@@ -13,11 +13,7 @@ return new class extends Migration
     {
         Schema::create('minem_template2s', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('contractor_company_id')->constrained('contractor_companies'); // ID de la empresa contratista
-            $table->foreignId('contractor_company_type_id')->constrained('contractor_company_types'); // Tipo de contratista
-            $table->foreignId('uea_id')->constrained('ueas'); // ID de la UEA
-            $table->foreignId('user_id')->constrained('users'); // ID del usuario que subió el archivo
-            $table->text('file'); // Archivo
+            $table->foreignId('file_status_id')->constrained('file_statuses'); // Archivo
             $table->integer('year'); // Año
             $table->integer('month'); // Mes
             $table->string('concession_code')->nullable(); // Código de concesión
@@ -30,7 +26,6 @@ return new class extends Migration
             $table->integer('female_administrative')->nullable(); // Administrativos mujeres
             $table->integer('female_plant_staff')->nullable(); // Personal de planta mujeres
             $table->integer('female_general_operations')->nullable(); // Operaciones generales mujeres
-            $table->boolean('is_old')->default(false); // Es antiguo
             $table->timestamps(); // Tiempos de creación y actualización
             $table->softDeletes(); // Borrado suave
         });

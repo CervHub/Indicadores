@@ -13,13 +13,10 @@ return new class extends Migration
     {
         Schema::create('annex28s', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('contractor_company_id')->constrained('contractor_companies'); // Contratista
-            $table->foreignId('contractor_company_type_id')->constrained('contractor_company_types'); // Tipo de contratista
-            $table->foreignId('uea_id')->constrained('ueas'); // UEA
-            $table->foreignId('user_id')->constrained('users'); // Usuario que subió el archivo
-            $table->text('file'); // Archivo
+            $table->foreignId('file_status_id')->constrained('file_statuses'); // Archivo
             $table->integer('year'); // Año
             $table->integer('month'); // Mes
+            $table->string('situation')->nullable(); // Situacion
             $table->integer('employees')->nullable(); // Empleados
             $table->integer('workers')->nullable(); // Obreros
             $table->integer('incidents')->nullable(); // Incidentes
@@ -27,12 +24,11 @@ return new class extends Migration
             $table->integer('minor_accidents')->nullable(); // Accidentes leves
             $table->integer('disability')->nullable(); // Incapacidad
             $table->integer('mortality')->nullable(); // Mortalidad
-            $table->integer('lost_days')->nullable(); // Días perdidos
-            $table->integer('man_hours_worked')->nullable(); // Horas hombre trabajadas
-            $table->integer('frequency_index')->nullable(); // Índice de frecuencia
-            $table->integer('severity_index')->nullable(); // Índice de severidad
-            $table->integer('accident_rate')->nullable(); // Índice de accidentalidad
-            $table->boolean('is_old')->default(false); // Es antiguo
+            $table->decimal('lost_days', 8, 2)->nullable(); // Días perdidos
+            $table->decimal('man_hours_worked', 8, 2)->nullable(); // Horas hombre trabajadas
+            $table->decimal('frequency_index', 8, 2)->nullable(); // Índice de frecuencia
+            $table->decimal('severity_index', 8, 2)->nullable(); // Índice de severidad
+            $table->decimal('accident_rate', 8, 2)->nullable(); // Índice de accidentalidad
             $table->timestamps(); // Tiempos de creación y actualización
             $table->softDeletes(); // Borrado suave
         });

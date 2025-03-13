@@ -11,11 +11,7 @@ class Annex27 extends Model
 
     //Campos de la tabla
     protected $fillable = [
-        'contractor_company_id',
-        'contractor_company_type_id',
-        'uea_id',
-        'user_id',
-        'file',
+        'file_status_id',
         'year',
         'month',
         'empl',
@@ -42,7 +38,6 @@ class Annex27 extends Model
         'day20',
         'day21',
         'day22',
-        'is_old',
         'created_at',
         'updated_at',
     ];

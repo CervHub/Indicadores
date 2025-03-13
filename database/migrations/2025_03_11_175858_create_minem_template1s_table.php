@@ -13,13 +13,11 @@ return new class extends Migration
     {
         Schema::create('minem_template1s', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('contractor_company_id')->constrained('contractor_companies'); // ID de la empresa contratista
-            $table->foreignId('contractor_company_type_id')->constrained('contractor_company_types'); // Tipo de contratista
-            $table->foreignId('uea_id')->constrained('ueas'); // ID de la UEA
-            $table->foreignId('user_id')->constrained('users'); // ID del usuario que subió el archivo
-            $table->text('file'); // Archivo
+            $table->foreignId('file_status_id')->constrained('file_statuses'); // Archivo
             $table->integer('year'); // Año
             $table->integer('month'); // Mes
+            $table->string('concession_code')->nullable(); // Código de concesión
+            $table->string('concession_name')->nullable(); // Nombre de concesión
             $table->integer('local_male_workers')->nullable(); // Trabajadores locales hombres obreros
             $table->integer('regional_male_workers')->nullable(); // Trabajadores regionales hombres obreros
             $table->integer('national_male_workers')->nullable(); // Trabajadores nacionales hombres obreros
@@ -38,7 +36,10 @@ return new class extends Migration
             $table->integer('national_female_employees')->nullable(); // Trabajadoras nacionales mujeres empleados
             $table->integer('foreign_female_employees')->nullable(); // Trabajadoras extranjeras mujeres empleados
 
-            $table->boolean('is_old')->default(false); // Es antiguo
+            $table->decimal('total_employees')->nullable(); // Employees
+            $table->decimal('total_hours_employees')->nullable(); // Hours worked
+            $table->string('mining_activities')->nullable(); // Mining activities
+
             $table->timestamps(); // Tiempos de creación y actualización
             $table->softDeletes(); // Borrado suave
         });

@@ -25,41 +25,48 @@ class AnnexImport implements WithMultipleSheets
      */
     public function sheets(): array
     {
-        $spreadsheet = IOFactory::load($this->filePath);
-        $sheetNames = $spreadsheet->getSheetNames();
-        $data = $this->initializeDataArray();
+        try {
+            $spreadsheet = IOFactory::load($this->filePath);
+            $sheetNames = $spreadsheet->getSheetNames();
+            $data = $this->initializeDataArray();
 
-        foreach ($sheetNames as $sheetName) {
-            $sheet = $spreadsheet->getSheetByName($sheetName);
-            $sheetData = $sheet->toArray();
+            // Validar todas las hojas antes de procesarlas
+            $this->validateAllSheets($spreadsheet);
+            foreach ($sheetNames as $sheetName) {
+                $sheet = $spreadsheet->getSheetByName($sheetName);
+                $sheetData = $sheet->toArray();
 
-            switch ($sheetName) {
-                case 'ANEXO 24':
-                case 'ANEXO 25':
-                case 'ANEXO 26':
-                case 'ANEXO 27':
-                    $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 26, false, 0, 0);
-                    break;
-                case 'ANEXO 28':
-                    $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 28, false, 1, 0);
-                    break;
-                case 'ANEXO 29':
-                    $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 16, true, 0, 0, 'ANEXO 29');
-                    break;
-                case 'ANEXO 30':
-                    $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 17, true, 0, 0, 'ANEXO 30');
-                    break;
-                case 'PLANTILLA MINEM 1':
-                    $data[$sheetName] = $this->processSheet($sheetData, 'Nombre Concesion o UEA', '', 24, true, 2);
-                    break;
-                case 'PLANTILLA MINEM 2':
-                    $data[$sheetName] = $this->processSheet($sheetData, 'RUC', '', 13, true, 0);
-                    break;
+                switch ($sheetName) {
+                    case 'ANEXO 24':
+                    case 'ANEXO 25':
+                    case 'ANEXO 26':
+                    case 'ANEXO 27':
+                        $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 26, true, 0, 0);
+                        break;
+                    case 'ANEXO 28':
+                        $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 28, true, 1, 0);
+                        break;
+                    case 'ANEXO 29':
+                        $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 16, true, 0, 0, 'ANEXO 29');
+                        break;
+                    case 'ANEXO 30':
+                        $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 17, true, 0, 0, 'ANEXO 30');
+                        break;
+                    case 'PLANTILLA MINEM 1':
+                        $data[$sheetName] = $this->processSheet($sheetData, 'Nombre Concesion o UEA', '', 24, true, 2);
+                        break;
+                    case 'PLANTILLA MINEM 2':
+                        $data[$sheetName] = $this->processSheet($sheetData, 'RUC', '', 13, true, 0);
+                        break;
+                }
             }
+            $this->data = $data;
+            // Retornar un array vacío ya que solo queremos listar las hojas
+            return $data;
+        } catch (\Exception $e) {
+            // Handle the exception (e.g., log the error, rethrow the exception, return an error message, etc.)
+            throw new \Exception($e->getMessage());
         }
-        $this->data = $data;
-        // Retornar un   array vacío ya que solo queremos listar las hojas
-        return $data;
     }
 
     /**
@@ -93,6 +100,74 @@ class AnnexImport implements WithMultipleSheets
     }
 
     /**
+     * Validate all sheets by checking for the presence of specific keywords.
+     *
+     * @param \PhpOffice\PhpSpreadsheet\Spreadsheet $spreadsheet
+     * @throws \Exception
+     */
+    private function validateAllSheets($spreadsheet): void
+    {
+        $sheetNames = $spreadsheet->getSheetNames();
+        $errors = [];
+
+        foreach ($sheetNames as $sheetName) {
+            $sheet = $spreadsheet->getSheetByName($sheetName);
+            $sheetData = $sheet->toArray();
+
+            $keywords = $this->getKeywordsForSheet($sheetName);
+            foreach ($keywords as $keyword) {
+                $found = false;
+                foreach ($sheetData as $row) {
+                    if (in_array($keyword, $row)) {
+                        $found = true;
+                        break;
+                    }
+                }
+                if (!$found) {
+                    $errors[] = $sheetName;
+                    break;
+                }
+            }
+        }
+
+        if (!empty($errors)) {
+            throw new \Exception(implode(", ", $errors));
+        }
+    }
+
+    /**
+     * Get the keywords for a specific sheet.
+     *
+     * @param string $sheetName
+     * @return array
+     */
+    private function getKeywordsForSheet(string $sheetName): array
+    {
+        switch ($sheetName) {
+            case 'ANEXO 24':
+                return ['EMPL.', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'];
+            case 'ANEXO 25':
+                return ['EMPL.', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'];
+            case 'ANEXO 26':
+                return ['EMPL.', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'];
+            case 'ANEXO 27':
+                return ['EMPL.', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'];
+            case 'ANEXO 28':
+                return ['EMPL.', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'];
+            case 'ANEXO 29':
+                return ['SPCC', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDAD CONEXA'];
+            case 'ANEXO 30':
+                return ['Día (F)', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'];
+            case 'PLANTILLA MINEM 1':
+                return ['RUC'];
+            case 'PLANTILLA MINEM 2':
+                return ['RUC'];
+            default:
+                return [];
+        }
+    }
+
+    /**
      * Process a sheet and extract data based on markers and column count.
      *
      * @param array $sheetData
@@ -101,6 +176,8 @@ class AnnexImport implements WithMultipleSheets
      * @param int $columnCount
      * @param bool $filterEmptyRows
      * @param int $filterColumnIndex
+     * @param int $addStartMarker
+     * @param int $addEndMarker
      * @return array
      */
     private function processSheet(array $sheetData, string $startMarker, string $endMarker, int $columnCount, bool $filterEmptyRows = false, int $filterColumnIndex = 0, $addStartMarker = 0, $addEndMarker = 0): array
@@ -133,6 +210,9 @@ class AnnexImport implements WithMultipleSheets
      * @param array $sheetData
      * @param int $columnCount
      * @param bool $filterEmptyRows
+     * @param int $start
+     * @param int $end
+     * @param string $anexo
      * @return array
      */
     private function processSheetForTypeClient(array $sheetData, int $columnCount, bool $filterEmptyRows = false, $start = 0, $end = 0, $anexo = ''): array
@@ -144,14 +224,14 @@ class AnnexImport implements WithMultipleSheets
                 $endLim = 'EMPRESA CONTRATISTA MINERO';
 
                 if ($anexo == 'ANEXO 29') {
-                    $beginLim = 'SPCC - TOQUEPALA 1';
+                    $beginLim = 'SPCC';
                     $endLim = 'EMPRESA CONTRATISTA MINERO';
                 }
                 if ($anexo == 'ANEXO 30') {
                     $beginLim = 'Día (F)';
                     $endLim = 'EMPRESA CONTRATISTA MINERO';
                 }
-                return $this->processSheet($sheetData, $beginLim, $endLim, $columnCount, $filterEmptyRows, 0, 0 + $start, 1 + $end);
+                return $this->processSheet($sheetData, $beginLim, $endLim, $columnCount, $filterEmptyRows, 1, 0 + $start, 1 + $end);
             case 'E':
                 $beginLim = 'EMPRESA CONTRATISTA MINERO';
                 $endLim = 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS';
@@ -161,7 +241,7 @@ class AnnexImport implements WithMultipleSheets
                     $endLim = 'EMPRESA CONTRATISTA DE ACTIVIDAD CONEXA';
                 }
 
-                return $this->processSheet($sheetData, $beginLim, $endLim, $columnCount, $filterEmptyRows, 0, 0, 1);
+                return $this->processSheet($sheetData, $beginLim, $endLim, $columnCount, $filterEmptyRows, 1, 0, 1);
             case 'O':
                 $beginLim = 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS';
                 $endLim = 'TOTAL';

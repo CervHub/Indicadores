@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 import { useForm, usePage } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
@@ -5,10 +7,10 @@ import { FormEventHandler, useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
-
+import { months } from '@/lib/utils';
 interface ContractorCompanyType {
     id: number;
     name: string;
@@ -33,8 +35,12 @@ export default function CreateAnnex() {
     const { contractorCompanyTypes, ueas, flash } = usePage<{
         contractorCompanyTypes: ContractorCompanyType[];
         ueas: Uea[];
-        flash: { success?: string };
+        flash: { success?: string; error?: string };
     }>().props;
+
+    useEffect(() => {
+        console.log('Mensajes flash al iniciar:', flash);
+    }, [flash]);
 
     const { data, setData, post, processing, errors, reset } = useForm<Required<ContractorForm>>({
         contractor_company_type_id: '',
@@ -49,43 +55,32 @@ export default function CreateAnnex() {
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post(route('annexes.store'), {
-            onSuccess: (response) => {
+            onSuccess: (page) => {
                 reset();
                 setIsDialogOpen(false);
-                console.log('Solicitud de creación exitosa:', response);
+                console.log('Solicitud de creación exitosa:', page?.props?.flash);
             },
-            onError: (errors) => {
+            onError: (erros) => {
                 setIsDialogOpen(true);
-                console.log('Errores en la solicitud de creación:', errors);
+                console.log('Errores en la solicitud de creación:', erros);
             },
         });
     };
 
     const isFormValid = () => {
         return (
-            true
+            data.contractor_company_type_id &&
+            data.uea_id &&
+            data.year &&
+            data.month &&
+            data.file
         );
     };
 
     const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
-    const months = [
-        { value: '01', label: 'Enero' },
-        { value: '02', label: 'Febrero' },
-        { value: '03', label: 'Marzo' },
-        { value: '04', label: 'Abril' },
-        { value: '05', label: 'Mayo' },
-        { value: '06', label: 'Junio' },
-        { value: '07', label: 'Julio' },
-        { value: '08', label: 'Agosto' },
-        { value: '09', label: 'Septiembre' },
-        { value: '10', label: 'Octubre' },
-        { value: '11', label: 'Noviembre' },
-        { value: '12', label: 'Diciembre' },
-    ];
 
     return (
         <div>
-            {flash?.success && <div className="mb-4 text-green-600">{flash.success}</div>}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <div className="flex justify-start">
                     <DialogTrigger asChild>
@@ -100,7 +95,11 @@ export default function CreateAnnex() {
                     <form onSubmit={submit} className="space-y-3" method="post" action={route('contractor.store')} encType="multipart/form-data">
                         <div className="grid gap-2">
                             <Label htmlFor="contractor_company_type_id">Tipo de Cliente</Label>
-                            <Select required onValueChange={(value) => setData('contractor_company_type_id', value)} value={data.contractor_company_type_id}>
+                            <Select
+                                required
+                                onValueChange={(value) => setData('contractor_company_type_id', value)}
+                                value={data.contractor_company_type_id}
+                            >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Seleccione un tipo de cliente" />
                                 </SelectTrigger>

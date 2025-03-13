@@ -13,11 +13,7 @@ return new class extends Migration
     {
         Schema::create('annex24s', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('contractor_company_id')->constrained('contractor_companies'); // Contratista
-            $table->foreignId('contractor_company_type_id')->constrained('contractor_company_types'); // Tipo de contratista
-            $table->foreignId('uea_id')->constrained('ueas'); // UEA
-            $table->foreignId('user_id')->constrained('users'); // Usuario que subió el archivo
-            $table->text('file'); // Archivo
+            $table->foreignId('file_status_id')->constrained('file_statuses'); // Archivo
             $table->integer('year'); // Año
             $table->integer('month'); // Mes
             $table->integer('empl')->nullable();
@@ -44,7 +40,6 @@ return new class extends Migration
             $table->integer('day20')->nullable();
             $table->integer('day21')->nullable();
             $table->integer('day22')->nullable();
-            $table->boolean('is_old')->default(false);
             $table->timestamps();
             $table->softDeletes();
         });
