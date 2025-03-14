@@ -17,3 +17,4 @@ require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
 require __DIR__.'/contractor.php';
 require __DIR__.'/annex.php';
+require __DIR__.'/consolidated.php';

@@ -1,5 +1,14 @@
 'use client';
-import { ColumnDef, SortingState, flexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
+import {
+    ColumnDef,
+    SortingState,
+    flexRender,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getPaginationRowModel,
+    getSortedRowModel,
+    useReactTable,
+} from '@tanstack/react-table';
 import * as React from 'react';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -15,6 +24,7 @@ interface DataTableProps<TData, TValue> {
 
 export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
+    const [globalFilter, setGlobalFilter] = React.useState('');
 
     const table = useReactTable({
         data,
@@ -23,8 +33,11 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
         getPaginationRowModel: getPaginationRowModel(),
         onSortingChange: setSorting,
         getSortedRowModel: getSortedRowModel(),
+        onGlobalFilterChange: setGlobalFilter,
+        getFilteredRowModel: getFilteredRowModel(),
         state: {
             sorting,
+            globalFilter,
         },
     });
 
@@ -36,7 +49,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id} className="p-2">
+                                    <TableHead key={header.id} style={{ minWidth: '10px', maxWidth: '150px' }}>
                                         {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                                     </TableHead>
                                 ))}
@@ -48,13 +61,24 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                             table.getRowModel().rows.map((row) => (
                                 <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id} className="p-2">{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                                        <TableCell
+                                            key={cell.id}
+                                            style={{
+                                                minWidth: '10px',
+                                                maxWidth: '150px',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                            }}
+                                        >
+                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                        </TableCell>
                                     ))}
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center p-2">
+                                <TableCell colSpan={columns.length} className="h-24 text-center">
                                     No results.
                                 </TableCell>
                             </TableRow>
@@ -62,7 +86,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                     </TableBody>
                 </Table>
             </div>
-            <div className="flex items-center justify-end space-x-2 py-2">
+            <div className="flex items-center justify-end space-x-2 py-4">
                 <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
                     Previous
                 </Button>

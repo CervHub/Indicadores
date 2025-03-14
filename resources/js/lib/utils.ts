@@ -55,3 +55,14 @@ export function findInArrayObject<T>(
     const foundItem = array.find(item => castFunction(item[searchField]) === castFunction(searchValue));
     return foundItem ? foundItem[returnField] : undefined;
 }
+
+export function formatNumber  (value: number | string)  {
+    if (typeof value === 'string') {
+        value = value.replace(',', ''); // Eliminar comas si existen
+    }
+    const number = parseFloat(value.toString());
+    if (!isNaN(number)) {
+        return number.toFixed(2);
+    }
+    return value;
+};

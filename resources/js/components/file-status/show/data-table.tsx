@@ -14,7 +14,6 @@ import * as React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 // Define a custom filter function
 
@@ -44,14 +43,6 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
 
     return (
         <div>
-            <div className="flex items-center py-4">
-                <Input
-                    placeholder="Filter by any column..."
-                    value={globalFilter}
-                    onChange={(event) => setGlobalFilter(event.target.value)}
-                    className="max-w-sm"
-                />
-            </div>
             <div className="grid grid-cols-1 rounded-md border">
                 <Table className="text-xs">
                     <TableHeader>

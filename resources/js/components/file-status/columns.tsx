@@ -26,6 +26,8 @@ export type FileStatus = {
     annex30: string;
     minem_template_1: string;
     minem_template_2: string;
+    minem_template1: object;
+    minem_template2: object;
     is_old: boolean;
     created_at: string;
     updated_at: string;
