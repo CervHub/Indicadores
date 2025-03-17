@@ -10,4 +10,5 @@ Route::middleware('auth')->group(function () {
     Route::get('consolidated/{id}', [ConsolidatedController::class, 'show'])->name('consolidated.show');
     Route::patch('consolidated/{id}', [ConsolidatedController::class, 'update'])->name('consolidated.update');
     Route::delete('consolidated/{id}', [ConsolidatedController::class, 'destroy'])->name('consolidated.destroy');
+    Route::get('consolidated/download/{id}', [ConsolidatedController::class, 'download'])->name('consolidated.download'); // Nueva ruta para descargar el archivo
 });

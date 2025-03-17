@@ -41,7 +41,7 @@ class AnnexImport implements WithMultipleSheets
                     case 'ANEXO 25':
                     case 'ANEXO 26':
                     case 'ANEXO 27':
-                        $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 26, true, 0, 0);
+                        $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 26, true, 1, 0);
                         break;
                     case 'ANEXO 28':
                         $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 28, true, 1, 0);
@@ -194,6 +194,7 @@ class AnnexImport implements WithMultipleSheets
             $endRow -= $addEndMarker;
 
             $extractedData = $this->extractData($sheetData, $startRow, $endRow, $columnCount);
+
             if ($filterEmptyRows) {
                 $extractedData = array_filter($extractedData, function ($row) use ($filterColumnIndex) {
                     return !empty($row[$filterColumnIndex]);
@@ -252,7 +253,7 @@ class AnnexImport implements WithMultipleSheets
                 if ($anexo == 'ANEXO 30') {
                     $endLim = '';
                 }
-                return $this->processSheet($sheetData, $beginLim, $endLim, $columnCount, $filterEmptyRows, 1, 0, 1);
+                return $this->processSheet($sheetData, $beginLim, $endLim, $columnCount, true, 2, -2, 0);
             default:
                 return [];
         }
@@ -270,10 +271,14 @@ class AnnexImport implements WithMultipleSheets
     private function extractData(array $data, int $startRow, int $endRow, int $columnCount): array
     {
         $filteredData = array_slice($data, $startRow, $endRow - $startRow + 1);
-        foreach ($filteredData as &$row) {
+        foreach ($filteredData as $key => &$row) {
+            if (strtoupper($row[0]) === 'TOTAL') {
+                unset($filteredData[$key]);
+                continue;
+            }
             $row = array_slice($row, 0, $columnCount); // Columns A to specified column count
         }
-        return $filteredData;
+        return array_values($filteredData); // Reindex array to avoid gaps
     }
 
     /**

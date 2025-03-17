@@ -11,6 +11,7 @@ class ConsolidationCreationService
     public function store($request)
     {
         $this->generateConsolidated($request->year, $request->month);
+        return $this->result;
     }
 
     private function generateConsolidated($year, $month)
@@ -24,17 +25,23 @@ class ConsolidationCreationService
         $minem1 = $this->getMinem1Data($year, $month);
         $minem2 = $this->getMinem2Data($year, $month);
 
-        dd([
-            'annex24' => $annex24,
-            'annex25' => $annex25,
-            'annex26' => $annex26,
-            'annex27' => $annex27,
-            'annex28' => $annex28,
-            'annex30' => $annex30,
-            'minem1' => $minem1,
-            'minem2' => $minem2,
-        ]);
+        $this->groupData($annex24, 'annex24');
+        $this->groupData($annex25, 'annex25');
+        $this->groupData($annex26, 'annex26');
+        $this->groupData($annex27, 'annex27');
+        $this->groupData($annex28, 'annex28');
+        $this->groupData($annex30, 'annex30');
+        $this->groupData($minem1, 'minem1');
+        $this->groupData($minem2, 'minem2');
     }
+
+    private function groupData($data, $model)
+    {
+        foreach ($data as $item) {
+            $this->result[$item->uea_name][$model][$item->contractor_company_type_name][] = $item;
+        }
+    }
+
 
     private function getAnnexData($table, $year, $month)
     {

@@ -1,6 +1,6 @@
 import { useForm, usePage } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler, useState, useEffect } from 'react';
+import { FormEventHandler, useEffect, useState } from 'react';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -14,22 +14,40 @@ type ConsolidatedForm = {
     month: number;
 };
 
-export default function CreateConsolidated() {
+type CreateConsolidatedProps = {
+    initialYear?: number;
+    initialMonth?: number;
+    isOpen?: boolean;
+    onOpenChange?: (isOpen: boolean) => void;
+};
+
+export default function CreateConsolidated({ initialYear = 0, initialMonth = 0, isOpen = false, onOpenChange }: CreateConsolidatedProps) {
     const { flash } = usePage<{
         flash: { success?: string };
     }>().props;
 
     const { data, setData, post, processing, errors, reset } = useForm<Required<ConsolidatedForm>>({
-        year: 0,
-        month: 0,
+        year: initialYear,
+        month: initialMonth,
     });
 
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isDialogOpen, setIsDialogOpen] = useState(isOpen);
     const [isFormValid, setIsFormValid] = useState(false);
 
     useEffect(() => {
         setIsFormValid(data.year !== 0 && data.month !== 0);
     }, [data]);
+
+    useEffect(() => {
+        setIsDialogOpen(isOpen);
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (isOpen) {
+            setData('year', initialYear);
+            setData('month', initialMonth);
+        }
+    }, [initialYear, initialMonth, isOpen, setData]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -37,6 +55,7 @@ export default function CreateConsolidated() {
             onSuccess: (response) => {
                 reset();
                 setIsDialogOpen(false);
+                if (onOpenChange) onOpenChange(false);
                 console.log('Solicitud de creación exitosa:', response);
             },
             onError: (errors) => {
@@ -52,7 +71,13 @@ export default function CreateConsolidated() {
     return (
         <div>
             {flash?.success && <div className="mb-4 text-green-600">{flash.success}</div>}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog
+                open={isDialogOpen}
+                onOpenChange={(open) => {
+                    setIsDialogOpen(open);
+                    if (onOpenChange) onOpenChange(open);
+                }}
+            >
                 <div className="flex justify-start">
                     <DialogTrigger asChild>
                         <Button className="inline-block px-4 py-2">Agregar Consolidado</Button>

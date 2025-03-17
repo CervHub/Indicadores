@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use ZipArchive;
+
 class UtilService
 {
     // Guarda un archivo en la carpeta especificada dentro de 'public'
@@ -28,5 +30,23 @@ class UtilService
     {
         $publicPath = public_path($filePath);
         return unlink($publicPath);
+    }
+
+    // Comprime archivos en un archivo ZIP
+    public function compressFiles(array $filePaths)
+    {
+        $zipFilePath = storage_path('app/public/consolidated_files.zip');
+        $zip = new ZipArchive;
+
+        if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+            foreach ($filePaths as $file) {
+                $zip->addFile(public_path($file), basename($file));
+            }
+            $zip->close();
+        } else {
+            throw new \Exception('No se pudo crear el archivo ZIP.');
+        }
+
+        return $zipFilePath;
     }
 }
