@@ -140,22 +140,31 @@ class AnnexExport
     private function modifyAnexo($sheet, $sheetName, $data)
     {
         $sections = [
-            'Titular' => $data['Titular'] ?? [],
-            'Empresa Contratista Minero' => $data['Empresa Contratista Minero'] ?? [],
-            'Empresa Conexa' => $data['Empresa Conexa'] ?? []
+            'Titular' => [
+                'data' => $data['Titular'] ?? [],
+                'row' => 13
+            ],
+            'Empresa Contratista Minero' => [
+                'data' => $data['Empresa Contratista Minero'] ?? [],
+                'row' => 15
+            ],
+            'Empresa Conexa' => [
+                'data' => $data['Empresa Conexa'] ?? [],
+                'row' => 17
+            ]
         ];
-
-        $numBegin = $sheetName === 'ANEXO 27' ? 14 : 13;
-        $currentRow = $numBegin;
 
         $totals = array_fill(0, 27, 0); // Initialize totals array for columns B to AA
 
-        foreach ($sections as $sectionName => $sectionData) {
-            if (count($sectionData) > 1) {
-                $sheet->insertNewRowBefore($currentRow + 1, count($sectionData) - 1);
+        foreach (array_reverse($sections) as $sectionName => $section) {
+            $currentRow = $sheetName === 'ANEXO 27' ? $section['row'] + 1 : $section['row'];
+
+
+            if (count($section['data']) > 1) {
+                $sheet->insertNewRowBefore($currentRow + 1, count($section['data']) - 1);
             }
 
-            foreach ($sectionData as $item) {
+            foreach ($section['data'] as $item) {
                 $total = ($item->total_empl ?? 0) + ($item->total_obr ?? 0);
                 $sheet->setCellValue("A{$currentRow}", $item->contractor_company_name ?? 'S/N');
                 $sheet->setCellValue("B{$currentRow}", $item->total_empl ?? 'S/N');
@@ -177,11 +186,9 @@ class AnnexExport
 
                 $currentRow++;
             }
-
-            $currentRow++; // Add an extra row between sections
         }
 
-        // Find the cell with 'CON TOTAL' and add totals row below it
+        // Find the cell with 'TOTAL' and add totals row below it
         $highestRow = $sheet->getHighestRow();
         for ($row = 1; $row <= $highestRow; $row++) {
             $cellValue = $sheet->getCell("A{$row}")->getValue();
@@ -191,7 +198,6 @@ class AnnexExport
             }
         }
 
-        $sheet->setCellValue("A{$currentRow}", 'TOTAL');
         for ($col = 1; $col <= 26; $col++) {
             $sheet->setCellValueByColumnAndRow($col + 1, $currentRow - 1, $totals[$col]);
         }
@@ -217,7 +223,7 @@ class AnnexExport
         $totals = array_fill(0, 28, 0); // Initialize totals array for columns B to AB
 
         // Fill the rows with data
-        foreach (array_reverse($sections) as $sectionName => $section) {
+        foreach (array_reverse($sections) as $section) {
             $currentRow = $section['row'];
             if (count($section['data']) > 1) {
                 $sheet->insertNewRowBefore($currentRow + 1, count($section['data']) - 1);
@@ -346,31 +352,25 @@ class AnnexExport
         $sections = [
             'Titular' => [
                 'data' => $data['Titular'] ?? [],
-                'row' => 5
             ],
             'Empresa Contratista Minero' => [
                 'data' => $data['Empresa Contratista Minero'] ?? [],
-                'row' => 5
             ],
             'Empresa Conexa' => [
                 'data' => $data['Empresa Conexa'] ?? [],
-                'row' => 5
             ]
         ];
 
         // Fill the rows with data
-        foreach (array_reverse($sections) as $sectionName => $section) {
-            $currentRow = $section['row'];
-            if (count($section['data']) > 1) {
-                $sheet->insertNewRowBefore($currentRow + 1, count($section['data']) - 1);
-            }
-
+        $currentRow = 6;
+        foreach ($sections as $sectionName => $section) {
             foreach ($section['data'] as $item) {
+                $sheet->insertNewRowBefore($currentRow);
                 $sheet->setCellValue("A{$currentRow}", $item->ruc_number ?? '');
                 $sheet->setCellValue("B{$currentRow}", $item->concession_code ?? '');
                 $sheet->setCellValue("C{$currentRow}", $item->uea_name ?? '');
                 $sheet->setCellValue("D{$currentRow}", $item->abbreviation ?? '');
-                $sheet->setCellValue("E{$currentRow}", $item->contractor_company_type_name ?? '');
+                $sheet->setCellValue("E{$currentRow}", $item->contractor_company_name ?? '');
                 $sheet->setCellValue("F{$currentRow}", $item->total_local_male_workers ?? '');
                 $sheet->setCellValue("G{$currentRow}", $item->total_regional_male_workers ?? '');
                 $sheet->setCellValue("H{$currentRow}", $item->total_national_male_workers ?? '');
@@ -394,6 +394,9 @@ class AnnexExport
                 $currentRow++;
             }
         }
+
+        //Eliminar la fila o row 5
+        $sheet->removeRow(5);
     }
 
     private function modifyPlantillaMinem2($sheet, $fileIndex, $data)
@@ -401,31 +404,25 @@ class AnnexExport
         $sections = [
             'Titular' => [
                 'data' => $data['Titular'] ?? [],
-                'row' => 5
             ],
             'Empresa Contratista Minero' => [
                 'data' => $data['Empresa Contratista Minero'] ?? [],
-                'row' => 5
             ],
             'Empresa Conexa' => [
                 'data' => $data['Empresa Conexa'] ?? [],
-                'row' => 5
             ]
         ];
 
         // Fill the rows with data
-        foreach (array_reverse($sections) as $sectionName => $section) {
-            $currentRow = $section['row'];
-            if (count($section['data']) > 1) {
-                $sheet->insertNewRowBefore($currentRow + 1, count($section['data']) - 1);
-            }
-
+        $currentRow = 6;
+        foreach ($sections as $sectionName => $section) {
             foreach ($section['data'] as $item) {
+                $sheet->insertNewRowBefore($currentRow);
                 $sheet->setCellValue("A{$currentRow}", $item->ruc_number ?? '');
                 $sheet->setCellValue("B{$currentRow}", $item->concession_code ?? '');
                 $sheet->setCellValue("C{$currentRow}", $item->uea_name ?? '');
                 $sheet->setCellValue("D{$currentRow}", $item->abbreviation ?? '');
-                $sheet->setCellValue("E{$currentRow}", $item->contractor_company_type_name ?? '');
+                $sheet->setCellValue("E{$currentRow}", $item->contractor_company_name ?? '');
                 $sheet->setCellValue("F{$currentRow}", $item->total_male_managers ?? '');
                 $sheet->setCellValue("G{$currentRow}", $item->total_male_administrative ?? '');
                 $sheet->setCellValue("H{$currentRow}", $item->total_male_plant_staff ?? '');
@@ -438,5 +435,7 @@ class AnnexExport
                 $currentRow++;
             }
         }
+
+        $sheet->removeRow(5);
     }
 }

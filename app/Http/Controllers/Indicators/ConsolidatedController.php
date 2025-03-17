@@ -47,9 +47,9 @@ class ConsolidatedController extends Controller
                 [
                     'user_id' => Auth::user()->id,
                     'is_closed' => false,
-                    'file_sx_ew' => $filePaths[0], // Guardar la ruta del segundo archivo generado
-                    'file_accumulation' => $filePaths[1], // Guardar la ruta del tercer archivo generado
-                    'file_concentrator' => $filePaths[2], // Guardar la ruta del primer archivo generado
+                    'file_accumulation' => $filePaths[0], // Guardar la ruta del tercer archivo generado
+                    'file_concentrator' => $filePaths[1], // Guardar la ruta del primer archivo generado
+                    'file_sx_ew' => $filePaths[2], // Guardar la ruta del segundo archivo generado
                 ]
             );
 

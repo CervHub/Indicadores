@@ -78,10 +78,6 @@ export const getColumns = (onReconsolidateClick: (id: string) => void): ColumnDe
                         <RefreshCw className="mr-2 h-4 w-4" />
                         Reconsolidar
                     </Button>
-                    <Button variant="destructive" onClick={() => downloadWinrar(consolidated.id)}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Descargar WinRAR
-                    </Button>
                 </div>
             );
         },
@@ -95,18 +91,6 @@ const downloadFile = (filePath: string) => {
     const link = document.createElement('a');
     link.href = fullPath;
     link.download = filePath.split('/').pop() || 'default_filename';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
-
-const downloadWinrar = (id: string) => {
-    const origin = window.location.origin;
-    const fullPath = `${origin}/consolidated/download/${id}`;
-    console.log(`Downloading WinRAR from: ${fullPath}`);
-    const link = document.createElement('a');
-    link.href = fullPath;
-    link.download = `consolidated_${id}.rar`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

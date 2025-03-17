@@ -41,7 +41,7 @@ class AnnexImport implements WithMultipleSheets
                     case 'ANEXO 25':
                     case 'ANEXO 26':
                     case 'ANEXO 27':
-                        $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 26, true, 1, 0);
+                        $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 26, true, 0, 0);
                         break;
                     case 'ANEXO 28':
                         $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 28, true, 1, 0);
@@ -183,6 +183,8 @@ class AnnexImport implements WithMultipleSheets
     private function processSheet(array $sheetData, string $startMarker, string $endMarker, int $columnCount, bool $filterEmptyRows = false, int $filterColumnIndex = 0, $addStartMarker = 0, $addEndMarker = 0): array
     {
         list($startRow, $endRow) = $this->getStartEndRows($sheetData, $startMarker, $endMarker);
+
+
 
         if ($startRow !== null) {
 

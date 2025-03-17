@@ -80,13 +80,13 @@ export default function CreateConsolidated({ initialYear = 0, initialMonth = 0, 
             >
                 <div className="flex justify-start">
                     <DialogTrigger asChild>
-                        <Button className="inline-block px-4 py-2">Agregar Consolidado</Button>
+                        <Button className="inline-block px-4 py-2">Crear Consolidado</Button>
                     </DialogTrigger>
                 </div>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Agregar Consolidado</DialogTitle>
-                        <DialogDescription>Complete los campos para agregar un nuevo consolidado.</DialogDescription>
+                        <DialogTitle>Crear Consolidado</DialogTitle>
+                        <DialogDescription>Complete los campos para crear un nuevo consolidado.</DialogDescription>
                     </DialogHeader>
                     <form onSubmit={submit} className="space-y-3" method="post" action={route('consolidated.store')}>
                         <div className="grid gap-2">
@@ -129,7 +129,7 @@ export default function CreateConsolidated({ initialYear = 0, initialMonth = 0, 
                         </div>
                         <Button type="submit" className="mt-2" disabled={processing || !isFormValid}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                            Guardar
+                            Generar
                         </Button>
                     </form>
                 </DialogContent>
