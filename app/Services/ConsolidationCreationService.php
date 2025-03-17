@@ -47,14 +47,14 @@ class ConsolidationCreationService
     {
         return DB::table('file_statuses as fs')
             ->join('ueas as u', 'u.id', '=', 'fs.uea_id')
-            ->join('contractor_companies as cc', 'cc.id', '=', 'fs.contractor_company_id')
+            ->join('companies as cc', 'cc.id', '=', 'fs.contractor_company_id')
             ->join('contractor_company_types as cct', 'cct.id', '=', 'fs.contractor_company_type_id')
             ->rightJoin($table . ' as a', 'a.file_status_id', '=', 'fs.id')
             ->select(
                 'cct.abbreviation',
                 'cct.name as contractor_company_type_name',
-                'cc.name as contractor_company_name',
-                'cc.ruc_number',
+                'cc.nombre as contractor_company_name',
+                'cc.ruc as ruc_number',
                 'u.name as uea_name',
                 'fs.year',
                 'fs.month',
@@ -95,8 +95,8 @@ class ConsolidationCreationService
             ->groupBy(
                 'cct.abbreviation',
                 'cct.name',
-                'cc.name',
-                'cc.ruc_number',
+                'cc.nombre',
+                'cc.ruc',
                 'u.name',
                 'fs.year',
                 'fs.month'
@@ -108,14 +108,14 @@ class ConsolidationCreationService
     {
         return DB::table('file_statuses as fs')
             ->join('ueas as u', 'u.id', '=', 'fs.uea_id')
-            ->join('contractor_companies as cc', 'cc.id', '=', 'fs.contractor_company_id')
+            ->join('companies as cc', 'cc.id', '=', 'fs.contractor_company_id')
             ->join('contractor_company_types as cct', 'cct.id', '=', 'fs.contractor_company_type_id')
             ->rightJoin('annex28s as a28', 'a28.file_status_id', '=', 'fs.id')
             ->select(
                 'cct.abbreviation',
                 'cct.name as contractor_company_type_name',
-                'cc.name as contractor_company_name',
-                'cc.ruc_number',
+                'cc.nombre as contractor_company_name',
+                'cc.ruc as ruc_number',
                 'u.name as uea_name',
                 'fs.year',
                 'fs.month',
@@ -139,8 +139,8 @@ class ConsolidationCreationService
             ->groupBy(
                 'cct.abbreviation',
                 'cct.name',
-                'cc.name',
-                'cc.ruc_number',
+                'cc.nombre',
+                'cc.ruc',
                 'u.name',
                 'fs.year',
                 'fs.month'
@@ -152,14 +152,14 @@ class ConsolidationCreationService
     {
         return DB::table('file_statuses as fs')
             ->join('ueas as u', 'u.id', '=', 'fs.uea_id')
-            ->join('contractor_companies as cc', 'cc.id', '=', 'fs.contractor_company_id')
+            ->join('companies as cc', 'cc.id', '=', 'fs.contractor_company_id')
             ->join('contractor_company_types as cct', 'cct.id', '=', 'fs.contractor_company_type_id')
             ->rightJoin('annex30s as a30', 'a30.file_status_id', '=', 'fs.id')
             ->select(
                 'cct.abbreviation',
                 'cct.name as contractor_company_type_name',
-                'cc.name as contractor_company_name',
-                'cc.ruc_number',
+                'cc.nombre as contractor_company_name',
+                'cc.ruc as ruc_number',
                 'u.name as uea_name',
                 'fs.year',
                 'fs.month',
@@ -189,14 +189,14 @@ class ConsolidationCreationService
     {
         return DB::table('file_statuses as fs')
             ->join('ueas as u', 'u.id', '=', 'fs.uea_id')
-            ->join('contractor_companies as cc', 'cc.id', '=', 'fs.contractor_company_id')
+            ->join('companies as cc', 'cc.id', '=', 'fs.contractor_company_id')
             ->join('contractor_company_types as cct', 'cct.id', '=', 'fs.contractor_company_type_id')
             ->rightJoin('minem_template1s as mt1', 'mt1.file_status_id', '=', 'fs.id')
             ->select(
                 'cct.abbreviation',
                 'cct.name as contractor_company_type_name',
-                'cc.name as contractor_company_name',
-                'cc.ruc_number',
+                'cc.nombre as contractor_company_name',
+                'cc.ruc as ruc_number',
                 'u.name as uea_name',
                 'fs.year',
                 'fs.month',
@@ -227,8 +227,8 @@ class ConsolidationCreationService
             ->groupBy(
                 'cct.abbreviation',
                 'cct.name',
-                'cc.name',
-                'cc.ruc_number',
+                'cc.nombre',
+                'cc.ruc',
                 'u.name',
                 'fs.year',
                 'fs.month',
@@ -243,14 +243,14 @@ class ConsolidationCreationService
     {
         return DB::table('file_statuses as fs')
             ->join('ueas as u', 'u.id', '=', 'fs.uea_id')
-            ->join('contractor_companies as cc', 'cc.id', '=', 'fs.contractor_company_id')
+            ->join('companies as cc', 'cc.id', '=', 'fs.contractor_company_id')
             ->join('contractor_company_types as cct', 'cct.id', '=', 'fs.contractor_company_type_id')
             ->rightJoin('minem_template2s as mt2', 'mt2.file_status_id', '=', 'fs.id')
             ->select(
                 'cct.abbreviation',
                 'cct.name as contractor_company_type_name',
-                'cc.name as contractor_company_name',
-                'cc.ruc_number',
+                'cc.nombre as contractor_company_name',
+                'cc.ruc as ruc_number',
                 'u.name as uea_name',
                 'fs.year',
                 'fs.month',
@@ -270,8 +270,8 @@ class ConsolidationCreationService
             ->groupBy(
                 'cct.abbreviation',
                 'cct.name',
-                'cc.name',
-                'cc.ruc_number',
+                'cc.nombre',
+                'cc.ruc',
                 'u.name',
                 'fs.year',
                 'fs.month',

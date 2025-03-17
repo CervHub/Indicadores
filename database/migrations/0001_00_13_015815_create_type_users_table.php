@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('type_users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name'); // Obligatorio
-            $table->string('description')->nullable(); // Opcional
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        // Schema::create('type_users', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->string('name'); // Obligatorio
+        //     $table->string('description')->nullable(); // Opcional
+        //     $table->timestamps();
+        //     $table->softDeletes();
+        // });
     }
 
     /**
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('type_users');
+        // Schema::dropIfExists('type_users');
     }
 };

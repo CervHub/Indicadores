@@ -35,7 +35,7 @@ interface ContractorCompanyType {
 
 export const getColumns = (contractorCompanyTypes: ContractorCompanyType[]): ColumnDef<Contractor>[] => [
     {
-        accessorKey: 'name',
+        accessorKey: 'nombre',
         header: ({ column }) => {
             return (
               <Button
@@ -49,20 +49,16 @@ export const getColumns = (contractorCompanyTypes: ContractorCompanyType[]): Col
           },
     },
     {
-        accessorKey: 'business_name',
+        accessorKey: 'descripcion',
         header: 'Business Name',
     },
     {
-        accessorKey: 'ruc_number',
+        accessorKey: 'ruc',
         header: 'RUC Number',
     },
     {
-        accessorKey: 'contractor_company_type_id',
+        accessorKey: 'email',
         header: 'Contractor Company Type',
-        cell: ({ row }) => {
-            const type = contractorCompanyTypes.find(type => type.id === Number(row.original.contractor_company_type_id));
-            return type ? type.name : 'Unknown';
-        },
     },
     {
         id: 'actions',

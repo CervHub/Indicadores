@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\ContractorCompanyType;
-use App\Models\ContractorCompany;
+use App\Models\Company as ContractorCompany;
 use Illuminate\Support\Facades\DB;
 
 class ContractorController extends Controller

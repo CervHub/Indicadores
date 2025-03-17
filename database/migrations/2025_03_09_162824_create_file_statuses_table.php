@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('file_statuses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('contractor_company_id')->constrained('contractor_companies'); // Contratista
+            $table->foreignId('contractor_company_id')->constrained('companies'); // Contratista
             $table->foreignId('contractor_company_type_id')->constrained('contractor_company_types'); // Tipo de contratista
             $table->foreignId('uea_id')->constrained('ueas'); // UEA
             $table->foreignId('user_id')->constrained('users'); // Usuario que subió el archivo

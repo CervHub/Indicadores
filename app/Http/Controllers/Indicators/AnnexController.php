@@ -36,7 +36,7 @@ class AnnexController extends Controller
         $contractorCompanyTypes = $this->contractorCompanyType->all();
         $fileStatuses = $this->fileStatus->where('is_old', false)
             ->where('user_id', Auth::id())
-            ->where('contractor_company_id', Auth::user()->contractor_company_id)
+            ->where('contractor_company_id', Auth::user()->company_id)
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -51,7 +51,7 @@ class AnnexController extends Controller
     {
         $request->merge([
             'user_id' => Auth::id(),
-            'contractor_company_id' => Auth::user()->contractor_company_id,
+            'contractor_company_id' => Auth::user()->company_id,
         ]);
 
         $validatedData = $request->validate([

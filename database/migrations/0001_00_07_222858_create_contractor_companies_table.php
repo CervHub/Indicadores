@@ -11,20 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('contractor_companies', function (Blueprint $table) {
-            $table->id();
-            $table->string('name'); // Obligatorio
-            $table->string('business_name')->nullable(); // Opcional
-            $table->string('email')->nullable(); // Opcional
-            $table->string('phone_number')->nullable(); // Opcional
-            $table->string('address')->nullable(); // Opcional
-            $table->string('city')->nullable(); // Opcional
-            $table->string('country')->nullable(); // Opcional
-            $table->string('ruc_number')->unique(); // Obligatorio
-            $table->foreignId('contractor_company_type_id')->constrained('contractor_company_types'); // Tipo de cliente
-            $table->string('situation')->nullable(); // Situación
-            $table->timestamps();
-            $table->softDeletes();
+        Schema::table('companies', function (Blueprint $table) {
+            $table->foreignId('contractor_company_type_id')->nullable()->constrained('contractor_company_types')->after('ruc_number'); // Tipo de cliente
+            $table->string('situation')->nullable()->after('contractor_company_type_id'); // Situación
         });
     }
 
@@ -33,6 +22,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('contractor_companies');
+        Schema::table('companies', function (Blueprint $table) {
+            $table->dropColumn('situation');
+            $table->dropForeign(['contractor_company_type_id']);
+            $table->dropColumn('contractor_company_type_id');
+        });
     }
 };

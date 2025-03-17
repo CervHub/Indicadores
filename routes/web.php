@@ -18,3 +18,9 @@ require __DIR__.'/auth.php';
 require __DIR__.'/contractor.php';
 require __DIR__.'/annex.php';
 require __DIR__.'/consolidated.php';
+
+//Legacy
+require __DIR__.'/legacy/user.php';
+require __DIR__.'/legacy/contrata.php';
+require __DIR__.'/legacy/company.php';
+require __DIR__.'/legacy/admin.php';
