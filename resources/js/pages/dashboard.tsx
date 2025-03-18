@@ -14,10 +14,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const url = route('dashboard');
-console.log(url);
+interface InfoCardProps {
+    title: string;
+    buttons: { text: string; url: string }[];
+    info: string;
+}
 
-const InfoCard = ({ title, buttons, info }) => (
+const InfoCard = ({ title, buttons, info }: InfoCardProps) => (
     <Card className="relative w-full">
         <CardHeader className="flex items-center justify-between">
             <CardTitle>{title}</CardTitle>
@@ -36,15 +39,10 @@ const InfoCard = ({ title, buttons, info }) => (
         </CardHeader>
         <CardContent>
             {buttons.map(({ text, url }, index) => (
-                <Link
-                    key={index}
-                    href={url}
-                    method="get"
-                    className="mb-2 flex w-full items-center justify-between gap-2"
-                >
-                    <Button variant="outline" className="flex w-full items-center justify-between gap-2">
-                        {text}
-                        <ArrowRight className="h-5 w-5" />
+                <Link key={index} href={url} method="get" className="mb-2 flex w-full items-center gap-2">
+                    <Button variant="outline" className="flex w-full items-center gap-2">
+                        <span className="flex-1 overflow-hidden text-left text-ellipsis whitespace-nowrap">{text}</span>
+                        <ArrowRight className="h-5 w-5 flex-shrink-0" />
                     </Button>
                 </Link>
             ))}
@@ -55,14 +53,14 @@ const InfoCard = ({ title, buttons, info }) => (
 export default function Dashboard() {
     const distributionButtons = [
         { text: 'Actos y condiciones subestándares e incidentes', url: '/company/analysis/category' },
-        { text: 'Actos Subestándares', url: '/company/analysis/category/detail?category_name=Actos%20Subestándares' },
-        { text: 'Condiciones Subestándares', url: '/company/analysis/category/detail?category_name=Condiciones%20Subestándares' },
-        { text: 'Incidentes', url: '/company/analysis/category/detail?category_name=Incidentes' },
+        { text: 'Actos Subestándares', url: '/admin/analysis/category/Actos Subestándares' },
+        { text: 'Condiciones Subestándares', url: '/admin/analysis/category/Condiciones Subestándares' },
+        { text: 'Incidentes', url: '/admin/analysis/category/Incidentes' },
     ];
 
     const trendButtons = [
-        { text: 'Actos y condiciones subestándares e incidentes', url: '/company/analysis/category/year' },
-        { text: 'Observaciones detectadas por Gerencia', url: '/company/analysis/inspeccion/year' },
+        { text: 'Actos y condiciones subestándares e incidentes', url: 'admin/analysis/year' },
+        { text: 'Observaciones detectadas por Gerencia', url: route('company.analysis.inspeccion.year') },
     ];
 
     const inspectionButtons = [

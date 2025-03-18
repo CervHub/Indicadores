@@ -6,27 +6,40 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'doi',
         'email',
         'password',
+        'nombres',
+        'apellidos',
+        'telefono',
+        'codigo',
+        'cargo',
+        'entity_id',
+        'company_id',
+        'role_id',
+        'new_company_id',
+        'permisos',
+        'system_role_id',
+        'contrata',
+        'text_password',
     ];
 
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -34,15 +47,54 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be cast.
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
+    // New Methods
+
+    public function data()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+        // Obtener la entidad, la compañía y el rol
+
+        $entity = $this->entity()->first();
+        $company = $this->company()->first();
+        $role = $this->role()->first();
+
+        // Construir los datos a devolver
+        $result = [
+            'id' => $this->id,
+            'doi' => $this->doi,
+            'nombres' => $this->nombres,
+            'apellidos' => $this->apellidos,
+            'telefono' => $this->telefono,
+            'codigo' => $this->codigo,
+            'cargo' => $this->cargo,
+            'entity' => $entity ? $entity->nombre : null,
+            'id_company' => $this->company_id,
+            'company' => $company ? $company->nombre : null,
+            'role' => $role ? $role->nombre : null,
         ];
+
+        return $result;
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function entity()
+    {
+        return $this->belongsTo(Entity::class);
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
     }
 }

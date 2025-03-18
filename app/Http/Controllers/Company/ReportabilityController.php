@@ -9,12 +9,11 @@ use App\Models\User;
 use App\Models\SecurityEngineer;
 use PDF;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 use Symfony\Component\HttpKernel\Exception\AbortException;
 
 class ReportabilityController extends Controller
 {
-
-
     public function index()
     {
         // Define the raw SQL query
@@ -42,7 +41,7 @@ class ReportabilityController extends Controller
         INNER JOIN
             users AS u ON u.id = m.user_id
         LEFT JOIN
-            entities AS e ON e.id = 
+            entities AS e ON e.id =
                 CASE
                     WHEN CHARINDEX('\"gerencia\":', m.levels) > 0 THEN
                         CAST(
@@ -74,9 +73,10 @@ class ReportabilityController extends Controller
         $reportabilities = DB::select($query);
 
         // Pass the results to the view
-        return view('company.reportability.index', compact('reportabilities'));
+        return Inertia::render('reportability/index', [
+            'reportabilities' => $reportabilities,
+        ]);
     }
-
 
     public function detalle($reportability_id)
     {
@@ -86,12 +86,14 @@ class ReportabilityController extends Controller
             ->get();
         $reportability = Module::find($reportability_id);
 
+        $view = $reportability->tipo_reporte == 'inspeccion'
+            ? 'reportability/detalleInspeccion'
+            : 'reportability/detalle';
 
-        if ($reportability->tipo_reporte == 'inspeccion') {
-            return view('company.reportability.detalle_inspeccion', compact('reportability', 'engineers'));
-        } else {
-            return view('company.reportability.detalle', compact('reportability', 'engineers'));
-        }
+        return Inertia::render($view, [
+            'reportability' => $reportability,
+            'engineers' => $engineers,
+        ]);
     }
 
     public function download($reportability_id)

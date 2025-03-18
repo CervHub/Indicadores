@@ -55,7 +55,7 @@ Route::post('admin/category/admin/{category_id}', [CategoryController::class, 's
 
 //Reportabilidad
 Route::get('admin/reportability', [ReportabilityController::class, 'index'])->name('company.reportability');
-Route::get('admin/reportability/detalle/{reportability_id}', [ReportabilityController::class, 'detalle'])->name('company.reportability.detalle');
+Route::get('admin2/reportability/detalle/{reportability_id}', [ReportabilityController::class, 'detalle'])->name('company.reportability.detalle');
 
 
 //Analiticas
@@ -63,14 +63,14 @@ Route::get('admin/analysis', [AnalysisController::class, 'index'])->name('compan
 //Analitica Toquepala
 Route::get('admin/analysis/category', [AnalysisController::class, 'category'])->name('company.analysis.category');
 Route::get('admin/analysis/category/{category_name}', [AnalysisController::class, 'categoryDetail'])->name('company.analysis.category.detail');
-Route::get('admin/analysis/year', [AnalysisController::class, 'categoryYear'])->name('company.analysis.category.year');
+Route::get('/admin/analysis/year', [AnalysisController::class, 'categoryYear'])->name('company.analysis.category.year');
 
 //Analiticas Inspecciones
 Route::get('admin/analysis/inspeccion', [AnalysisController::class, 'inspeccion'])->name('company.analysis.inspeccion');
 Route::get('admin/analysis/inspeccion/detalle', [AnalysisController::class, 'inspeccionDetail'])->name('company.analysis.inspeccion.detail');
 Route::get('admin/analysis/inspeccion/year', [AnalysisController::class, 'inspeccionYear'])->name('company.analysis.inspeccion.year');
 
-// Crear contratistas
+// Crear contratistas`
 Route::get('admin/contractor', [ContrataController::class, 'index'])->name('admin.contractor');
 Route::post('admin/contractor/store', [ContrataController::class, 'store'])->name('admin.contractor.store');
 Route::put('admin/contractor/{contrata}', [ContrataController::class, 'update'])->name('admin.contractor.update');

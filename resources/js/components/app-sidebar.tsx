@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, FileArchive, FileChartPie, Folder, HousePlus, LayoutGrid } from 'lucide-react';
+import { BookOpen, FileArchive, FileChartPie, Folder, HousePlus, LayoutGrid, Users, Shield, FileText, UserCheck, ShieldPlusIcon } from 'lucide-react'; // Import new icons
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -27,6 +27,31 @@ const mainNavItems: NavItem[] = [
         title: 'Consolidados',
         url: '/consolidated',
         icon: FileChartPie,
+    },
+    {
+        title: 'Gerencias',
+        url: '/admin/management',
+        icon: Users,
+    },
+    {
+        title: 'Gestión de SSO',
+        url: '/admin/category',
+        icon: Shield,
+    },
+    {
+        title: 'Reporte',
+        url: '/admin/reportability',
+        icon: FileText,
+    },
+    {
+        title: 'Personal', // New item
+        url: '/admin/personal',
+        icon: UserCheck,
+    },
+    {
+        title: 'Ingeniero de Seguridad', // New item
+        url: '/admin/security-engineer',
+        icon: ShieldPlusIcon,
     },
 ];
 
