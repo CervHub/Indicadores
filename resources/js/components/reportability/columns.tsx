@@ -23,7 +23,7 @@ export type Reportability = {
     company_report_name: string;
 };
 
-export const getColumns = (): ColumnDef<Reportability>[] => [
+export const getColumns = (handleAction: (action: string, id: number) => void): ColumnDef<Reportability>[] => [
     {
         accessorKey: 'id',
         header: 'ID',
@@ -82,7 +82,7 @@ export const getColumns = (): ColumnDef<Reportability>[] => [
             };
 
             return (
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap space-x-2">
                     <Link href={urlDetalle} className="flex items-center">
                         <Button
                             aria-label="Toggle detalle"

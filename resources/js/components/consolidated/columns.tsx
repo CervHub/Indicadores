@@ -66,7 +66,7 @@ export const getColumns = (
             const consolidated = row.original;
 
             return (
-                <div className="flex space-x-2">
+                <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
                     <Button onClick={() => handleDonwloadClick(consolidated.id, 'file_sx_ew')}>
                         <Download className="mr-2 h-4 w-4" />
                         Lixiviacion
@@ -90,7 +90,7 @@ export const getColumns = (
             const consolidated = row.original;
 
             return (
-                <div className="flex space-x-2">
+                <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                     <Button variant="secondary" onClick={() => handleActionClick(consolidated.id, 'reconsolidate')}>
                         <RefreshCw className="h-4 w-4" />
                         Actualizar

@@ -43,55 +43,55 @@ export default function ReportabilityPage() {
                             <CardTitle>Seleccionar Fechas</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="flex items-end justify-between space-x-4">
-                                <div className="flex space-x-4">
-                                    <div className="flex flex-col">
-                                        <h3>Desde</h3>
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button variant={'outline'} className="w-[240px] pl-3 text-left font-normal">
-                                                    {startDate ? format(startDate, 'PPP') : <span>Pick a date</span>}
-                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0" align="start">
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={startDate}
-                                                    onSelect={setStartDate}
-                                                    disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
-                                                    initialFocus
-                                                    className="rounded-md border"
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <h3>Hasta</h3>
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button variant={'outline'} className="w-[240px] pl-3 text-left font-normal">
-                                                    {endDate ? format(endDate, 'PPP') : <span>Pick a date</span>}
-                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0" align="start">
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={endDate}
-                                                    onSelect={setEndDate}
-                                                    disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
-                                                    initialFocus
-                                                    className="rounded-md border"
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <div className="flex flex-col">
+                                    <h3>Desde</h3>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button variant={'outline'} className="w-full pl-3 text-left font-normal md:w-[240px]">
+                                                {startDate ? format(startDate, 'PPP') : <span>Pick a date</span>}
+                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={startDate}
+                                                onSelect={setStartDate}
+                                                disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
+                                                initialFocus
+                                                className="rounded-md border"
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
                                 </div>
-                                <Button onClick={handleDownload} className="bg-green-500 text-white">
-                                    <FileTextIcon className="mr-2 h-4 w-4" />
-                                    Descargar Excel
-                                </Button>
+                                <div className="flex flex-col">
+                                    <h3>Hasta</h3>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button variant={'outline'} className="w-full pl-3 text-left font-normal md:w-[240px]">
+                                                {endDate ? format(endDate, 'PPP') : <span>Pick a date</span>}
+                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={endDate}
+                                                onSelect={setEndDate}
+                                                disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
+                                                initialFocus
+                                                className="rounded-md border"
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                                <div className="flex items-end ">
+                                    <Button onClick={handleDownload} className="w-full bg-green-500 text-white">
+                                        <FileTextIcon className="mr-2 h-4 w-4" />
+                                        Descargar Excel
+                                    </Button>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>

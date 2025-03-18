@@ -52,9 +52,9 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Personal', // New item
-        url: '/admin/personal',
+        url: '/contrata/personal',
         icon: UserCheck,
-        isActive: window.location.pathname === '/admin/personal', // Add isActive property
+        isActive: window.location.pathname === '/contrata/personal', // Add isActive property
     },
     {
         title: 'Ingeniero de Seguridad', // New item

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Role;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class PersonalController extends Controller
 {
@@ -17,11 +18,14 @@ class PersonalController extends Controller
         $people = User::where('role_id', $rol_id)
             ->where('company_id', $company_id)
             ->get();
-        return view('contrata.user.index', compact('people'));
+        return Inertia::render('people/index', [
+            'people' => $people
+        ]);
     }
 
     public function store(Request $request)
     {
+        dd($request->all());
         try {
             // Verificar si ya existe un usuario con el mismo email o DOI
             $existingUser = User::where('email', $request->email)
@@ -53,9 +57,9 @@ class PersonalController extends Controller
             return redirect()->back()->with('error', 'Hubo un error al crear el usuario: ' . $e->getMessage());
         }
     }
+
     public function update(Request $request, $id)
     {
-
         try {
             $request->validate([
                 'documento' => 'required|unique:users,doi,' . $id,
@@ -77,6 +81,7 @@ class PersonalController extends Controller
             return redirect()->back()->with('error', 'Hubo un error al actualizar el usuario: ' . $e->getMessage());
         }
     }
+
     public function destroy($id)
     {
         try {
