@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-
 import { useForm, usePage } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
@@ -11,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { months } from '@/lib/utils';
+import { toast } from 'sonner';
+
 interface ContractorCompanyType {
     id: number;
     name: string;
@@ -31,16 +31,16 @@ type ContractorForm = {
     file: File | null;
 };
 
-export default function CreateAnnex() {
-    const { contractorCompanyTypes, ueas, flash } = usePage<{
+interface CreateAnnexProps {
+    rules: any; // Adjust the type as needed based on the structure of rules
+}
+
+export default function CreateAnnex({ rules }: CreateAnnexProps) {
+    const { contractorCompanyTypes, ueas } = usePage<{
         contractorCompanyTypes: ContractorCompanyType[];
         ueas: Uea[];
         flash: { success?: string; error?: string };
     }>().props;
-
-    useEffect(() => {
-        console.log('Mensajes flash al iniciar:', flash);
-    }, [flash]);
 
     const { data, setData, post, processing, errors, reset } = useForm<Required<ContractorForm>>({
         contractor_company_type_id: '',
@@ -52,8 +52,26 @@ export default function CreateAnnex() {
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+    const validateRules = () => {
+        // Filtrar las reglas por el año seleccionado
+        const yearRules = rules.filter((rule: { year: string; month: string }) => {
+            return parseInt(rule.year) === parseInt(data.year);
+        });
+
+        // Verificar si el mes seleccionado está dentro de las reglas filtradas por el año
+        const isValid = yearRules.some((rule: { year: string; month: string }) => {
+            return parseInt(rule.month) === parseInt(data.month);
+        });
+
+        return isValid;
+    };
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+        if (validateRules()) {
+            toast.error('No se puede subir el archivo en el mes seleccionado, porque esta cerrado, comuniquese con el administrador.');
+            return;
+        }
         post(route('annexes.store'), {
             onSuccess: (page) => {
                 reset();
@@ -68,13 +86,7 @@ export default function CreateAnnex() {
     };
 
     const isFormValid = () => {
-        return (
-            data.contractor_company_type_id &&
-            data.uea_id &&
-            data.year &&
-            data.month &&
-            data.file
-        );
+        return data.contractor_company_type_id && data.uea_id && data.year && data.month && data.file;
     };
 
     const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);

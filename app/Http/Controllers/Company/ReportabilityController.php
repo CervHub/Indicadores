@@ -80,19 +80,37 @@ class ReportabilityController extends Controller
 
     public function detalle($reportability_id)
     {
-        $engineers = User::where('company_id', auth()->user()->company_id)
-            ->where('cargo', 'Ingeniero de Seguridad')
-            ->where('estado', 1)
-            ->get();
-        $reportability = Module::find($reportability_id);
+        $query = "
+        SELECT
+            m.estado,
+            CASE
+                WHEN m.tipo_reporte = 'actos' THEN 'Reporte de actos subestándar'
+                WHEN m.tipo_reporte = 'inspeccion' THEN 'Reporte de inspección'
+                WHEN m.tipo_reporte = 'incidentes' THEN 'Reporte de incidentes'
+                WHEN m.tipo_reporte = 'condiciones' THEN 'Reporte de condiciones subestándar'
+                ELSE m.tipo_reporte
+            END AS tipo_reporte,
+            m.company_id,
+            c.nombre AS company_name,
+            m.company_report_id,
+            cr.nombre AS company_report_name,
+            m.fecha_reporte,
+            m.fecha_evento
+        FROM
+            modules AS m
+        INNER JOIN
+            companies AS c ON c.id = m.company_id
+        LEFT JOIN
+            companies AS cr ON cr.id = m.company_report_id
+        WHERE
+            m.id = ?
+        ";
 
-        $view = $reportability->tipo_reporte == 'inspeccion'
-            ? 'reportability/detalleInspeccion'
-            : 'reportability/detalle';
+        $reportability = DB::selectOne($query, [$reportability_id]);
 
-        return Inertia::render($view, [
+        return Inertia::render('reportability/detalle', [
             'reportability' => $reportability,
-            'engineers' => $engineers,
+            'reportability_id' => $reportability_id,
         ]);
     }
 

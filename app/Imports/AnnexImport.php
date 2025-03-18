@@ -11,6 +11,7 @@ class AnnexImport implements WithMultipleSheets
     private $typeClient;
     private $uea;
     private $data;
+    private $keywordPositions;
 
     public function __construct($filePath, $typeClient, $uea)
     {
@@ -18,6 +19,7 @@ class AnnexImport implements WithMultipleSheets
         $this->typeClient = $typeClient;
         $this->uea = $uea;
         $this->data = [];
+        $this->keywordPositions = [];
     }
 
     /**
@@ -38,25 +40,28 @@ class AnnexImport implements WithMultipleSheets
 
                 switch ($sheetName) {
                     case 'ANEXO 24':
+                        $data[$sheetName] = $this->processAnexo24($sheetData);
+                        break;
                     case 'ANEXO 25':
+                        $data[$sheetName] = $this->processAnexo25($sheetData);
+                        break;
                     case 'ANEXO 26':
+                        $data[$sheetName] = $this->processAnexo26($sheetData);
+                        break;
                     case 'ANEXO 27':
-                        $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 26, true, 0, 0);
+                        $data[$sheetName] = $this->processAnexo27($sheetData);
                         break;
                     case 'ANEXO 28':
-                        $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 28, true, 1, 0);
-                        break;
-                    case 'ANEXO 29':
-                        $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 16, true, 0, 0, 'ANEXO 29');
+                        $data[$sheetName] = $this->processAnexo28($sheetData);
                         break;
                     case 'ANEXO 30':
-                        $data[$sheetName] = $this->processSheetForTypeClient($sheetData, 17, true, 0, 0, 'ANEXO 30');
+                        $data[$sheetName] = $this->processAnexo30($sheetData);
                         break;
                     case 'PLANTILLA MINEM 1':
-                        $data[$sheetName] = $this->processSheet($sheetData, 'Nombre Concesion o UEA', '', 24, true, 2);
+                        $data[$sheetName] = $this->processPlantillaMinem1($sheetData);
                         break;
                     case 'PLANTILLA MINEM 2':
-                        $data[$sheetName] = $this->processSheet($sheetData, 'RUC', '', 13, true, 0);
+                        $data[$sheetName] = $this->processPlantillaMinem2($sheetData);
                         break;
                 }
             }
@@ -82,7 +87,6 @@ class AnnexImport implements WithMultipleSheets
             'ANEXO 26' => [],
             'ANEXO 27' => [],
             'ANEXO 28' => [],
-            'ANEXO 29' => [],
             'ANEXO 30' => [],
             'PLANTILLA MINEM 1' => [],
             'PLANTILLA MINEM 2' => []
@@ -117,10 +121,20 @@ class AnnexImport implements WithMultipleSheets
             $keywords = $this->getKeywordsForSheet($sheetName);
             foreach ($keywords as $keyword) {
                 $found = false;
-                foreach ($sheetData as $row) {
-                    if (in_array($keyword, $row)) {
-                        $found = true;
-                        break;
+                foreach ($sheetData as $rowIndex => $row) {
+                    if ($keyword === 'TOTAL') {
+                        // Check only column A for 'TOTAL'
+                        if (isset($row[0]) && $row[0] === 'TOTAL') {
+                            $found = true;
+                            $this->keywordPositions[$sheetName][$keyword] = $rowIndex;
+                            break;
+                        }
+                    } else {
+                        if (in_array($keyword, $row)) {
+                            $found = true;
+                            $this->keywordPositions[$sheetName][$keyword] = $rowIndex;
+                            break;
+                        }
                     }
                 }
                 if (!$found) {
@@ -145,19 +159,17 @@ class AnnexImport implements WithMultipleSheets
     {
         switch ($sheetName) {
             case 'ANEXO 24':
-                return ['EMPL.', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'];
+                return ['EMPL.', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS', 'TOTAL'];
             case 'ANEXO 25':
-                return ['EMPL.', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'];
+                return ['EMPL.', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS', 'TOTAL'];
             case 'ANEXO 26':
-                return ['EMPL.', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'];
+                return ['EMPL.', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS', 'TOTAL'];
             case 'ANEXO 27':
-                return ['EMPL.', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'];
+                return ['EMPL.', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS', 'TOTAL'];
             case 'ANEXO 28':
-                return ['EMPL.', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'];
-            case 'ANEXO 29':
-                return ['SPCC', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDAD CONEXA'];
+                return ['INCAP.', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS', 'TOTAL'];
             case 'ANEXO 30':
-                return ['Día (F)', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'];
+                return ['Día (F)', 'EMPRESA CONTRATISTA MINERO', 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS', 'Nota:'];
             case 'PLANTILLA MINEM 1':
                 return ['RUC'];
             case 'PLANTILLA MINEM 2':
@@ -167,98 +179,111 @@ class AnnexImport implements WithMultipleSheets
         }
     }
 
-    /**
-     * Process a sheet and extract data based on markers and column count.
-     *
-     * @param array $sheetData
-     * @param string $startMarker
-     * @param string $endMarker
-     * @param int $columnCount
-     * @param bool $filterEmptyRows
-     * @param int $filterColumnIndex
-     * @param int $addStartMarker
-     * @param int $addEndMarker
-     * @return array
-     */
-    private function processSheet(array $sheetData, string $startMarker, string $endMarker, int $columnCount, bool $filterEmptyRows = false, int $filterColumnIndex = 0, $addStartMarker = 0, $addEndMarker = 0): array
+    private function processAnexo(array $sheetData, string $anexo, int $columnCount): array
     {
-        list($startRow, $endRow) = $this->getStartEndRows($sheetData, $startMarker, $endMarker);
-
-
-
-        if ($startRow !== null) {
-
-            $startRow += 1;
-            $endRow = $endRow ?? count($sheetData) - 1;
-
-            // para el tipo de titular
-            $startRow += $addStartMarker;
-            $endRow -= $addEndMarker;
-
-            $extractedData = $this->extractData($sheetData, $startRow, $endRow, $columnCount);
-
-            if ($filterEmptyRows) {
-                $extractedData = array_filter($extractedData, function ($row) use ($filterColumnIndex) {
-                    return !empty($row[$filterColumnIndex]);
-                });
-            }
-            return $extractedData;
-        }
-        return [];
-    }
-
-    /**
-     * Process a sheet based on typeClient and extract data.
-     *
-     * @param array $sheetData
-     * @param int $columnCount
-     * @param bool $filterEmptyRows
-     * @param int $start
-     * @param int $end
-     * @param string $anexo
-     * @return array
-     */
-    private function processSheetForTypeClient(array $sheetData, int $columnCount, bool $filterEmptyRows = false, $start = 0, $end = 0, $anexo = ''): array
-    {
+        $limits = $this->keywordPositions[$anexo];
 
         switch ($this->typeClient) {
             case 'T':
-                $beginLim = 'EMPL.';
-                $endLim = 'EMPRESA CONTRATISTA MINERO';
-
-                if ($anexo == 'ANEXO 29') {
-                    $beginLim = 'SPCC';
-                    $endLim = 'EMPRESA CONTRATISTA MINERO';
-                }
-                if ($anexo == 'ANEXO 30') {
-                    $beginLim = 'Día (F)';
-                    $endLim = 'EMPRESA CONTRATISTA MINERO';
-                }
-                return $this->processSheet($sheetData, $beginLim, $endLim, $columnCount, $filterEmptyRows, 1, 0 + $start, 1 + $end);
+                $startRow = $limits['EMPL.'] + 1;
+                $endRow = $limits['EMPRESA CONTRATISTA MINERO'] - 1;
+                break;
             case 'E':
-                $beginLim = 'EMPRESA CONTRATISTA MINERO';
-                $endLim = 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS';
-
-                if ($anexo == 'ANEXO 29') {
-                    $beginLim = 'EMPRESA CONTRATISTA MINERO';
-                    $endLim = 'EMPRESA CONTRATISTA DE ACTIVIDAD CONEXA';
-                }
-
-                return $this->processSheet($sheetData, $beginLim, $endLim, $columnCount, $filterEmptyRows, 1, 0, 1);
+                $startRow = $limits['EMPRESA CONTRATISTA MINERO'] + 1;
+                $endRow = $limits['EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'] - 1;
+                break;
             case 'O':
-                $beginLim = 'EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS';
-                $endLim = 'TOTAL';
-                if ($anexo == 'ANEXO 29') {
-                    $beginLim = 'EMPRESA CONTRATISTA DE ACTIVIDAD CONEXA';
-                    $endLim = '';
-                }
-                if ($anexo == 'ANEXO 30') {
-                    $endLim = '';
-                }
-                return $this->processSheet($sheetData, $beginLim, $endLim, $columnCount, true, 2, -2, 0);
+                $startRow = $limits['EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'] + 1;
+                $endRow = $limits['TOTAL'] - 1;
+                break;
             default:
                 return [];
         }
+
+        return $this->extractData($sheetData, $startRow, $endRow, $columnCount);
+    }
+
+    private function processAnexo24(array $sheetData): array
+    {
+        return $this->processAnexo($sheetData, 'ANEXO 24', 24);
+    }
+
+    private function processAnexo25(array $sheetData): array
+    {
+        return $this->processAnexo($sheetData, 'ANEXO 25', 24);
+    }
+
+    private function processAnexo26(array $sheetData): array
+    {
+        return $this->processAnexo($sheetData, 'ANEXO 26', 24);
+    }
+
+    private function processAnexo27(array $sheetData): array
+    {
+        return $this->processAnexo($sheetData, 'ANEXO 27', 24);
+    }
+
+    private function processAnexo28(array $sheetData): array
+    {
+        $limits = $this->keywordPositions['ANEXO 28'];
+
+        switch ($this->typeClient) {
+            case 'T':
+                $startRow = $limits['EMPL.'] + 1;
+                $endRow = $limits['EMPRESA CONTRATISTA MINERO'] - 1;
+                break;
+            case 'E':
+                $startRow = $limits['EMPRESA CONTRATISTA MINERO'] + 1;
+                $endRow = $limits['EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'] - 1;
+                break;
+            case 'O':
+                $startRow = $limits['EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'] + 1;
+                $endRow = $limits['TOTAL'] - 1;
+                break;
+            default:
+                return [];
+        }
+        return $this->extractData($sheetData, $startRow, $endRow, 28);
+    }
+
+    private function processAnexo30(array $sheetData): array
+    {
+        $limits = $this->keywordPositions['ANEXO 30'];
+
+        switch ($this->typeClient) {
+            case 'T':
+                $startRow = $limits['SPCC'] + 1;
+                $endRow = $limits['EMPRESA CONTRATISTA MINERO'] - 1;
+                break;
+            case 'E':
+                $startRow = $limits['EMPRESA CONTRATISTA MINERO'] + 1;
+                $endRow = $limits['EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'] - 1;
+                break;
+            case 'O':
+                $startRow = $limits['EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'] + 1;
+                $endRow = $limits['Nota:'] - 1;
+                break;
+            default:
+                return [];
+        }
+        return $this->extractData($sheetData, $startRow, $endRow, 17);
+    }
+
+    private function processPlantillaMinem1(array $sheetData): array
+    {
+        $limits = $this->keywordPositions['PLANTILLA MINEM 1'];
+        $startRow = $limits['RUC'] + 1;
+        $endRow = $endRow ?? count($sheetData) - 1;
+        return $this->extractData($sheetData, $startRow, $endRow, 13, 4);
+    }
+
+    private function processPlantillaMinem2(array $sheetData): array
+    {
+        $limits = $this->keywordPositions['PLANTILLA MINEM 2'];
+        $startRow = $limits['RUC'] + 1;
+        $endRow = $endRow ?? count($sheetData) - 1;
+
+        return $this->extractData($sheetData, $startRow, $endRow, 13, 4);
     }
 
     /**
@@ -270,43 +295,20 @@ class AnnexImport implements WithMultipleSheets
      * @param int $columnCount
      * @return array
      */
-    private function extractData(array $data, int $startRow, int $endRow, int $columnCount): array
+    private function extractData(array $data, int $startRow, int $endRow, int $columnCount, int $filterColumnIndex = 0): array
     {
         $filteredData = array_slice($data, $startRow, $endRow - $startRow + 1);
+        $filteredRows = [];
         foreach ($filteredData as $key => &$row) {
             if (strtoupper($row[0]) === 'TOTAL') {
                 unset($filteredData[$key]);
                 continue;
             }
             $row = array_slice($row, 0, $columnCount); // Columns A to specified column count
-        }
-        return array_values($filteredData); // Reindex array to avoid gaps
-    }
-
-    /**
-     * Get start and end row indices based on markers.
-     *
-     * @param array $data
-     * @param string $startMarker
-     * @param string $endMarker
-     * @return array
-     */
-    private function getStartEndRows(array $data, string $startMarker, string $endMarker): array
-    {
-        $startRow = null;
-        $endRow = null;
-
-        foreach ($data as $rowIndex => $row) {
-            foreach ($row as $cell) {
-                if ($cell === $startMarker) {
-                    $startRow = $rowIndex;
-                }
-                if ($cell === $endMarker) {
-                    $endRow = $rowIndex;
-                }
+            if (!empty($row[$filterColumnIndex])) {
+                $filteredRows[] = $row;
             }
         }
-
-        return [$startRow, $endRow];
+        return array_values($filteredRows); // Reindex array to avoid gaps
     }
 }

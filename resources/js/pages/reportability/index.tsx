@@ -6,8 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { Inertia } from '@inertiajs/inertia';
+import { Head, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { CalendarIcon, FileTextIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -25,19 +24,6 @@ export default function ReportabilityPage() {
     useEffect(() => {
         console.log('Reportabilities: ', JSON.stringify(reportabilities));
     }, [reportabilities]);
-
-    const handleActionClick = (action: string, report: Reportability) => {
-        if (action === 'detalle') {
-            const urlDetalle = route('admin.reportability.detalle', { reportability_id: report.id });
-            Inertia.visit(urlDetalle);
-        } else if (action === 'pdf') {
-            const urlPdf = route('company.reportability.download', { reportability_id: report.id });
-            Inertia.visit(urlPdf);
-        } else {
-            console.log(`Action: ${action}, Report ID: ${report.id}`);
-        }
-        // Aquí puedes agregar la lógica adicional para manejar las acciones
-    };
 
     const [startDate, setStartDate] = useState<Date | undefined>(new Date());
     const [endDate, setEndDate] = useState<Date | undefined>(new Date());
@@ -110,7 +96,7 @@ export default function ReportabilityPage() {
                         </CardContent>
                     </Card>
                 </div>
-                <DataTable columns={getColumns(handleActionClick)} data={reportabilities} />
+                <DataTable columns={getColumns()} data={reportabilities} />
             </div>
         </AppLayout>
     );

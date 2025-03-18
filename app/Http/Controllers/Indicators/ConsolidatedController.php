@@ -83,4 +83,22 @@ class ConsolidatedController extends Controller
         // Descargar el archivo ZIP
         return response()->download($zipPath);
     }
+
+    public function close($id)
+    {
+        $consolidated = Consolidated::find($id);
+        $consolidated->is_closed = 1;
+        $consolidated->save();
+
+        return redirect()->route('consolidated.index')->with('success', 'Consolidado cerrado correctamente' . $consolidated->id);
+    }
+
+    public function open($id)
+    {
+        $consolidated = Consolidated::find($id);
+        $consolidated->is_closed = 0;
+        $consolidated->save();
+
+        return redirect()->route('consolidated.index')->with('success', 'Consolidado abierto correctamente' . $consolidated->id);
+    }
 }

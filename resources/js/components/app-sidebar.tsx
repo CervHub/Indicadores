@@ -12,46 +12,55 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         url: '/dashboard',
         icon: LayoutGrid,
+        isActive: window.location.pathname === '/dashboard', // Add isActive property
     },
     {
         title: 'Contratistas',
         url: '/contractor',
         icon: HousePlus,
+        isActive: window.location.pathname === '/contractor', // Add isActive property
     },
     {
         title: 'Anexos',
         url: '/annexes',
         icon: FileArchive,
+        isActive: window.location.pathname === '/annexes', // Add isActive property
     },
     {
         title: 'Consolidados',
         url: '/consolidated',
         icon: FileChartPie,
+        isActive: window.location.pathname === '/consolidated', // Add isActive property
     },
     {
         title: 'Gerencias',
         url: '/admin/management',
         icon: Users,
+        isActive: window.location.pathname === '/admin/management', // Add isActive property
     },
     {
         title: 'Gestión de SSO',
         url: '/admin/category',
         icon: Shield,
+        isActive: window.location.pathname === '/admin/category', // Add isActive property
     },
     {
         title: 'Reporte',
         url: '/admin/reportability',
         icon: FileText,
+        isActive: window.location.pathname === '/admin/reportability', // Add isActive property
     },
     {
         title: 'Personal', // New item
         url: '/admin/personal',
         icon: UserCheck,
+        isActive: window.location.pathname === '/admin/personal', // Add isActive property
     },
     {
         title: 'Ingeniero de Seguridad', // New item
         url: '/admin/security-engineer',
         icon: ShieldPlusIcon,
+        isActive: window.location.pathname === '/admin/security-engineer', // Add isActive property
     },
 ];
 

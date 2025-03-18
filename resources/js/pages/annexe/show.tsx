@@ -1,5 +1,6 @@
 import { DataTable } from '@/components/data-table';
 import { FileStatus } from '@/components/file-status/columns';
+import { getColumns as getColumnsFileStatuses } from '@/components/file-status/file-status-list';
 import { Annex, getColumns } from '@/components/file-status/show/annex';
 import { Annex28, getColumns as getColumns28 } from '@/components/file-status/show/annex28';
 import { Annex30, getColumns as getColumns30 } from '@/components/file-status/show/annex30';
@@ -85,10 +86,11 @@ function InfoCard({ data }: InfoCardProps) {
 }
 
 export default function ContractorDashboard() {
-    const { fileStatus, contractorCompanyTypes, ueas } = usePage<{
+    const { fileStatus, contractorCompanyTypes, ueas, fileStatuses } = usePage<{
         contractorCompanyTypes: [];
         fileStatus: FileStatus;
         ueas: [];
+        fileStatuses: FileStatus[];
     }>().props;
 
     const data = {
@@ -214,6 +216,13 @@ export default function ContractorDashboard() {
                         </TabsContent>
                     ))}
                 </Tabs>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Historial de Archivos</CardTitle>
+                        <CardDescription>Listado de todos los archivos procesados.</CardDescription>
+                    </CardHeader>
+                </Card>
+                <DataTable columns={getColumnsFileStatuses(contractorCompanyTypes, ueas)} data={fileStatuses} />
             </div>
         </AppLayout>
     );

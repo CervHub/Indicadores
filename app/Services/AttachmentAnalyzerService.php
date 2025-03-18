@@ -79,7 +79,7 @@ class AttachmentAnalyzerService
                 throw new Exception('Uea not found.');
             }
 
-            $folder = 'indicadores/';
+            $folder = 'indicadores';
 
             $import = new AnnexImport($file->getRealPath(), $typeClient->abbreviation, $uea->name);
             Excel::import($import, $file);
@@ -145,6 +145,7 @@ class AttachmentAnalyzerService
             MinemTemplate2::whereIn('file_status_id', $fileStatusIds)->delete();
         } catch (Exception $e) {
             DB::rollBack();
+
             throw new \Exception($e->getMessage());
         }
     }

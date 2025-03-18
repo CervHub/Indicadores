@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { formatDateTime, months } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, Download, FileText } from 'lucide-react';
 
 // Este tipo define la forma de nuestros datos.
 export type FileStatus = {
@@ -70,10 +70,7 @@ export const getColumns = (contractorCompanyTypes: ContractorCompanyType[], ueas
         accessorKey: 'month',
         header: ({ column }) => {
             return (
-                <Button
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                >
+                <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
                     Mes
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
@@ -88,10 +85,7 @@ export const getColumns = (contractorCompanyTypes: ContractorCompanyType[], ueas
         accessorKey: 'year',
         header: ({ column }) => {
             return (
-                <Button
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                >
+                <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
                     Year
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
@@ -111,8 +105,8 @@ export const getColumns = (contractorCompanyTypes: ContractorCompanyType[], ueas
                 row.original.annex30,
             ];
             const completed = annexes.filter((annex) => annex === 'true' || annex === '1').length;
-            const percentage = (completed / annexes.length) * 100;
-            const variant = getBadgeVariant(percentage);
+            const percentage = ((completed / annexes.length) * 100).toFixed(0);
+            const variant = getBadgeVariant(Number(percentage));
             return (
                 <TooltipProvider>
                     <Tooltip>
@@ -138,8 +132,8 @@ export const getColumns = (contractorCompanyTypes: ContractorCompanyType[], ueas
         cell: ({ row }) => {
             const templates = [row.original.minem_template_1, row.original.minem_template_2];
             const completed = templates.filter((template) => template === 'true' || template === '1').length;
-            const percentage = (completed / templates.length) * 100;
-            const variant = getBadgeVariant(percentage);
+            const percentage = ((completed / templates.length) * 100).toFixed(0);
+            const variant = getBadgeVariant(Number(percentage));
             return (
                 <TooltipProvider>
                     <Tooltip>
@@ -157,7 +151,7 @@ export const getColumns = (contractorCompanyTypes: ContractorCompanyType[], ueas
     },
     {
         accessorKey: 'F. Creación',
-        header: 'Created At',
+        header: 'F. Creación',
         cell: ({ row }) => {
             const date = new Date(row.original.created_at);
             return formatDateTime(date);
@@ -169,12 +163,27 @@ export const getColumns = (contractorCompanyTypes: ContractorCompanyType[], ueas
         cell: ({ row }) => {
             const fileStatus = row.original;
 
+            const handleDownloadClick = (file: string) => {
+                console.log(`Downloading file from: ${window.location.origin}/${file}`);
+            };
+
+            const fileUrl = `${window.location.origin}/${fileStatus.file}`;
+
             return (
-                <Link href={route('annexes.show', { annex: fileStatus.id })}>
-                    <Button variant="default" size="sm" className="mt-2">
-                        Detalle
-                    </Button>
-                </Link>
+                <div>
+                    <Link href={route('annexes.show', { annex: fileStatus.id })}>
+                        <Button variant="default" size="sm">
+                            <FileText className="mr-2 h-4 w-4" />
+                            Detalle
+                        </Button>
+                    </Link>
+                    <a href={fileUrl} download onClick={() => handleDownloadClick(fileStatus.file)}>
+                        <Button variant="destructive" size="sm" className="ml-2">
+                            <Download className="mr-2 h-4 w-4" />
+                            Descargar
+                        </Button>
+                    </a>
+                </div>
             );
         },
     },

@@ -70,7 +70,6 @@ export default function CreateConsolidated({ initialYear = 0, initialMonth = 0, 
 
     return (
         <div>
-            {flash?.success && <div className="mb-4 text-green-600">{flash.success}</div>}
             <Dialog
                 open={isDialogOpen}
                 onOpenChange={(open) => {

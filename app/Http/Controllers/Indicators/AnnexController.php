@@ -10,6 +10,7 @@ use App\Models\ContractorCompanyType;
 use App\Models\FileStatus;
 use App\Services\AttachmentAnalyzerService;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Consolidated;
 
 class AnnexController extends Controller
 {
@@ -30,8 +31,17 @@ class AnnexController extends Controller
         $this->fileStatus = $fileStatus;
     }
 
+    private function getConsolidatedClose()
+    {
+        $consolidateds = Consolidated::where('is_closed', true)
+            ->select('year', 'month')
+            ->get();
+        return $consolidateds;
+    }
+
     public function index()
     {
+        $rules = $this->getConsolidatedClose();
         $ueas = $this->uea->all();
         $contractorCompanyTypes = $this->contractorCompanyType->all();
         $fileStatuses = $this->fileStatus->where('is_old', false)
@@ -43,6 +53,7 @@ class AnnexController extends Controller
         return Inertia::render('annexe/index', [
             'fileStatuses' => $fileStatuses,
             'ueas' => $ueas,
+            'rules' => $rules,
             'contractorCompanyTypes' => $contractorCompanyTypes,
         ]);
     }
@@ -97,10 +108,26 @@ class AnnexController extends Controller
         $ueas = $this->uea->all();
         $contractorCompanyTypes = $this->contractorCompanyType->all();
 
+        $month = $fileStatus->month;
+        $year = $fileStatus->year;
+        $contractorCompanyTypeId = $fileStatus->contractor_company_type_id;
+        $contractorCompanyId = $fileStatus->contractor_company_id;
+        $ueaId = $fileStatus->uea_id;
+
+        $fileStatuses = $this->fileStatus->where('user_id', Auth::id())
+            ->where('contractor_company_id', $contractorCompanyId)
+            ->where('contractor_company_type_id', $contractorCompanyTypeId)
+            ->where('uea_id', $ueaId)
+            ->where('year', $year)
+            ->where('month', $month)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return Inertia::render('annexe/show', [
             'fileStatus' => $fileStatus,
             'ueas' => $ueas,
             'contractorCompanyTypes' => $contractorCompanyTypes,
+            'fileStatuses' => $fileStatuses,
         ]);
     }
 }

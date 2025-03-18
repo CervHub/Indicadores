@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Button } from '@/components/ui/button';
 import { formatDateTime } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { Eye, FileText } from 'lucide-react';
+import { useState } from 'react';
 
 // Este tipo define la forma de nuestros datos.
 export type Reportability = {
@@ -23,11 +23,7 @@ export type Reportability = {
     company_report_name: string;
 };
 
-export const getColumns = (
-    handleClick: (action: string, report: Reportability) => void,
-    isLoading: boolean,
-    setIsLoading: (loading: boolean) => void,
-): ColumnDef<Reportability>[] => [
+export const getColumns = (): ColumnDef<Reportability>[] => [
     {
         accessorKey: 'id',
         header: 'ID',
@@ -73,58 +69,38 @@ export const getColumns = (
         accessorKey: 'acciones',
         header: 'Acciones',
         cell: ({ row }) => {
-            const [isLoading, setIsLoading] = useState(false);
+            const [detalleClicked, setDetalleClicked] = useState(false);
             const urlDetalle = route('admin.reportability.detalle', { reportability_id: row.original.id });
-            const handlePdfClick = async () => {
-                setIsLoading(true);
-                try {
-                    const response = await fetch(route('company.reportability.download', { reportability_id: row.original.id }), {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/pdf',
-                        },
-                    });
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `report_${row.original.id}.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                } catch (error) {
-                    console.error('Error downloading PDF:', error);
-                } finally {
-                    setIsLoading(false);
-                }
+            const urlPdf = route('company.reportability.download', { reportability_id: row.original.id });
+
+            const handleDetalleClick = () => {
+                setDetalleClicked(true);
+            };
+
+            const handlePdfClick = () => {
+                window.open(urlPdf, '_blank');
             };
 
             return (
-                <ToggleGroup type="multiple" variant="outline">
-                    <ToggleGroupItem
-                        value="detalle"
-                        aria-label="Toggle detalle"
-                        className="flex h-7 cursor-pointer items-center bg-blue-700 p-2 text-xs text-white hover:bg-blue-900 dark:bg-blue-600 dark:hover:bg-blue-800"
-                    >
-                        <Link href={urlDetalle} className="flex items-center">
+                <div className="flex space-x-2">
+                    <Link href={urlDetalle} className="flex items-center">
+                        <Button
+                            aria-label="Toggle detalle"
+                            className={`flex h-7 items-center bg-blue-700 p-2 text-xs text-white hover:bg-blue-900 dark:bg-blue-600 dark:hover:bg-blue-800 ${detalleClicked ? 'cursor-not-allowed opacity-50' : ''}`}
+                            onClick={handleDetalleClick}
+                            disabled={detalleClicked}
+                        >
                             <Eye className="mr-1 h-3 w-3" /> Detalle
-                        </Link>
-                    </ToggleGroupItem>
-                    <ToggleGroupItem
-                        value="pdf"
+                        </Button>
+                    </Link>
+                    <Button
                         aria-label="Toggle pdf"
-                        className="h-7 cursor-pointer bg-red-700 p-2 text-xs text-white hover:bg-red-900 dark:bg-red-600 dark:hover:bg-red-800"
+                        className="h-7 bg-red-700 p-2 text-xs text-white hover:bg-red-900 dark:bg-red-600 dark:hover:bg-red-800"
                         onClick={handlePdfClick}
                     >
-                        {isLoading ? (
-                            <span className="loader"></span> // Aquí puedes agregar un spinner o cualquier indicador de carga
-                        ) : (
-                            <>
-                                <FileText className="h-3 w-3" /> PDF
-                            </>
-                        )}
-                    </ToggleGroupItem>
-                </ToggleGroup>
+                        <FileText className="h-3 w-3" /> PDF
+                    </Button>
+                </div>
             );
         },
     },

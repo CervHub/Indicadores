@@ -1,7 +1,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, Download, RefreshCw } from 'lucide-react';
+import { ArrowUpDown, Download, Lock, RefreshCw, Unlock } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ export type Consolidated = {
     user_id: string;
     year: number;
     month: number;
-    is_closed: boolean;
+    is_closed: number;
     file_sx_ew: string;
     file_accumulation: string;
     file_concentrator: string;
@@ -32,7 +32,10 @@ const renderTooltip = (field: string, value: string) => (
     </TooltipProvider>
 );
 
-export const getColumns = (onReconsolidateClick: (id: string) => void): ColumnDef<Consolidated>[] => [
+export const getColumns = (
+    handleActionClick: (id: string, action: string) => void,
+    handleDonwloadClick: (id: string, uea: string) => void,
+): ColumnDef<Consolidated>[] => [
     {
         accessorKey: 'year',
         header: ({ column }) => {
@@ -52,7 +55,33 @@ export const getColumns = (onReconsolidateClick: (id: string) => void): ColumnDe
     {
         accessorKey: 'is_closed',
         header: 'Cerrado',
-        cell: ({ row }) => <Badge variant={row.original.is_closed ? 'destructive' : 'default'}>{row.original.is_closed ? 'Yes' : 'No'}</Badge>,
+        cell: ({ row }) => (
+            <Badge variant={row.original.is_closed == 1 ? 'destructive' : 'default'}>{row.original.is_closed == 1 ? 'Yes' : 'No'}</Badge>
+        ),
+    },
+    {
+        id: 'downloads',
+        header: 'Descargas',
+        cell: ({ row }) => {
+            const consolidated = row.original;
+
+            return (
+                <div className="flex space-x-2">
+                    <Button onClick={() => handleDonwloadClick(consolidated.id, 'file_sx_ew')}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Lixiviacion
+                    </Button>
+                    <Button onClick={() => handleDonwloadClick(consolidated.id, 'file_accumulation')}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Acumulacion
+                    </Button>
+                    <Button onClick={() => handleDonwloadClick(consolidated.id, 'file_concentrator')}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Concentradora
+                    </Button>
+                </div>
+            );
+        },
     },
     {
         id: 'actions',
@@ -62,36 +91,28 @@ export const getColumns = (onReconsolidateClick: (id: string) => void): ColumnDe
 
             return (
                 <div className="flex space-x-2">
-                    <Button onClick={() => downloadFile(consolidated.file_sx_ew)}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Lixiviacion
+                    <Button variant="secondary" onClick={() => handleActionClick(consolidated.id, 'reconsolidate')}>
+                        <RefreshCw className="h-4 w-4" />
+                        Actualizar
                     </Button>
-                    <Button onClick={() => downloadFile(consolidated.file_accumulation)}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Acumulacion
-                    </Button>
-                    <Button onClick={() => downloadFile(consolidated.file_concentrator)}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Concentradora
-                    </Button>
-                    <Button variant="secondary" onClick={() => onReconsolidateClick(consolidated.id)}>
-                        <RefreshCw className="mr-2 h-4 w-4" />
-                        Reconsolidar
+                    <Button
+                        variant={consolidated.is_closed == 1 ? 'default' : 'destructive'}
+                        onClick={() => handleActionClick(consolidated.id, consolidated.is_closed == 1 ? 'open' : 'close')}
+                    >
+                        {consolidated.is_closed == 1 ? (
+                            <>
+                                <Unlock className="h-4 w-4" />
+                                Abrir
+                            </>
+                        ) : (
+                            <>
+                                <Lock className="h-4 w-4" />
+                                Cerrar
+                            </>
+                        )}
                     </Button>
                 </div>
             );
         },
     },
 ];
-
-const downloadFile = (filePath: string) => {
-    const origin = window.location.origin;
-    const fullPath = `${origin}/${filePath}`;
-    console.log(`Downloading file from: ${fullPath}`);
-    const link = document.createElement('a');
-    link.href = fullPath;
-    link.download = filePath.split('/').pop() || 'default_filename';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
