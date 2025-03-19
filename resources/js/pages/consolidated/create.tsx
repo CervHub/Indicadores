@@ -1,6 +1,6 @@
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler, useEffect, useState } from 'react';
+import { FormEventHandler, useEffect, useRef, useState } from 'react';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -19,13 +19,16 @@ type CreateConsolidatedProps = {
     initialMonth?: number;
     isOpen?: boolean;
     onOpenChange?: (isOpen: boolean) => void;
+    autoConsolidated?: boolean;
 };
 
-export default function CreateConsolidated({ initialYear = 0, initialMonth = 0, isOpen = false, onOpenChange }: CreateConsolidatedProps) {
-    const { flash } = usePage<{
-        flash: { success?: string };
-    }>().props;
-
+export default function CreateConsolidated({
+    initialYear = 0,
+    initialMonth = 0,
+    isOpen = false,
+    onOpenChange,
+    autoConsolidated = false,
+}: CreateConsolidatedProps) {
     const { data, setData, post, processing, errors, reset } = useForm<Required<ConsolidatedForm>>({
         year: initialYear,
         month: initialMonth,
@@ -33,6 +36,8 @@ export default function CreateConsolidated({ initialYear = 0, initialMonth = 0, 
 
     const [isDialogOpen, setIsDialogOpen] = useState(isOpen);
     const [isFormValid, setIsFormValid] = useState(false);
+    const [isAutoConsolidated, setIsAutoConsolidated] = useState(autoConsolidated);
+    const submitButtonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         setIsFormValid(data.year !== 0 && data.month !== 0);
@@ -43,11 +48,21 @@ export default function CreateConsolidated({ initialYear = 0, initialMonth = 0, 
     }, [isOpen]);
 
     useEffect(() => {
+        setIsAutoConsolidated(autoConsolidated);
+    }, [autoConsolidated]);
+
+    useEffect(() => {
         if (isOpen) {
             setData('year', initialYear);
             setData('month', initialMonth);
         }
     }, [initialYear, initialMonth, isOpen, setData]);
+
+    useEffect(() => {
+        if (isDialogOpen && isAutoConsolidated && submitButtonRef.current) {
+            submitButtonRef.current.click();
+        }
+    }, [isDialogOpen, isAutoConsolidated]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -79,12 +94,17 @@ export default function CreateConsolidated({ initialYear = 0, initialMonth = 0, 
             >
                 <div className="flex justify-start">
                     <DialogTrigger asChild>
-                        <Button className="inline-block px-4 py-2">Crear Consolidado</Button>
+                        <Button
+                            className="inline-block px-4 py-2"
+                            onClick={() => setIsAutoConsolidated(false)}
+                        >
+                            Crear Consolidado
+                        </Button>
                     </DialogTrigger>
                 </div>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Crear Consolidado</DialogTitle>
+                        <DialogTitle>{isAutoConsolidated ? 'Re-Consolidando' : 'Crear Consolidado'}</DialogTitle>
                         <DialogDescription>Complete los campos para crear un nuevo consolidado.</DialogDescription>
                     </DialogHeader>
                     <form onSubmit={submit} className="space-y-3" method="post" action={route('consolidated.store')}>
@@ -126,7 +146,7 @@ export default function CreateConsolidated({ initialYear = 0, initialMonth = 0, 
                             </Select>
                             <InputError message={errors.month} />
                         </div>
-                        <Button type="submit" className="mt-2" disabled={processing || !isFormValid}>
+                        <Button ref={submitButtonRef} type="submit" className="mt-2" disabled={processing || !isFormValid}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             Generar
                         </Button>

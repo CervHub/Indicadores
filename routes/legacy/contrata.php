@@ -11,7 +11,7 @@ Route::get('/contrata/personal', [PersonalController::class, 'index'])->name('co
 Route::post('/contrata/personal/store', [PersonalController::class, 'store'])->name('contrata.personal.store');
 Route::put('/contrata/personal/{personal}', [PersonalController::class, 'update'])->name('contrata.personal.update');
 Route::delete('/contrata/personal/{personal}', [PersonalController::class, 'destroy'])->name('contrata.personal.destroy');
-
+Route::put('/contrata/personal/activate/{personal}', [PersonalController::class, 'activate'])->name('contrata.personal.activate');
 // /reprotabilidad
 Route::get('contrata/analysis/category', [ContrataController::class, 'category'])->name('contrata.analysis.category');
 Route::get('contrata/analysis/category/{category_name}', [ContrataController::class, 'categoryDetail'])->name('contrata.analysis.category.detail');

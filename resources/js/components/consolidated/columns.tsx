@@ -3,7 +3,6 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, Download, Lock, RefreshCw, Unlock } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { findFieldByValue, months } from '@/lib/utils';
@@ -55,9 +54,7 @@ export const getColumns = (
     {
         accessorKey: 'is_closed',
         header: 'Cerrado',
-        cell: ({ row }) => (
-            <Badge variant={row.original.is_closed == 1 ? 'destructive' : 'default'}>{row.original.is_closed == 1 ? 'Yes' : 'No'}</Badge>
-        ),
+        cell: ({ row }) => (row.original.is_closed == 1 ? <Lock className="h-6 w-6" /> : <Unlock className="h-6 w-6" />),
     },
     {
         id: 'downloads',

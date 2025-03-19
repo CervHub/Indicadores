@@ -102,7 +102,7 @@ export const getColumns = (contractorCompanyTypes: ContractorCompanyType[], ueas
                 row.original.annex26,
                 row.original.annex27,
                 row.original.annex28,
-                row.original.annex30,
+                // row.original.annex30,
             ];
             const completed = annexes.filter((annex) => annex === 'true' || annex === '1').length;
             const percentage = ((completed / annexes.length) * 100).toFixed(0);

@@ -1,9 +1,14 @@
 import { getColumns, Person } from '@/components/person/columns';
 import { DataTable } from '@/components/reportability/data-table';
+import useFlashMessages from '@/hooks/useFlashMessages';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
+import { useState } from 'react';
+import ActivatePerson from './activate';
 import CreatePerson from './create';
+import DeletePerson from './delete';
+import EditPerson from './edit';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -13,13 +18,28 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function ReportabilityPage() {
-    const { people } = usePage<{ reportabilities: Person[] }>().props;
+    const { people } = usePage<{ people: Person[] }>().props;
 
+    useFlashMessages();
     console.log('People: ', people);
+
+    const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [isActivateDialogOpen, setIsActivateDialogOpen] = useState(false);
 
     const handleAction = (action: string, id: number) => {
         console.log(`Action: ${action}, ID: ${id}`);
-        // Aquí puedes agregar la lógica adicional que necesites
+        const person = people.find((p) => p.id === id);
+        setSelectedPerson(person || null);
+
+        if (action === 'editar') {
+            setIsEditDialogOpen(true);
+        } else if (action === 'eliminar') {
+            setIsDeleteDialogOpen(true);
+        } else if (action === 'activar') {
+            setIsActivateDialogOpen(true);
+        }
     };
 
     return (
@@ -31,6 +51,13 @@ export default function ReportabilityPage() {
                     <DataTable columns={getColumns(handleAction)} data={people} />
                 </div>
             </div>
+            {selectedPerson && (
+                <>
+                    <EditPerson isOpen={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} person={selectedPerson} />
+                    <DeletePerson isOpen={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen} selectedItem={selectedPerson} />
+                    <ActivatePerson isOpen={isActivateDialogOpen} onOpenChange={setIsActivateDialogOpen} selectedItem={selectedPerson} />
+                </>
+            )}
         </AppLayout>
     );
 }

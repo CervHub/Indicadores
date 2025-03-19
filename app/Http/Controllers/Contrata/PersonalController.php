@@ -25,11 +25,23 @@ class PersonalController extends Controller
 
     public function store(Request $request)
     {
-        dd($request->all());
+        // Eliminar la línea de depuración
+        // dd($request->all());
+
+        // Validar los campos
+        $request->validate([
+            'doi' => 'required|unique:users,doi',
+            'email' => 'required|email|unique:users,email',
+            'nombres' => 'required',
+            'apellidos' => 'required',
+            'telefono' => 'required',
+            'cargo' => 'required',
+        ]);
+
         try {
             // Verificar si ya existe un usuario con el mismo email o DOI
             $existingUser = User::where('email', $request->email)
-                ->orWhere('doi', $request->documento)
+                ->orWhere('doi', $request->doi)
                 ->first();
 
             if ($existingUser) {
@@ -39,10 +51,10 @@ class PersonalController extends Controller
             // Crear un nuevo usuario
             $user = new User();
             $user->fill([
-                'doi' => $request->documento,
-                'nombres' => $request->nombre,
-                'apellidos' => $request->apellido,
-                'password' => bcrypt($request->documento),
+                'doi' => $request->doi,
+                'nombres' => $request->nombres,
+                'apellidos' => $request->apellidos,
+                'password' => bcrypt($request->doi),
                 'telefono' => $request->telefono,
                 'email' => $request->email,
                 'cargo' => $request->cargo,
@@ -61,28 +73,48 @@ class PersonalController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            // Eliminar la línea de depuración
+            // dd($request->all(), $id);
+
             $request->validate([
-                'documento' => 'required|unique:users,doi,' . $id,
+                'doi' => 'required|unique:users,doi,' . $id,
                 'email' => 'required|email|unique:users,email,' . $id,
-                'nombre' => 'required',
-                'apellido' => 'required',
+                'nombres' => 'required',
+                'apellidos' => 'required',
+                'telefono' => 'required',
                 'cargo' => 'required',
             ]);
 
             $person = User::findOrFail($id);
-            $person->doi = $request->documento;
+            $person->doi = $request->doi;
             $person->email = $request->email;
-            $person->nombres = $request->nombre;
-            $person->apellidos = $request->apellido;
+            $person->nombres = $request->nombres;
+            $person->apellidos = $request->apellidos;
+            $person->telefono = $request->telefono;
             $person->cargo = $request->cargo;
             $person->save();
-            return redirect()->back()->with('success', 'Personal actualizado correctamente');
+
+            return redirect()->route('contrata.personal')->with('success', 'Personal actualizado correctamente');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Hubo un error al actualizar el usuario: ' . $e->getMessage());
+            return redirect()->route('contrata.personal')->with('error', 'Hubo un error al actualizar el usuario: ' . $e->getMessage());
         }
     }
 
     public function destroy($id)
+    {
+        try {
+            $person = User::findOrFail($id);
+            $person->estado = !$person->estado; // Toggle the estado
+            $person->save();
+
+            $message = $person->estado ? 'Usuario activado correctamente' : 'Usuario desactivado correctamente';
+            return redirect()->back()->with('success', $message);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Hubo un error al cambiar el estado del usuario: ' . $e->getMessage());
+        }
+    }
+
+    public function activate($id)
     {
         try {
             $person = User::findOrFail($id);

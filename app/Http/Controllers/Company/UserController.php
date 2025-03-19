@@ -76,7 +76,13 @@ class UserController extends Controller
         $entities = Entity::where('company_id', Auth::user()->company->id)->get();
         $positions = Position::all();
         $grouped_entities = $this->getEntities($entities, $levels);
-        return view('company.security.index', compact('levels', 'systemRoles', 'users', 'grouped_entities', 'positions'));
+        return inertia('security/index', [
+            'levels' => $levels,
+            'systemRoles' => $systemRoles,
+            'users' => $users,
+            'grouped_entities' => $grouped_entities,
+            'positions' => $positions,
+        ]);
     }
 
     public function store(Request $request)

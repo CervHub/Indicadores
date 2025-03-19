@@ -5,11 +5,11 @@ import { FormEventHandler, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-type DeletePersonForm = {
+type ActivatePersonForm = {
     id: string;
 };
 
-type DeletePersonProps = {
+type ActivatePersonProps = {
     isOpen?: boolean;
     onOpenChange?: (isOpen: boolean) => void;
     selectedItem: {
@@ -19,8 +19,15 @@ type DeletePersonProps = {
     };
 };
 
-export default function DeletePerson({ isOpen = false, onOpenChange, selectedItem }: DeletePersonProps) {
-    const { data, setData, delete: destroy, processing, errors, reset } = useForm<Required<DeletePersonForm>>({
+export default function ActivatePerson({ isOpen = false, onOpenChange, selectedItem }: ActivatePersonProps) {
+    const {
+        data,
+        setData,
+        put: activate,
+        processing,
+        errors,
+        reset,
+    } = useForm<Required<ActivatePersonForm>>({
         id: selectedItem.id,
     });
 
@@ -41,16 +48,16 @@ export default function DeletePerson({ isOpen = false, onOpenChange, selectedIte
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        destroy(route('contrata.personal.destroy', { personal: data.id }), {
+        activate(route('contrata.personal.activate', { personal: data.id }), {
             onSuccess: (response) => {
                 reset();
                 setIsDialogOpen(false);
                 if (onOpenChange) onOpenChange(false);
-                console.log('Eliminación exitosa:', response);
+                console.log('Activación exitosa:', response);
             },
             onError: (errors) => {
                 setIsDialogOpen(true);
-                console.log('Errores en la eliminación:', errors);
+                console.log('Errores en la activación:', errors);
             },
         });
     };
@@ -66,12 +73,12 @@ export default function DeletePerson({ isOpen = false, onOpenChange, selectedIte
             >
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Eliminar Personal</DialogTitle>
+                        <DialogTitle>Activar Personal</DialogTitle>
                         <DialogDescription>
-                            ¿Está seguro de que desea eliminar a {selectedItem.nombres} {selectedItem.apellidos}? Esta acción no se puede deshacer.
+                            ¿Está seguro de que desea activar a {selectedItem.nombres} {selectedItem.apellidos}?
                         </DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={submit} className="space-y-3" method="delete" action={route('contrata.personal.destroy', { personal: data.id })}>
+                    <form onSubmit={submit} className="space-y-3" method="put" action={route('contrata.personal.activate', { personal: data.id })}>
                         <div className="flex justify-end space-x-2">
                             <Button type="submit" className="mt-2" disabled={processing || !isFormValid}>
                                 {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}

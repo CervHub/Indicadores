@@ -86,6 +86,24 @@ class AttachmentAnalyzerService
 
             $data = $import->getData();
 
+            // Validar datos generando errores si están vacíos
+            $requiredData = [
+                'ANEXO 24' => 'ANEXO 24',
+                'ANEXO 25' => 'ANEXO 25',
+                'ANEXO 26' => 'ANEXO 26',
+                'ANEXO 27' => 'ANEXO 27',
+                'ANEXO 28' => 'ANEXO 28',
+                'PLANTILLA MINEM 1' => 'PLANTILLA MINEM 1',
+                'PLANTILLA MINEM 2' => 'PLANTILLA MINEM 2'
+            ];
+
+            foreach ($requiredData as $key => $value) {
+                if (empty($data[$key])) {
+                    throw new Exception("Los datos de $value están vacíos.");
+                }
+            }
+
+
             //Creamos un file status y guardamos el archivo
             $filePath = $this->utilService->saveFile($file, $folder);
             $this->filePath = $filePath;

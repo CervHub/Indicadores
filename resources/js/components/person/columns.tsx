@@ -78,15 +78,9 @@ export const getColumns = (handleAction: (action: string, id: number) => void): 
         header: 'Acciones',
         cell: ({ row }) => {
             const id = row.original.id;
+            const estado = row.original.estado;
             return (
-                <div className="flex w-128 w-full flex-wrap space-x-2">
-                    <Button
-                        aria-label="Activar"
-                        className="h-7 bg-green-700 p-2 text-xs text-white hover:bg-green-900 dark:bg-green-600 dark:hover:bg-green-800"
-                        onClick={() => handleAction('activar', id)}
-                    >
-                        <CheckCircle className="h-3 w-3" /> {/* Icono siempre visible */}
-                    </Button>
+                <div className="flex flex-wrap space-x-2">
                     <Button
                         aria-label="Editar"
                         className="h-7 bg-yellow-700 p-2 text-xs text-white hover:bg-yellow-900 dark:bg-yellow-600 dark:hover:bg-yellow-800"
@@ -94,16 +88,26 @@ export const getColumns = (handleAction: (action: string, id: number) => void): 
                     >
                         <Edit className="h-3 w-3" /> {/* Icono siempre visible */}
                     </Button>
-                    <Button
-                        aria-label="Eliminar"
-                        className="h-7 bg-red-700 p-2 text-xs text-white hover:bg-red-900 dark:bg-red-600 dark:hover:bg-red-800"
-                        onClick={() => handleAction('eliminar', id)}
-                    >
-                        <Trash2 className="h-3 w-3" /> {/* Icono siempre visible */}
-                    </Button>
+                    {estado !== '1' && (
+                        <Button
+                            aria-label="Activar"
+                            className="h-7 bg-green-700 p-2 text-xs text-white hover:bg-green-900 dark:bg-green-600 dark:hover:bg-green-800"
+                            onClick={() => handleAction('activar', id)}
+                        >
+                            <CheckCircle className="h-3 w-3" /> {/* Icono siempre visible */}
+                        </Button>
+                    )}
+                    {estado === '1' && (
+                        <Button
+                            aria-label="Eliminar"
+                            className="h-7 bg-red-700 p-2 text-xs text-white hover:bg-red-900 dark:bg-red-600 dark:hover:bg-red-800"
+                            onClick={() => handleAction('eliminar', id)}
+                        >
+                            <Trash2 className="h-3 w-3" /> {/* Icono siempre visible */}
+                        </Button>
+                    )}
                 </div>
             );
         },
-        size: 300,
     },
 ];
