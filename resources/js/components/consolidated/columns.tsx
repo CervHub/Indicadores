@@ -5,7 +5,7 @@ import { ArrowUpDown, Download, Lock, RefreshCw, Unlock } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { findFieldByValue, months } from '@/lib/utils';
+import { findFieldByValue, formatDateTime, months } from '@/lib/utils';
 
 export type Consolidated = {
     id: string;
@@ -16,6 +16,8 @@ export type Consolidated = {
     file_sx_ew: string;
     file_accumulation: string;
     file_concentrator: string;
+    created_at: string;
+    updated_at: string;
 };
 
 const renderTooltip = (field: string, value: string) => (
@@ -53,32 +55,55 @@ export const getColumns = (
     },
     {
         accessorKey: 'is_closed',
-        header: 'Cerrado',
+        header: 'Estado',
         cell: ({ row }) => (row.original.is_closed == 1 ? <Lock className="h-6 w-6" /> : <Unlock className="h-6 w-6" />),
     },
     {
-        id: 'downloads',
-        header: 'Descargas',
+        id: 'file_sx_ew',
+        header: 'Lixiviacion',
         cell: ({ row }) => {
             const consolidated = row.original;
-
             return (
-                <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+                <div className="text-center">
                     <Button onClick={() => handleDonwloadClick(consolidated.id, 'file_sx_ew')}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Lixiviacion
-                    </Button>
-                    <Button onClick={() => handleDonwloadClick(consolidated.id, 'file_accumulation')}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Acumulacion
-                    </Button>
-                    <Button onClick={() => handleDonwloadClick(consolidated.id, 'file_concentrator')}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Concentradora
+                        <Download className="h-4 w-4" />
                     </Button>
                 </div>
             );
         },
+    },
+    {
+        id: 'file_accumulation',
+        header: 'Acumulacion',
+        cell: ({ row }) => {
+            const consolidated = row.original;
+            return (
+                <div className="text-center">
+                    <Button onClick={() => handleDonwloadClick(consolidated.id, 'file_accumulation')}>
+                        <Download className="h-4 w-4" />
+                    </Button>
+                </div>
+            );
+        },
+    },
+    {
+        id: 'file_concentrator',
+        header: 'Concentradora',
+        cell: ({ row }) => {
+            const consolidated = row.original;
+            return (
+                <div className="text-center">
+                    <Button onClick={() => handleDonwloadClick(consolidated.id, 'file_concentrator')}>
+                        <Download className="h-4 w-4" />
+                    </Button>
+                </div>
+            );
+        },
+    },
+    {
+        id: 'update_at',
+        header: 'Actualizado',
+        cell: ({ row }) => formatDateTime(row.original.updated_at),
     },
     {
         id: 'actions',
@@ -88,22 +113,23 @@ export const getColumns = (
 
             return (
                 <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                    <Button variant="secondary" onClick={() => handleActionClick(consolidated.id, 'reconsolidate')}>
-                        <RefreshCw className="h-4 w-4" />
+                    <Button variant="secondary" className="w-auto" onClick={() => handleActionClick(consolidated.id, 'reconsolidate')}>
+                        <RefreshCw className="h-4" />
                         Actualizar
                     </Button>
                     <Button
                         variant={consolidated.is_closed == 1 ? 'default' : 'destructive'}
+                        className="w-auto"
                         onClick={() => handleActionClick(consolidated.id, consolidated.is_closed == 1 ? 'open' : 'close')}
                     >
                         {consolidated.is_closed == 1 ? (
                             <>
-                                <Unlock className="h-4 w-4" />
+                                <Unlock className="h-4" />
                                 Abrir
                             </>
                         ) : (
                             <>
-                                <Lock className="h-4 w-4" />
+                                <Lock className="h-4" />
                                 Cerrar
                             </>
                         )}

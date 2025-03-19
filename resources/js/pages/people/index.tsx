@@ -21,7 +21,6 @@ export default function ReportabilityPage() {
     const { people } = usePage<{ people: Person[] }>().props;
 
     useFlashMessages();
-    console.log('People: ', people);
 
     const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);

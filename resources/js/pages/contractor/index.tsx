@@ -25,11 +25,6 @@ export default function ContractorDashboard() {
         contractorCompanyTypes: ContractorCompanyType[];
     }>().props;
 
-    useEffect(() => {
-        console.log('Contractors: ', JSON.stringify(contractors));
-        console.log('Contractor Company Types: ', JSON.stringify(contractorCompanyTypes));
-    }, [contractors, contractorCompanyTypes]);
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Contratistas" />

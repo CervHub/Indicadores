@@ -181,26 +181,31 @@ class AnnexImport implements WithMultipleSheets
 
     private function processAnexo(array $sheetData, string $anexo, int $columnCount): array
     {
-        $limits = $this->keywordPositions[$anexo];
+        try {
+            $limits = $this->keywordPositions[$anexo];
 
-        switch ($this->typeClient) {
-            case 'T':
-                $startRow = $limits['EMPL.'] + 1;
-                $endRow = $limits['EMPRESA CONTRATISTA MINERO'] - 1;
-                break;
-            case 'E':
-                $startRow = $limits['EMPRESA CONTRATISTA MINERO'] + 1;
-                $endRow = $limits['EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'] - 1;
-                break;
-            case 'O':
-                $startRow = $limits['EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'] + 1;
-                $endRow = $limits['TOTAL'] - 1;
-                break;
-            default:
-                return [];
+            switch ($this->typeClient) {
+                case 'T':
+                    $startRow = $limits['EMPL.'] + 1;
+                    $endRow = $limits['EMPRESA CONTRATISTA MINERO'] - 1;
+                    break;
+                case 'E':
+                    $startRow = $limits['EMPRESA CONTRATISTA MINERO'] + 1;
+                    $endRow = $limits['EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'] - 1;
+                    break;
+                case 'O':
+                    $startRow = $limits['EMPRESA CONTRATISTA DE ACTIVIDADES CONEXAS'] + 1;
+                    $endRow = $limits['TOTAL'] - 1;
+                    break;
+                default:
+                    return [];
+            }
+
+            return $this->extractData($sheetData, $startRow, $endRow, $columnCount);
+        } catch (\Exception $e) {
+            // Handle the exception (e.g., log the error, rethrow the exception, return an error message, etc.)
+            throw new \Exception("Error processing $anexo: " . $e->getMessage());
         }
-
-        return $this->extractData($sheetData, $startRow, $endRow, $columnCount);
     }
 
     private function processAnexo24(array $sheetData): array
@@ -229,7 +234,7 @@ class AnnexImport implements WithMultipleSheets
 
         switch ($this->typeClient) {
             case 'T':
-                $startRow = $limits['EMPL.'] + 1;
+                $startRow = $limits['INCAP.'] + 1;
                 $endRow = $limits['EMPRESA CONTRATISTA MINERO'] - 1;
                 break;
             case 'E':
@@ -252,7 +257,7 @@ class AnnexImport implements WithMultipleSheets
 
         switch ($this->typeClient) {
             case 'T':
-                $startRow = $limits['SPCC'] + 1;
+                $startRow = $limits['Día (F)'] + 1;
                 $endRow = $limits['EMPRESA CONTRATISTA MINERO'] - 1;
                 break;
             case 'E':

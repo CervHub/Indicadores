@@ -1,5 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
+import { FilePieChart, LoaderCircle } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 import InputError from '@/components/input-error';
@@ -96,8 +96,14 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <div className="flex justify-start">
                     <DialogTrigger asChild>
-                        <Button className="inline-block px-4 py-2">Agregar Anexos</Button>
+                        <div className="flex w-full justify-between">
+                            <Button className="inline-block px-4 py-2">Agregar Anexos</Button>
+                        </div>
                     </DialogTrigger>
+                    <Button variant="success" className="ml-2" onClick={() => (window.location.href = '/formats/formato.xlsx')}>
+                        <FilePieChart className="mr-2 h-4 w-4" />
+                        Formato
+                    </Button>
                 </div>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>

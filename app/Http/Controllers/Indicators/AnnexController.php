@@ -88,6 +88,7 @@ class AnnexController extends Controller
             $this->attachmentAnalyzerService->saveAnexo($validatedData);
             return redirect()->back()->with('success', 'Anexo guardado exitosamente.');
         } catch (\Exception $e) {
+            dd($e);
             return redirect()->back()->with('error', 'Hubo un error al procesar: ' . $e->getMessage());
         }
     }

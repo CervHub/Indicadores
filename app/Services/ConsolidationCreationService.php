@@ -104,9 +104,36 @@ class ConsolidationCreationService
             ->get();
     }
 
+
     private function getAnnex28Data($year, $month)
     {
-        return DB::table('file_statuses as fs')
+        // Subconsulta para el acumulado
+        $incidentsAccumulation = DB::table('file_statuses as fs')
+            ->join('annex28s as a28', 'a28.file_status_id', '=', 'fs.id')
+            ->select(
+                'fs.contractor_company_id',
+                'fs.uea_id',
+                'fs.year',
+                'fs.month',
+                DB::raw('SUM(a28.incidents) AS accumulation_incidents'),
+                DB::raw('SUM(a28.dangerous_incidents) AS accumulation_dangerous_incidents'),
+                DB::raw('SUM(a28.minor_accidents) AS accumulation_minor_accidents'),
+                DB::raw('SUM(a28.disability) AS accumulation_disability'),
+                DB::raw('SUM(a28.mortality) AS accumulation_mortality'),
+                DB::raw('SUM(a28.mortality) + SUM(a28.disability) AS accumulation_mortality_disability'),
+                DB::raw('SUM(a28.lost_days) AS accumulation_lost_days'),
+                DB::raw('SUM(a28.man_hours_worked) AS accumulation_man_hours_worked'),
+                DB::raw('SUM(a28.frequency_index) AS accumulation_frequency_index'),
+                DB::raw('SUM(a28.severity_index) AS accumulation_severity_index'),
+                DB::raw('SUM(a28.accident_rate) AS accumulation_accident_rate')
+            )
+            ->where('fs.year', '=', DB::raw('YEAR(GETDATE())'))
+            ->where('fs.month', '<=', DB::raw('MONTH(GETDATE())'))
+            ->groupBy('fs.contractor_company_id', 'fs.uea_id', 'fs.year', 'fs.month')
+            ->toSql(); // Generamos la subconsulta SQL
+
+        // Consulta principal
+        $query = DB::table('file_statuses as fs')
             ->join('ueas as u', 'u.id', '=', 'fs.uea_id')
             ->join('companies as cc', 'cc.id', '=', 'fs.contractor_company_id')
             ->join('contractor_company_types as cct', 'cct.id', '=', 'fs.contractor_company_type_id')
@@ -119,23 +146,23 @@ class ConsolidationCreationService
                 'u.name as uea_name',
                 'fs.year',
                 'fs.month',
-                DB::raw('SUM(a28.employees) as total_employees'),
-                DB::raw('SUM(a28.workers) as total_workers'),
-                DB::raw('SUM(a28.employees) + SUM(a28.workers) as total_personnel'),
-                DB::raw('SUM(a28.incidents) as total_incidents'),
-                DB::raw('SUM(a28.dangerous_incidents) as total_dangerous_incidents'),
-                DB::raw('SUM(a28.minor_accidents) as total_minor_accidents'),
-                DB::raw('SUM(a28.disability) as total_disability'),
-                DB::raw('SUM(a28.mortality) as total_mortality'),
-                DB::raw('SUM(a28.mortality) + SUM(a28.disability) as total_mortality_disability'),
-                DB::raw('SUM(a28.lost_days) as total_lost_days'),
-                DB::raw('SUM(a28.man_hours_worked) as total_man_hours_worked'),
-                DB::raw('SUM(a28.frequency_index) as total_frequency_index'),
-                DB::raw('SUM(a28.severity_index) as total_severity_index'),
-                DB::raw('SUM(a28.accident_rate) as total_accident_rate')
+                DB::raw('SUM(a28.employees) AS total_employees'),
+                DB::raw('SUM(a28.workers) AS total_workers'),
+                DB::raw('SUM(a28.employees) + SUM(a28.workers) AS total_personnel'),
+                DB::raw('SUM(a28.incidents) AS total_incidents'),
+                DB::raw('SUM(a28.dangerous_incidents) AS total_dangerous_incidents'),
+                DB::raw('SUM(a28.minor_accidents) AS total_minor_accidents'),
+                DB::raw('SUM(a28.disability) AS total_disability'),
+                DB::raw('SUM(a28.mortality) AS total_mortality'),
+                DB::raw('SUM(a28.mortality) + SUM(a28.disability) AS total_mortality_disability'),
+                DB::raw('SUM(a28.lost_days) AS total_lost_days'),
+                DB::raw('SUM(a28.man_hours_worked) AS total_man_hours_worked'),
+                DB::raw('SUM(a28.frequency_index) AS total_frequency_index'),
+                DB::raw('SUM(a28.severity_index) AS total_severity_index'),
+                DB::raw('SUM(a28.accident_rate) AS total_accident_rate')
             )
-            ->where('fs.year', $year)
-            ->where('fs.month', $month)
+            ->where('fs.year', '=', $year)
+            ->where('fs.month', '=', $month)
             ->groupBy(
                 'cct.abbreviation',
                 'cct.name',
@@ -143,10 +170,105 @@ class ConsolidationCreationService
                 'cc.ruc',
                 'u.name',
                 'fs.year',
-                'fs.month'
+                'fs.month',
+                'fs.contractor_company_id',
+                'fs.uea_id'
             )
-            ->get();
+            // Acumulados
+            ->addSelect(DB::raw("(
+                SELECT SUM(accumulation_incidents)
+                FROM ({$incidentsAccumulation}) AS ia
+                WHERE ia.contractor_company_id = fs.contractor_company_id
+                AND ia.uea_id = fs.uea_id
+                AND ia.year = fs.year
+                AND ia.month <= fs.month
+            ) AS accumulation_incidents"))
+            ->addSelect(DB::raw("(
+                SELECT SUM(accumulation_dangerous_incidents)
+                FROM ({$incidentsAccumulation}) AS ia
+                WHERE ia.contractor_company_id = fs.contractor_company_id
+                AND ia.uea_id = fs.uea_id
+                AND ia.year = fs.year
+                AND ia.month <= fs.month
+            ) AS accumulation_dangerous_incidents"))
+            ->addSelect(DB::raw("(
+                SELECT SUM(accumulation_minor_accidents)
+                FROM ({$incidentsAccumulation}) AS ia
+                WHERE ia.contractor_company_id = fs.contractor_company_id
+                AND ia.uea_id = fs.uea_id
+                AND ia.year = fs.year
+                AND ia.month <= fs.month
+            ) AS accumulation_minor_accidents"))
+            ->addSelect(DB::raw("(
+                SELECT SUM(accumulation_disability)
+                FROM ({$incidentsAccumulation}) AS ia
+                WHERE ia.contractor_company_id = fs.contractor_company_id
+                AND ia.uea_id = fs.uea_id
+                AND ia.year = fs.year
+                AND ia.month <= fs.month
+            ) AS accumulation_disability"))
+            ->addSelect(DB::raw("(
+                SELECT SUM(accumulation_mortality)
+                FROM ({$incidentsAccumulation}) AS ia
+                WHERE ia.contractor_company_id = fs.contractor_company_id
+                AND ia.uea_id = fs.uea_id
+                AND ia.year = fs.year
+                AND ia.month <= fs.month
+            ) AS accumulation_mortality"))
+            ->addSelect(DB::raw("(
+                SELECT SUM(accumulation_mortality_disability)
+                FROM ({$incidentsAccumulation}) AS ia
+                WHERE ia.contractor_company_id = fs.contractor_company_id
+                AND ia.uea_id = fs.uea_id
+                AND ia.year = fs.year
+                AND ia.month <= fs.month
+            ) AS accumulation_mortality_disability"))
+            ->addSelect(DB::raw("(
+                SELECT SUM(accumulation_lost_days)
+                FROM ({$incidentsAccumulation}) AS ia
+                WHERE ia.contractor_company_id = fs.contractor_company_id
+                AND ia.uea_id = fs.uea_id
+                AND ia.year = fs.year
+                AND ia.month <= fs.month
+            ) AS accumulation_lost_days"))
+            ->addSelect(DB::raw("(
+                SELECT SUM(accumulation_man_hours_worked)
+                FROM ({$incidentsAccumulation}) AS ia
+                WHERE ia.contractor_company_id = fs.contractor_company_id
+                AND ia.uea_id = fs.uea_id
+                AND ia.year = fs.year
+                AND ia.month <= fs.month
+            ) AS accumulation_man_hours_worked"))
+            ->addSelect(DB::raw("(
+                SELECT SUM(accumulation_frequency_index)
+                FROM ({$incidentsAccumulation}) AS ia
+                WHERE ia.contractor_company_id = fs.contractor_company_id
+                AND ia.uea_id = fs.uea_id
+                AND ia.year = fs.year
+                AND ia.month <= fs.month
+            ) AS accumulation_frequency_index"))
+            ->addSelect(DB::raw("(
+                SELECT SUM(accumulation_severity_index)
+                FROM ({$incidentsAccumulation}) AS ia
+                WHERE ia.contractor_company_id = fs.contractor_company_id
+                AND ia.uea_id = fs.uea_id
+                AND ia.year = fs.year
+                AND ia.month <= fs.month
+            ) AS accumulation_severity_index"))
+            ->addSelect(DB::raw("(
+                SELECT SUM(accumulation_accident_rate)
+                FROM ({$incidentsAccumulation}) AS ia
+                WHERE ia.contractor_company_id = fs.contractor_company_id
+                AND ia.uea_id = fs.uea_id
+                AND ia.year = fs.year
+                AND ia.month <= fs.month
+            ) AS accumulation_accident_rate"))
+            ->get(); // Ejecutamos la consulta y obtenemos los resultados
+
+        return $query;
     }
+
+
 
     private function getAnnex30Data($year, $month)
     {

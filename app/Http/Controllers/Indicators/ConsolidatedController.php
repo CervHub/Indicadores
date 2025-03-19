@@ -53,7 +53,16 @@ class ConsolidatedController extends Controller
                 ]
             );
 
-            return redirect()->route('consolidated.index')->with('success', 'Consolidado creado o actualizado correctamente');
+            $mensaje = 'Consolidado creado con exito';
+            if ($consolidated->wasRecentlyCreated) {
+                $mensaje = 'Consolidado actualizado con exito';
+            }
+
+            if ($request->has('reconsolidated')) {
+                $mensaje = 'Consolidado reconsolidado con exito';
+            }
+
+            return redirect()->route('consolidated.index')->with('success', $mensaje);
         } catch (\Exception $e) {
             return redirect()->route('consolidated.index')->with('error', 'Error al crear o actualizar el consolidado: ' . $e->getMessage());
         }

@@ -21,10 +21,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function ReportabilityPage() {
     const { reportability_id, reportability } = usePage<{ reportability_id: number; reportability: any }>().props;
 
-    useEffect(() => {
-        console.log('Reportability ID: ', reportability_id);
-    }, [reportability_id]);
-
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 

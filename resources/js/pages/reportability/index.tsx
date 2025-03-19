@@ -21,10 +21,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function ReportabilityPage() {
     const { reportabilities } = usePage<{ reportabilities: Reportability[] }>().props;
 
-    useEffect(() => {
-        console.log('Reportabilities: ', JSON.stringify(reportabilities));
-    }, [reportabilities]);
-
     const [startDate, setStartDate] = useState<Date | undefined>(new Date());
     const [endDate, setEndDate] = useState<Date | undefined>(new Date());
 

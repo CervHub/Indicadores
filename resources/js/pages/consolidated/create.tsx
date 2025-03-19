@@ -14,55 +14,22 @@ type ConsolidatedForm = {
     month: number;
 };
 
-type CreateConsolidatedProps = {
-    initialYear?: number;
-    initialMonth?: number;
-    isOpen?: boolean;
-    onOpenChange?: (isOpen: boolean) => void;
-    autoConsolidated?: boolean;
-};
+export default function CreateConsolidated() {
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1; // getMonth() returns 0-11
 
-export default function CreateConsolidated({
-    initialYear = 0,
-    initialMonth = 0,
-    isOpen = false,
-    onOpenChange,
-    autoConsolidated = false,
-}: CreateConsolidatedProps) {
     const { data, setData, post, processing, errors, reset } = useForm<Required<ConsolidatedForm>>({
-        year: initialYear,
-        month: initialMonth,
+        year: currentYear,
+        month: currentMonth,
     });
 
-    const [isDialogOpen, setIsDialogOpen] = useState(isOpen);
-    const [isFormValid, setIsFormValid] = useState(false);
-    const [isAutoConsolidated, setIsAutoConsolidated] = useState(autoConsolidated);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isFormValid, setIsFormValid] = useState(true);
     const submitButtonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         setIsFormValid(data.year !== 0 && data.month !== 0);
     }, [data]);
-
-    useEffect(() => {
-        setIsDialogOpen(isOpen);
-    }, [isOpen]);
-
-    useEffect(() => {
-        setIsAutoConsolidated(autoConsolidated);
-    }, [autoConsolidated]);
-
-    useEffect(() => {
-        if (isOpen) {
-            setData('year', initialYear);
-            setData('month', initialMonth);
-        }
-    }, [initialYear, initialMonth, isOpen, setData]);
-
-    useEffect(() => {
-        if (isDialogOpen && isAutoConsolidated && submitButtonRef.current) {
-            submitButtonRef.current.click();
-        }
-    }, [isDialogOpen, isAutoConsolidated]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -70,7 +37,6 @@ export default function CreateConsolidated({
             onSuccess: (response) => {
                 reset();
                 setIsDialogOpen(false);
-                if (onOpenChange) onOpenChange(false);
                 console.log('Solicitud de creación exitosa:', response);
             },
             onError: (errors) => {
@@ -80,37 +46,27 @@ export default function CreateConsolidated({
         });
     };
 
-    const currentYear = new Date().getFullYear();
     const years = Array.from({ length: currentYear - 2023 + 1 }, (_, i) => 2023 + i);
 
     return (
         <div>
-            <Dialog
-                open={isDialogOpen}
-                onOpenChange={(open) => {
-                    setIsDialogOpen(open);
-                    if (onOpenChange) onOpenChange(open);
-                }}
-            >
+            <Dialog open={isDialogOpen} onOpenChange={(open) => setIsDialogOpen(open)}>
                 <div className="flex justify-start">
                     <DialogTrigger asChild>
-                        <Button
-                            className="inline-block px-4 py-2"
-                            onClick={() => setIsAutoConsolidated(false)}
-                        >
+                        <Button className="inline-block px-4 py-2" onClick={() => setIsDialogOpen(true)}>
                             Crear Consolidado
                         </Button>
                     </DialogTrigger>
                 </div>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>{isAutoConsolidated ? 'Re-Consolidando' : 'Crear Consolidado'}</DialogTitle>
+                        <DialogTitle>Crear Consolidado</DialogTitle>
                         <DialogDescription>Complete los campos para crear un nuevo consolidado.</DialogDescription>
                     </DialogHeader>
                     <form onSubmit={submit} className="space-y-3" method="post" action={route('consolidated.store')}>
                         <div className="grid gap-2">
                             <Label htmlFor="year">Año</Label>
-                            <Select onValueChange={(value) => setData('year', Number(value))} value={data.year ? String(data.year) : ''}>
+                            <Select onValueChange={(value) => setData('year', Number(value))} value={String(data.year)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Seleccione un año" />
                                 </SelectTrigger>
@@ -129,7 +85,7 @@ export default function CreateConsolidated({
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="month">Mes</Label>
-                            <Select onValueChange={(value) => setData('month', Number(value))} value={data.month ? String(data.month) : ''}>
+                            <Select onValueChange={(value) => setData('month', Number(value))} value={String(data.month)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Seleccione un mes" />
                                 </SelectTrigger>

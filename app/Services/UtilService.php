@@ -16,8 +16,8 @@ class UtilService
             mkdir($publicPath, 0777, true);
         }
 
-        // Genera un nombre de archivo único sin usar el nombre original
-        $uniqueFileName = uniqid() . '.' . $file->getClientOriginalExtension();
+        // Genera un nombre de archivo con el formato especificado
+        $uniqueFileName = strtoupper(date('Y_F_His')) . '.' . $file->getClientOriginalExtension();
         $filePath = $publicPath . '/' . $uniqueFileName;
         file_put_contents($filePath, file_get_contents($file->getRealPath()));
 

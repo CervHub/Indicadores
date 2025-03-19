@@ -6,8 +6,9 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import CloseConsolidated from './close';
-import CreateConsolidated from './create';
 import OpenConsolidated from './open';
+import ReConsolidated from './reconsolidated';
+import CreateConsolidated from './create';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -29,7 +30,6 @@ export default function ConsolidatedDashboard() {
 
     const [modalOpen, setModalOpen] = useState(false);
     const [initialYear, setInitialYear] = useState<number>(currentYear);
-    const [autoConsolidated, setAutoConsolidated] = useState(false);
     const [initialMonth, setInitialMonth] = useState<number>(currentMonth);
     const [openModal, setOpenModal] = useState(false);
     const [closeModal, setCloseModal] = useState(false);
@@ -49,7 +49,6 @@ export default function ConsolidatedDashboard() {
                     setCloseModal(true);
                     break;
                 case 'reconsolidate':
-                    setAutoConsolidated(true);
                     setModalOpen(true);
                     setInitialYear(selectedConsolidated.year);
                     setInitialMonth(selectedConsolidated.month);
@@ -92,13 +91,8 @@ export default function ConsolidatedDashboard() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Consolidados" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <CreateConsolidated
-                    autoConsolidated={autoConsolidated}
-                    initialYear={initialYear}
-                    initialMonth={initialMonth}
-                    isOpen={modalOpen}
-                    onOpenChange={setModalOpen}
-                />
+                <CreateConsolidated/>
+                <ReConsolidated initialYear={initialYear} initialMonth={initialMonth} isOpen={modalOpen} onOpenChange={setModalOpen} />
                 <div className="w-full max-w-full overflow-x-auto">
                     <DataTable columns={getColumns(handleActionClick, handleDonwloadClick)} data={consolidateds} />
                 </div>

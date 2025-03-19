@@ -15,10 +15,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Management() {
     const { entities } = usePage<{ entities: Entity[] }>().props;
 
-    useEffect(() => {
-        console.log('Entities: ', JSON.stringify(entities));
-    }, [entities]);
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Management" />

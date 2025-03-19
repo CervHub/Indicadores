@@ -237,27 +237,27 @@ class AnnexExport
                 $sheet->setCellValue("E{$currentRow}", $item->total_workers ?? 0);
                 $sheet->setCellValue("F{$currentRow}", $item->total_personnel ?? 0);
                 $sheet->setCellValue("G{$currentRow}", $item->total_incidents ?? 0);
-                $sheet->setCellValue("H{$currentRow}", 0);
+                $sheet->setCellValue("H{$currentRow}", $item->accumulation_incidents ?? 0);
                 $sheet->setCellValue("I{$currentRow}", $item->total_dangerous_incidents ?? 0);
-                $sheet->setCellValue("J{$currentRow}", 0);
+                $sheet->setCellValue("J{$currentRow}", $item->accumulation_dangerous_incidents ?? 0);
                 $sheet->setCellValue("K{$currentRow}", $item->total_minor_accidents ?? 0);
-                $sheet->setCellValue("L{$currentRow}", 0);
+                $sheet->setCellValue("L{$currentRow}", $item->accumulation_minor_accidents ?? 0);
                 $sheet->setCellValue("M{$currentRow}", $item->total_disability ?? 0);
                 $sheet->setCellValue("N{$currentRow}", $item->total_mortality ?? 0);
                 $sheet->setCellValue("O{$currentRow}", $item->total_mortality_disability ?? 0);
-                $sheet->setCellValue("P{$currentRow}", 0);
-                $sheet->setCellValue("Q{$currentRow}", 0);
-                $sheet->setCellValue("R{$currentRow}", 0);
+                $sheet->setCellValue("P{$currentRow}", $item->accumulation_disability ?? 0);
+                $sheet->setCellValue("Q{$currentRow}", $item->accumulation_mortality ?? 0);
+                $sheet->setCellValue("R{$currentRow}", $item->accumulation_mortality_disability ?? 0);
                 $sheet->setCellValue("S{$currentRow}", $item->total_lost_days ?? 0);
-                $sheet->setCellValue("T{$currentRow}", 0);
+                $sheet->setCellValue("T{$currentRow}", $item->accumulation_lost_days ?? 0);
                 $sheet->setCellValue("U{$currentRow}", $item->total_man_hours_worked ?? 0);
-                $sheet->setCellValue("V{$currentRow}", 0);
+                $sheet->setCellValue("V{$currentRow}", $item->accumulation_man_hours_worked ?? 0);
                 $sheet->setCellValue("W{$currentRow}", $item->total_frequency_index ?? 0);
-                $sheet->setCellValue("X{$currentRow}", 0);
+                $sheet->setCellValue("X{$currentRow}", $item->accumulation_frequency_index ?? 0);
                 $sheet->setCellValue("Y{$currentRow}", $item->total_severity_index ?? 0);
-                $sheet->setCellValue("Z{$currentRow}", 0);
+                $sheet->setCellValue("Z{$currentRow}", $item ->accumulation_severity_index ?? 0);
                 $sheet->setCellValue("AA{$currentRow}", $item->total_accident_rate ?? 0);
-                $sheet->setCellValue("AB{$currentRow}", 0);
+                $sheet->setCellValue("AB{$currentRow}", $item->accumulation_accident_rate ?? 0);
 
                 // Set row height to 1 cm
                 $sheet->getRowDimension($currentRow)->setRowHeight(10); // 1 cm = 10 points
@@ -267,16 +267,27 @@ class AnnexExport
                 $totals[4] += $item->total_workers ?? 0;
                 $totals[5] += $item->total_personnel ?? 0;
                 $totals[6] += $item->total_incidents ?? 0;
+                $totals[7] += $item->accumulation_incidents ?? 0;
                 $totals[8] += $item->total_dangerous_incidents ?? 0;
+                $totals[9] += $item->accumulation_dangerous_incidents ?? 0;
                 $totals[10] += $item->total_minor_accidents ?? 0;
+                $totals[11] += $item->accumulation_minor_accidents ?? 0;
                 $totals[12] += $item->total_disability ?? 0;
                 $totals[13] += $item->total_mortality ?? 0;
                 $totals[14] += $item->total_mortality_disability ?? 0;
+                $totals[15] += $item->accumulation_disability ?? 0;
+                $totals[16] += $item->accumulation_mortality ?? 0;
+                $totals[17] += $item->accumulation_mortality_disability ?? 0;
                 $totals[18] += $item->total_lost_days ?? 0;
+                $totals[19] += $item->accumulation_lost_days ?? 0;
                 $totals[20] += $item->total_man_hours_worked ?? 0;
+                $totals[21] += $item->accumulation_man_hours_worked ?? 0;
                 $totals[22] += $item->total_frequency_index ?? 0;
+                $totals[23] += $item->accumulation_frequency_index ?? 0;
                 $totals[24] += $item->total_severity_index ?? 0;
+                $totals[25] += $item->accumulation_severity_index ?? 0;
                 $totals[26] += $item->total_accident_rate ?? 0;
+                $totals[27] += $item->accumulation_accident_rate ?? 0;
 
                 $currentRow++;
             }

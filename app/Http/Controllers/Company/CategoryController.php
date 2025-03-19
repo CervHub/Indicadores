@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\CategoryCompany;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
@@ -14,8 +15,11 @@ class CategoryController extends Controller
     {
         $company_id = Auth::user()->company->id;
         $categories = Category::where('company_id', $company_id)->get();
-        return view('company.category.index', compact('categories'));
+        return Inertia::render('category/index', [
+            'categories' => $categories
+        ]);
     }
+
     public function store(Request $request)
     {
         try {
@@ -29,6 +33,7 @@ class CategoryController extends Controller
             return redirect()->route('company.category')->with('error', 'Error creating category: ' . $e->getMessage());
         }
     }
+
     public function destroy($id)
     {
         try {
