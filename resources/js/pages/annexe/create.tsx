@@ -100,7 +100,7 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
                             <Button className="inline-block px-4 py-2">Agregar Anexos</Button>
                         </div>
                     </DialogTrigger>
-                    <Button variant="success" className="ml-2" onClick={() => (window.location.href = '/formats/formato.xlsx')}>
+                    <Button variant="success" className="ml-2" onClick={() => (window.location.href = '/formats/format.xlsx')}>
                         <FilePieChart className="mr-2 h-4 w-4" />
                         Formato
                     </Button>

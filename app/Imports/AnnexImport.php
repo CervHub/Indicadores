@@ -564,6 +564,15 @@ class AnnexImport implements WithMultipleSheets
         }
 
         if (!empty($errors)) {
+            // dd([
+            //     'errors' => $errors,
+            //     'filteredData' => $filteredData,
+            //     'filteredRows' => $filteredRows,
+            //     'rules' => $filterColumns,
+            //     'data' => $data,
+            //     'startRow' => $startRow,
+            //     'endRow' => $endRow,
+            // ]);
             throw new \Exception($errors[0]);
         }
 
