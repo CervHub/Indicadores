@@ -69,7 +69,7 @@ const LineChartComponent: React.FC = () => {
     }, [chartData, selectedYear, selectedMonth]);
 
     const { props } = usePage<{ auth: { user: { role_id: string; company: string } } }>();
-    const company_id = props.auth.user.company || 'all';
+    const company_id = props.auth.user.company_id || 'all';
 
     React.useEffect(() => {
         const url = route('year.metrics', { company_id, year: selectedYear });

@@ -33,6 +33,7 @@ class AttachmentAnalyzerService
     protected $fileStatus;
     protected $userId;
     protected $contractorCompanyId;
+    protected $dataImport;
 
     public function __construct(UtilService $utilService)
     {
@@ -45,6 +46,7 @@ class AttachmentAnalyzerService
         $this->fileStatus = null;
         $this->contractorCompanyId = null;
         $this->userId = null;
+        $this->dataImport = [];
     }
 
     public function saveAnexo(array $request)
@@ -99,7 +101,23 @@ class AttachmentAnalyzerService
 
             foreach ($requiredData as $key => $value) {
                 if (empty($data[$key])) {
-                    throw new Exception("Los datos de $value están vacíos.");
+                    switch ($key) {
+                        case 'ANEXO 24':
+                        case 'ANEXO 25':
+                        case 'ANEXO 26':
+                        case 'ANEXO 27':
+                            throw new Exception("El Anexo $value debe contener almenos llenado el Nombre de la empresa, Empl. Obr. y TOTAL.");
+                            break;
+                        case 'ANEXO 28':
+                            throw new Exception("El Anexo $value debe contener almenos llenado Nombre del Titular de Actividades, SITUACION, Nro RUC, EMPL., OBR. y TOTAL.");
+                            break;
+                        case 'PLANTILLA MINEM 1':
+                            throw new Exception("La $value debe contener almenos llenado el RUC, Nombre Concesion, UEA, Tipo Cliente, Nombre Empresa, Total trabajadores, Total horas trabajadas y Actividades Mineras.");
+                            break;
+                        case 'PLANTILLA MINEM 2':
+                            throw new Exception("La $value debe contener almenos llenado el RUC, Nombre Concesion, UEA, Tipo Cliente, Nombre Empresa.");
+                            break;
+                    }
                 }
             }
 
@@ -163,7 +181,7 @@ class AttachmentAnalyzerService
             MinemTemplate2::whereIn('file_status_id', $fileStatusIds)->delete();
         } catch (Exception $e) {
             DB::rollBack();
-
+            // dd($e->getMessage());
             throw new \Exception($e->getMessage());
         }
     }
@@ -218,30 +236,30 @@ class AttachmentAnalyzerService
                     'file' => $this->filePath,
                     'year' => $this->year,
                     'month' => $this->month,
-                    'empl' => $item[1] ?? 0,
-                    'obr' => $item[2] ?? 0,
-                    'day1' => $item[4] ?? 0,
-                    'day2' => $item[5] ?? 0,
-                    'day3' => $item[6] ?? 0,
-                    'day4' => $item[7] ?? 0,
-                    'day5' => $item[8] ?? 0,
-                    'day6' => $item[9] ?? 0,
-                    'day7' => $item[10] ?? 0,
-                    'day8' => $item[11] ?? 0,
-                    'day9' => $item[12] ?? 0,
-                    'day10' => $item[13] ?? 0,
-                    'day11' => $item[14] ?? 0,
-                    'day12' => $item[15] ?? 0,
-                    'day13' => $item[16] ?? 0,
-                    'day14' => $item[17] ?? 0,
-                    'day15' => $item[18] ?? 0,
-                    'day16' => $item[19] ?? 0,
-                    'day17' => $item[20] ?? 0,
-                    'day18' => $item[21] ?? 0,
-                    'day19' => $item[22] ?? 0,
-                    'day20' => $item[23] ?? 0,
-                    'day21' => $item[24] ?? 0,
-                    'day22' => $item[25] ?? 0,
+                    'empl' => (int) ($item[1] ?? 0),
+                    'obr' => (int) ($item[2] ?? 0),
+                    'day1' => (int) ($item[4] ?? 0),
+                    'day2' => (int) ($item[5] ?? 0),
+                    'day3' => (int) ($item[6] ?? 0),
+                    'day4' => (int) ($item[7] ?? 0),
+                    'day5' => (int) ($item[8] ?? 0),
+                    'day6' => (int) ($item[9] ?? 0),
+                    'day7' => (int) ($item[10] ?? 0),
+                    'day8' => (int) ($item[11] ?? 0),
+                    'day9' => (int) ($item[12] ?? 0),
+                    'day10' => (int) ($item[13] ?? 0),
+                    'day11' => (int) ($item[14] ?? 0),
+                    'day12' => (int) ($item[15] ?? 0),
+                    'day13' => (int) ($item[16] ?? 0),
+                    'day14' => (int) ($item[17] ?? 0),
+                    'day15' => (int) ($item[18] ?? 0),
+                    'day16' => (int) ($item[19] ?? 0),
+                    'day17' => (int) ($item[20] ?? 0),
+                    'day18' => (int) ($item[21] ?? 0),
+                    'day19' => (int) ($item[22] ?? 0),
+                    'day20' => (int) ($item[23] ?? 0),
+                    'day21' => (int) ($item[24] ?? 0),
+                    'day22' => (int) ($item[25] ?? 0),
                     'is_old' => false
                 ]);
             }
