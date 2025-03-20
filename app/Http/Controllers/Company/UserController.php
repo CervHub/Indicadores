@@ -69,24 +69,22 @@ class UserController extends Controller
 
     public function indexsecurity()
     {
-        $levels = Level::orderBy('orden', 'asc')->get();
-        $systemRoles = SystemRole::all();
-        $user_ids = SecurityEngineer::where('company_id', Auth::user()->company->id)->pluck('user_id');
-        $users = User::whereIn('id', $user_ids)->orderBy('id', 'desc')->get();
-        $entities = Entity::where('company_id', Auth::user()->company->id)->get();
-        $positions = Position::all();
-        $grouped_entities = $this->getEntities($entities, $levels);
+        $company_id = Auth::user()->company->id ?? 0;
+        $user_ids = SecurityEngineer::where('company_id', $company_id)->pluck('user_id');
+        $security_users = User::whereIn('id', $user_ids)->orderBy('id', 'desc')->get();
+        $all_users = User::where('company_id', $company_id)
+            ->whereNotIn('id', $user_ids)
+            ->orderBy('id', 'desc')
+            ->get();
         return inertia('security/index', [
-            'levels' => $levels,
-            'systemRoles' => $systemRoles,
-            'users' => $users,
-            'grouped_entities' => $grouped_entities,
-            'positions' => $positions,
+            'security_users' => $security_users,
+            'all_users' => $all_users,
         ]);
     }
 
     public function store(Request $request)
     {
+        dd($request->all());
         // Preparar los datos
         $systemRoles = SystemRole::find($request->input('rolesystem_id'));
         $level = Level::find($systemRoles->level_id);

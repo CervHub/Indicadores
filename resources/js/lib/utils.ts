@@ -20,6 +20,17 @@ export const months = [
     { value: '12', label: 'Diciembre' },
 ];
 
+const permissions: { [key: number]: string } = {
+    1: 'admin',
+    2: 'security',
+    3: 'company',
+    4: 'user'
+};
+
+export function getPermissionDescription(value: number): string | undefined {
+    return permissions[value];
+}
+
 export function formatDateTime(date: Date | string): string {
     if (typeof date === 'string') {
         date = new Date(date);

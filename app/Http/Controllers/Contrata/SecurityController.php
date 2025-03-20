@@ -18,37 +18,37 @@ class SecurityController extends Controller
     public function store(Request $request)
     {
         try {
-            $user = User::where('doi', $request->dni)->first();
+            $user = User::find($request->userId);
 
             if (!$user) {
-                return redirect()->route('security-engineer')->withErrors('Usuario no encontrado.');
+                return redirect()->back()->withErrors('Usuario no encontrado.');
             }
 
-            SecurityEngineer::create([
-                'user_id' => $user->id,
-                'company_id' => auth()->user()->company_id,
-            ]);
+            SecurityEngineer::updateOrCreate(
+                ['user_id' => $user->id],
+                ['company_id' => auth()->user()->company_id]
+            );
 
-            return redirect()->route('security-engineer')->with('success', 'Ingeniero de Seguridad creado exitosamente.');
+            return redirect()->back()->with('success', 'Ingeniero de Seguridad asignado exitosamente.');
         } catch (\Exception $e) {
-            return redirect()->route('security-engineer')->withErrors('Ocurrió un error: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Ocurrió un error: ' . $e->getMessage());
         }
     }
 
-    public function destroy($dni)
+    public function destroy($id)
     {
         try {
-            $user = User::where('doi', $dni)->first();
+            $user = User::find($id);
 
             if (!$user) {
-                return redirect()->route('security-engineer')->withErrors('Usuario no encontrado.');
+                return redirect()->back()->withErrors('Usuario no encontrado.');
             }
 
             SecurityEngineer::where('user_id', $user->id)->delete();
 
-            return redirect()->route('security-engineer')->with('success', 'Ingeniero de Seguridad eliminado exitosamente.');
+            return redirect()->back()->with('success', 'Ingeniero de Seguridad eliminado exitosamente.');
         } catch (\Exception $e) {
-            return redirect()->route('security-engineer')->withErrors('Ocurrió un error: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Ocurrió un error: ' . $e->getMessage());
         }
     }
 }

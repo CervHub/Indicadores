@@ -35,4 +35,4 @@ Route::post('contrata/excel/formatoupload', [ReportabilityController::class, 'fo
 // Habilitar ingenieros de seguridad
 Route::get('contrata/security-engineer', [SecurityController::class, 'index'])->name('security-engineer');
 Route::post('contrata/security-engineer/store', [SecurityController::class, 'store'])->name('security-engineer.store');
-Route::delete('contrata/security-engineer/{dni}', [SecurityController::class, 'destroy'])->name('security-engineer.destroy');
+Route::delete('contrata/security-engineer/{id}', [SecurityController::class, 'destroy'])->name('security-engineer.destroy');
