@@ -63,7 +63,7 @@ class AnnexExport
         }
 
         foreach ($this->fileNames as $index => $fileName) {
-            $path = public_path('formats/Formato.xlsx');
+            $path = public_path('formats/Format.xlsx');
             $spreadsheet = IOFactory::load($path);
             $data = $this->data[$fileName] ?? [];
             foreach ($this->sheetNames as $sheetName) {
