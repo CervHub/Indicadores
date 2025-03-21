@@ -1,10 +1,9 @@
 import { FileStatus, getColumns } from '@/components/file-status/columns';
 import { DataTable } from '@/components/file-status/data-table';
-import useFlashMessages from '@/hooks/useFlashMessages';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
-import CreateAnnex from './create';
+import CreateAnnex from './create'
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -13,8 +12,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+
 export default function ContractorDashboard() {
-    useFlashMessages();
+
     const { fileStatuses, contractorCompanyTypes, ueas, rules } = usePage<{
         contractorCompanyTypes: [];
         fileStatuses: FileStatus[];

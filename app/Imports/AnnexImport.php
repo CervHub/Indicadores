@@ -179,10 +179,12 @@ class AnnexImport implements WithMultipleSheets
             $this->sumColumn($this->data['ANEXO 27'], 3),
             $this->sumColumn($this->data['ANEXO 28'], 5),
             $this->sumColumn($this->data['PLANTILLA MINEM 1'], 21),
+            $this->sumRange($this->data['PLANTILLA MINEM 1'], 5, 20),
+            $this->sumRange($this->data['PLANTILLA MINEM 2'], 5, 12),
         ];
 
         if (!$this->areAllValuesEqualLinear($dataTotal)) {
-            throw new \Exception('Los valores en la columna de totales de obreros y trabajadores no coinciden, entre los ANEXOS y MINEM 1');
+            throw new \Exception('Los valores en la columna de totales de obreros y trabajadores no coinciden, entre los ANEXOS 24,25,26,27,28 y las plantillas MINEM 1 y MINEM 2');
         }
 
         // Validacion de numero de incidentes

@@ -11,6 +11,12 @@ use App\Exports\AnnexExport;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\UtilService;
+use App\Models\Company;
+use App\Models\CompanyConsolidated;
+use App\Models\ContractorCompany;
+use App\Models\FileStatus;
+use App\Models\Uea;
+use App\Models\ContractorCompanyType;
 
 class ConsolidatedController extends Controller
 {
@@ -31,13 +37,43 @@ class ConsolidatedController extends Controller
         ]);
     }
 
+    public function show($id)
+    {
+        $consolidated = Consolidated::find($id);
+        $fileStatuses = FileStatus::where('year', $consolidated->year)
+            ->where('month', $consolidated->month)
+            ->with([
+                'annex24',
+                'annex25',
+                'annex26',
+                'annex27',
+                'annex28',
+                'annex30',
+                'minemTemplate1',
+                'minemTemplate2',
+                'company',
+                'contractorCompanyType',
+                'uea'
+            ])->get();
+        $ueas = Uea::all();
+        $companyConsolidateds = CompanyConsolidated::where('consolidated_id', $id)->with('company')->get();
+        $contractorCompanyTypes = ContractorCompanyType::all();
+        return Inertia::render('consolidated/show', [
+            'consolidated' => $consolidated,
+            'fileStatuses' => $fileStatuses,
+            'ueas' => $ueas,
+            'contractorCompanyTypes' => $contractorCompanyTypes,
+            'companyConsolidateds' => $companyConsolidateds
+        ]);
+    }
+
     public function store(Request $request)
     {
         try {
             $data = $this->consolidationCreationService->store($request);
 
             // Generar y guardar los archivos Excel en la carpeta 'public/consolidated'
-            $filePaths = $this->saveExcelToPublic($data);
+            $filePaths = $this->saveExcelToPublic($data, $request['year'], $request['month']);
 
             $consolidated = Consolidated::updateOrCreate(
                 [
@@ -52,6 +88,8 @@ class ConsolidatedController extends Controller
                     'file_sx_ew' => $filePaths[2], // Guardar la ruta del segundo archivo generado
                 ]
             );
+
+            $this->registerCompanyConsolidated($consolidated->id);
 
             $mensaje = 'Consolidado creado con exito';
             if ($consolidated->wasRecentlyCreated) {
@@ -68,10 +106,27 @@ class ConsolidatedController extends Controller
         }
     }
 
-    private function saveExcelToPublic($data)
+    private function registerCompanyConsolidated($consolidated_id)
+    {
+        $companies = Company::where('estado', 1)->get();
+        foreach ($companies as $company) {
+            CompanyConsolidated::updateOrCreate(
+                [
+                    'company_id' => $company->id,
+                    'consolidated_id' => $consolidated_id
+                ],
+                [
+                    'company_id' => $company->id,
+                    'consolidated_id' => $consolidated_id
+                ]
+            );
+        }
+    }
+
+    private function saveExcelToPublic($data, $year, $month)
     {
         // Generar los archivos Excel
-        $export = new AnnexExport($data);
+        $export = new AnnexExport($data, $year, $month);
 
         // Modificar y guardar los archivos Excel
         return $export->modifyAndSave();

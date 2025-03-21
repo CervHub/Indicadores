@@ -1,11 +1,12 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, Download, Lock, RefreshCw, Unlock } from 'lucide-react';
+import { ArrowUpDown, Download, Eye, Lock, RefreshCw, Unlock } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { findFieldByValue, formatDateTime, months } from '@/lib/utils';
+import { Link } from '@inertiajs/react';
 
 export type Consolidated = {
     id: string;
@@ -112,28 +113,22 @@ export const getColumns = (
             const consolidated = row.original;
 
             return (
-                <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                <div className="flex gap-2">
                     <Button variant="secondary" className="w-auto" onClick={() => handleActionClick(consolidated.id, 'reconsolidate')}>
                         <RefreshCw className="h-4" />
-                        Actualizar
                     </Button>
                     <Button
                         variant={consolidated.is_closed == 1 ? 'default' : 'destructive'}
                         className="w-auto"
                         onClick={() => handleActionClick(consolidated.id, consolidated.is_closed == 1 ? 'open' : 'close')}
                     >
-                        {consolidated.is_closed == 1 ? (
-                            <>
-                                <Unlock className="h-4" />
-                                Abrir
-                            </>
-                        ) : (
-                            <>
-                                <Lock className="h-4" />
-                                Cerrar
-                            </>
-                        )}
+                        {consolidated.is_closed == 1 ? <Unlock className="h-4" /> : <Lock className="h-4" />}
                     </Button>
+                    <Link href={route('consolidated.show', { id: consolidated.id })}>
+                        <Button variant="secondary" className="w-auto">
+                            <Eye className="h-4" />
+                        </Button>
+                    </Link>
                 </div>
             );
         },

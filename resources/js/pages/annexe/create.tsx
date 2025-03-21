@@ -39,7 +39,6 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
     const { contractorCompanyTypes, ueas } = usePage<{
         contractorCompanyTypes: ContractorCompanyType[];
         ueas: Uea[];
-        flash: { success?: string; error?: string };
     }>().props;
 
     const { data, setData, post, processing, errors, reset } = useForm<Required<ContractorForm>>({
@@ -69,18 +68,35 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         if (validateRules()) {
-            toast.error('No se puede subir el archivo en el mes seleccionado, porque esta cerrado, comuniquese con el administrador.');
+            toast.error('No se puede subir un anexo para el mes seleccionado.', {
+                duration: 10000,
+                closeButton: true,
+            });
             return;
         }
         post(route('annexes.store'), {
             onSuccess: (page) => {
-                reset();
-                setIsDialogOpen(false);
-                console.log('Solicitud de creación exitosa:', page?.props?.flash);
+                const flash = page.props?.flash;
+                if (flash.success) {
+                    toast.success(flash.success, {
+                        duration: 20000,
+                        closeButton: true,
+                    });
+                    reset();
+                    setIsDialogOpen(false);
+                } else if (flash.error) {
+                    toast.error(flash.error, {
+                        duration: 20000,
+                        closeButton: true,
+                    });
+                }
             },
-            onError: (erros) => {
+            onError: (errors) => {
                 setIsDialogOpen(true);
-                console.log('Errores en la solicitud de creación:', erros);
+                toast.error('Ocurrió un error al subir el archivo, intente de nuevo.', {
+                    duration: 20000,
+                    closeButton: true,
+                });
             },
         });
     };
@@ -94,18 +110,16 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
     return (
         <div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <div className="flex justify-start">
+                <div className="flex justify-between">
                     <DialogTrigger asChild>
-                        <div className="flex w-full justify-between">
-                            <Button className="inline-block px-4 py-2">Agregar Anexos</Button>
-                        </div>
+                        <Button className="inline-block px-4 py-2">Agregar Anexos</Button>
                     </DialogTrigger>
                     <Button variant="success" className="ml-2" onClick={() => (window.location.href = '/formats/format.xlsx')}>
                         <FilePieChart className="mr-2 h-4 w-4" />
                         Formato
                     </Button>
                 </div>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[425px]" onInteractOutside={(e) => e.preventDefault()}>
                     <DialogHeader>
                         <DialogTitle>Agregar Contratista</DialogTitle>
                         <DialogDescription>Complete los campos para agregar un nuevo contratista.</DialogDescription>

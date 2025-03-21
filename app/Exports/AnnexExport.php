@@ -10,6 +10,8 @@ use Carbon\Carbon;
 class AnnexExport
 {
     protected $data;
+    protected $year;
+    protected $month;
 
     protected $sheetNames = [
         'ANEXO 24',
@@ -43,9 +45,11 @@ class AnnexExport
         'December' => 'DICIEMBRE'
     ];
 
-    public function __construct($data)
+    public function __construct($data, $year, $month)
     {
         $this->data = $data;
+        $this->year = $year;
+        $this->month = $month;
     }
 
     /**
@@ -55,7 +59,8 @@ class AnnexExport
     {
         $filePaths = [];
         $timestamp = Carbon::now()->format('Ymd_His');
-        $monthName = $this->months[Carbon::now()->format('F')];
+        $monthName = $this->months[date('F', mktime(0, 0, 0, $this->month, 10))];
+        $year = $this->year;
 
         $directoryPath = public_path("consolidateds/{$timestamp}");
         if (!file_exists($directoryPath)) {
@@ -97,7 +102,7 @@ class AnnexExport
             rename($tempPath, $filePath);
 
             // Agregar la ruta al array de rutas
-            $filePaths[] = "consolidateds/{$timestamp}/{$safeFileName} - {$monthName}.xlsx";
+            $filePaths[] = "consolidateds/{$timestamp}/{$year} - {$monthName} - {$safeFileName}.xlsx";
         }
 
         // Retornar el array de rutas
@@ -255,7 +260,7 @@ class AnnexExport
                 $sheet->setCellValue("W{$currentRow}", $item->total_frequency_index ?? 0);
                 $sheet->setCellValue("X{$currentRow}", $item->accumulation_frequency_index ?? 0);
                 $sheet->setCellValue("Y{$currentRow}", $item->total_severity_index ?? 0);
-                $sheet->setCellValue("Z{$currentRow}", $item ->accumulation_severity_index ?? 0);
+                $sheet->setCellValue("Z{$currentRow}", $item->accumulation_severity_index ?? 0);
                 $sheet->setCellValue("AA{$currentRow}", $item->total_accident_rate ?? 0);
                 $sheet->setCellValue("AB{$currentRow}", $item->accumulation_accident_rate ?? 0);
 

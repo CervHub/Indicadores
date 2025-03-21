@@ -29,6 +29,21 @@ class FileStatus extends Model
         'is_old',
     ];
 
+    public function contractorCompanyType()
+    {
+        return $this->belongsTo(ContractorCompanyType::class);
+    }
+
+    public function uea()
+    {
+        return $this->belongsTo(Uea::class);
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'contractor_company_id');
+    }
+
     //Relaciones
     public function annex24()
     {
