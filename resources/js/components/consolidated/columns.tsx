@@ -52,12 +52,16 @@ export const getColumns = (
     {
         accessorKey: 'month',
         header: 'Month',
-        cell: ({ row }) => findFieldByValue(months, 'value', row.original.month, 'label') || 'N/A',
+        cell: ({ row }) => <Button variant="ghost">{findFieldByValue(months, 'value', row.original.month, 'label') || 'N/A'}</Button>,
     },
     {
         accessorKey: 'is_closed',
         header: 'Estado',
-        cell: ({ row }) => (row.original.is_closed == 1 ? <Lock className="h-6 w-6" /> : <Unlock className="h-6 w-6" />),
+        cell: ({ row }) => (
+            <Button variant="ghost" className={`icon-background ${row.original.is_closed == 1 ? 'closed' : 'open'}`}>
+                {row.original.is_closed == 1 ? <Lock className="h-8 w-8" /> : <Unlock className="h-8 w-8" />}
+            </Button>
+        ),
     },
     {
         id: 'file_sx_ew',
@@ -114,7 +118,12 @@ export const getColumns = (
 
             return (
                 <div className="flex gap-2">
-                    <Button variant="secondary" className="w-auto" onClick={() => handleActionClick(consolidated.id, 'reconsolidate')}>
+                    <Button
+                        variant="secondary"
+                        className="w-auto"
+                        onClick={() => handleActionClick(consolidated.id, 'reconsolidate')}
+                        disabled={consolidated.is_closed == 1}
+                    >
                         <RefreshCw className="h-4" />
                     </Button>
                     <Button

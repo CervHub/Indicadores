@@ -130,4 +130,41 @@ class AnnexController extends Controller
             'fileStatuses' => $fileStatuses,
         ]);
     }
+
+    public function delete($id)
+    {
+        $fileStatus = $this->fileStatus->with([
+            'annex24',
+            'annex25',
+            'annex26',
+            'annex27',
+            'annex28',
+            'annex30',
+            'minemTemplate1',
+            'minemTemplate2'
+        ])->find($id);
+
+        if (!$fileStatus) {
+            return redirect()->back()->with('error', 'Anexo no encontrado.');
+        }
+
+        try {
+            // Eliminar los registros relacionados en las tablas correspondientes
+            $fileStatus->annex24()->delete();
+            $fileStatus->annex25()->delete();
+            $fileStatus->annex26()->delete();
+            $fileStatus->annex27()->delete();
+            $fileStatus->annex28()->delete();
+            $fileStatus->annex30()->delete();
+            $fileStatus->minemTemplate1()->delete();
+            $fileStatus->minemTemplate2()->delete();
+
+            // Ahora eliminar el registro en file_statuses
+            $fileStatus->delete();
+            return redirect()->back()->with('success', 'Anexo eliminado exitosamente.');
+        } catch (\Exception $e) {
+            dd($e);
+            return redirect()->back()->with('error', 'Hubo un error al eliminar el anexo: ' . $e->getMessage());
+        }
+    }
 }

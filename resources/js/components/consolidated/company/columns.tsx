@@ -64,7 +64,7 @@ export const getColumns = (handleActionClick: (id: string, action: string) => vo
                     <Button
                         aria-label="Eliminar"
                         className="h-7 bg-red-700 p-2 text-xs text-white hover:bg-red-900 dark:bg-red-600 dark:hover:bg-red-800"
-                        onClick={() => handleActionClick(company.id, 'eliminar')}
+                        onClick={() => handleActionClick(company, 'e-c')}
                     >
                         <Trash2 className="h-3 w-3" />
                     </Button>

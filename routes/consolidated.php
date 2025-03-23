@@ -13,4 +13,5 @@ Route::middleware('auth')->group(function () {
     Route::get('consolidated/download/{id}', [ConsolidatedController::class, 'download'])->name('consolidated.download'); // Nueva ruta para descargar el archivo
     Route::patch('consolidated/close/{id}', [ConsolidatedController::class, 'close'])->name('consolidated.close'); // Nueva ruta para cerrar el consolidado
     Route::patch('consolidated/open/{id}', [ConsolidatedController::class, 'open'])->name('consolidated.open'); // Nueva ruta para abrir el consolidado
+    Route::delete('consolidated/company/delete/{id}', [ConsolidatedController::class, 'deleteCompany'])->name('consolidated.deleteCompany'); // Nueva ruta para eliminar una empresa del consolidado
 });

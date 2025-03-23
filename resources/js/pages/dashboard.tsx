@@ -16,7 +16,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface InfoCardProps {
     title: string;
-    buttons: { text: string; url: string }[];
+    buttons: { text: string; type: string }[];
     info: string;
 }
 
@@ -38,8 +38,8 @@ const InfoCard = ({ title, buttons, info }: InfoCardProps) => (
             </Popover>
         </CardHeader>
         <CardContent>
-            {buttons.map(({ text, url }, index) => (
-                <Link key={index} href={url} method="get" className="mb-2 flex w-full items-center gap-2">
+            {buttons.map(({ text, type }, index) => (
+                <Link key={index} href={route('dashboard.type', { type })} method="get" className="mb-2 flex w-full items-center gap-2">
                     <Button variant="outline" className="flex w-full items-center gap-2">
                         <span className="flex-1 overflow-hidden text-left text-ellipsis whitespace-nowrap">{text}</span>
                         <ArrowRight className="h-5 w-5 flex-shrink-0" />
@@ -52,20 +52,20 @@ const InfoCard = ({ title, buttons, info }: InfoCardProps) => (
 
 export default function Dashboard() {
     const distributionButtons = [
-        { text: 'Actos y condiciones subestándares e incidentes', url: '/company/analysis/category' },
-        { text: 'Actos Subestándares', url: '/admin/analysis/category/Actos Subestándares' },
-        { text: 'Condiciones Subestándares', url: '/admin/analysis/category/Condiciones Subestándares' },
-        { text: 'Incidentes', url: '/admin/analysis/category/Incidentes' },
+        { text: 'Actos y condiciones subestándares e incidentes', type: 'cat' },
+        { text: 'Actos Subestándares', type: 'actos' },
+        { text: 'Condiciones Subestándares', type: 'condiciones' },
+        { text: 'Incidentes', type: 'incidentes' },
     ];
 
     const trendButtons = [
-        { text: 'Actos y condiciones subestándares e incidentes', url: 'admin/analysis/year' },
-        { text: 'Observaciones detectadas por Gerencia', url: route('company.analysis.inspeccion.year') },
+        { text: 'Actos y condiciones subestándares e incidentes', type: 'yr' },
+        { text: 'Observaciones detectadas por Gerencia', type: 'insp.yr' },
     ];
 
     const inspectionButtons = [
-        { text: 'Planeada, no planeada, comite y otros', url: route('company.analysis.inspeccion') },
-        { text: 'Detalles de inspección', url: route('company.analysis.inspeccion.detail') },
+        { text: 'Planeada, no planeada, comite y otros', type: 'insp' },
+        { text: 'Detalles de inspección', type: 'insp.det' },
     ];
 
     return (
@@ -73,18 +73,18 @@ export default function Dashboard() {
             <Head title="Dashboard" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <LineChartComponent />
-                <div className="grid auto-rows-min gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid auto-rows-min gap-4 md:grid-cols-2 lg:grid-cols-2">
                     <InfoCard
                         title="DISTRIBUCIÓN POR TIPO"
                         buttons={distributionButtons}
                         info="Información detallada sobre la distribución por tipo."
                     />
                     <InfoCard title="CURVA DE TENDENCIA" buttons={trendButtons} info="Información detallada sobre la curva de tendencia." />
-                    <InfoCard
+                    {/* <InfoCard
                         title="DISTRIBUCIÓN INSPECCIÓN"
                         buttons={inspectionButtons}
                         info="Información detallada sobre la distribución de inspección."
-                    />
+                    /> */}
                 </div>
             </div>
         </AppLayout>

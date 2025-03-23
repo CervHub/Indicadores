@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FileStatus extends Model
 {
+    // use SoftDeletes;
+
     // Nombre de la table
     protected $table = 'file_statuses';
 
@@ -28,6 +31,8 @@ class FileStatus extends Model
         'minem_template_2',
         'is_old',
     ];
+
+    protected $dates = ['deleted_at'];
 
     public function contractorCompanyType()
     {

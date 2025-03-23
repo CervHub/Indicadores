@@ -2,8 +2,10 @@
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ColumnDef } from '@tanstack/react-table';
+import { Trash2 } from 'lucide-react';
 
 export type Annex = {
+    id: string;
     company: string;
     uea: string;
     type: string;
@@ -48,7 +50,25 @@ const renderTooltip = (day: string, value: string) => (
     </TooltipProvider>
 );
 
-export const getColumns = (): ColumnDef<Annex>[] => [
+export const getColumns = (handleActionClick: (id: string, action: string) => void): ColumnDef<Annex>[] => [
+    {
+        id: 'actions',
+        cell: ({ row }) => {
+            const item = row.original;
+
+            return (
+                <div className="flex gap-2">
+                    <span
+                        aria-label="Eliminar"
+                        className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md bg-red-700 text-xs text-white hover:bg-red-900 dark:bg-red-600 dark:hover:bg-red-800"
+                        onClick={() => handleActionClick(item, 'e-a')}
+                    >
+                        <Trash2 className="h-4 w-4" />
+                    </span>
+                </div>
+            );
+        },
+    },
     {
         accessorKey: 'uea',
         header: 'UEA',

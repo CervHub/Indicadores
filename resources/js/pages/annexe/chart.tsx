@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react';
 import { Annex } from '@/components/file-status/show/annex';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
@@ -39,8 +40,9 @@ function getheader(data: any) {
 }
 
 export default function ChartComponent({ data }: ChartComponentProps) {
-    const chartData = transformData(data);
-    const header = getheader(data);
+    const chartData = useMemo(() => transformData(data), [data]);
+    const header = useMemo(() => getheader(data), [data]);
+
     return (
         <Card className="py-0">
             <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">

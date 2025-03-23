@@ -13,7 +13,9 @@ import AppLayout from '@/layouts/app-layout';
 import ChartComponent from '@/pages/annexe/chart';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
-import React from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import DeleteFileStatus from './delete/annex';
+import DeleteCompany from './delete/company';
 
 const tabData = [
     { value: 'anexo24', title: 'Anexo 24', description: 'Detalles del Anexo 24.', abbreviation: 'A24' },
@@ -98,6 +100,11 @@ function addCompanyToAnnexes(fileStatuses: any[], annexKey: string): Annex[] {
 }
 
 export default function ConsolidatedDetail() {
+    const [openModalCompanyDelete, setOpenModalCompanyDelete] = useState(false);
+    const [companySelected, setCompanySelected] = useState(null);
+    const [openModalFileStatusDelete, setOpenModalFileStatusDelete] = useState(false);
+    const [fileStatusSelected, setFileStatusSelected] = useState(null);
+
     const { consolidated, fileStatuses, companyConsolidateds } = usePage<{
         consolidated: any;
         fileStatuses: { contractor_company_id: number }[];
@@ -106,36 +113,58 @@ export default function ConsolidatedDetail() {
         companyConsolidateds: any;
     }>().props;
 
-    const uniqueCompanyIds = Array.from(new Set(fileStatuses.map((status: any) => status.contractor_company_id)));
+    const uniqueCompanyIds = useMemo(() => Array.from(new Set(fileStatuses.map((status: any) => status.contractor_company_id))), [fileStatuses]);
 
-    const companyWithData = companyConsolidateds
-        .filter((company: any) => uniqueCompanyIds.includes(company.company_id))
-        .map((company: any) => company.company);
-    const companyWithoutData = companyConsolidateds
-        .filter((company: any) => !uniqueCompanyIds.includes(company.company_id))
-        .map((company: any) => company.company);
+    const companyWithData = useMemo(
+        () => companyConsolidateds.filter((company: any) => uniqueCompanyIds.includes(company.company_id)).map((company: any) => company.company),
+        [companyConsolidateds, uniqueCompanyIds],
+    );
 
-    const annex24s = addCompanyToAnnexes(fileStatuses, 'annex24');
-    const annex25s = addCompanyToAnnexes(fileStatuses, 'annex25');
-    const annex26s = addCompanyToAnnexes(fileStatuses, 'annex26');
-    const annex27s = addCompanyToAnnexes(fileStatuses, 'annex27');
-    const annex28s = addCompanyToAnnexes(fileStatuses, 'annex28');
-    const annex30s = addCompanyToAnnexes(fileStatuses, 'annex30');
-    const minemTemplate1 = addCompanyToAnnexes(fileStatuses, 'minem_template1');
-    const minemTemplate2 = addCompanyToAnnexes(fileStatuses, 'minem_template2');
+    const companyWithoutData = useMemo(
+        () => companyConsolidateds.filter((company: any) => !uniqueCompanyIds.includes(company.company_id)).map((company: any) => company.company),
+        [companyConsolidateds, uniqueCompanyIds],
+    );
 
-    const newFileStatus = {
-        annex24: annex24s,
-        annex25: annex25s,
-        annex26: annex26s,
-        annex27: annex27s,
-        annex28: annex28s,
-        annex30: annex30s,
-        minem_template_1: minemTemplate1,
-        minem_template_2: minemTemplate2,
-    };
+    const annex24s = useMemo(() => addCompanyToAnnexes(fileStatuses, 'annex24'), [fileStatuses]);
+    const annex25s = useMemo(() => addCompanyToAnnexes(fileStatuses, 'annex25'), [fileStatuses]);
+    const annex26s = useMemo(() => addCompanyToAnnexes(fileStatuses, 'annex26'), [fileStatuses]);
+    const annex27s = useMemo(() => addCompanyToAnnexes(fileStatuses, 'annex27'), [fileStatuses]);
+    const annex28s = useMemo(() => addCompanyToAnnexes(fileStatuses, 'annex28'), [fileStatuses]);
+    const annex30s = useMemo(() => addCompanyToAnnexes(fileStatuses, 'annex30'), [fileStatuses]);
+    const minemTemplate1 = useMemo(() => addCompanyToAnnexes(fileStatuses, 'minem_template1'), [fileStatuses]);
+    const minemTemplate2 = useMemo(() => addCompanyToAnnexes(fileStatuses, 'minem_template2'), [fileStatuses]);
 
-    console.log('File Statuses', fileStatuses);
+    const newFileStatus = useMemo(
+        () => ({
+            annex24: annex24s,
+            annex25: annex25s,
+            annex26: annex26s,
+            annex27: annex27s,
+            annex28: annex28s,
+            annex30: annex30s,
+            minem_template_1: minemTemplate1,
+            minem_template_2: minemTemplate2,
+        }),
+        [annex24s, annex25s, annex26s, annex27s, annex28s, annex30s, minemTemplate1, minemTemplate2],
+    );
+
+    const handleActionClick = useCallback((item: object, action: string) => {
+        switch (action) {
+            case 'e-c':
+                console.log('Eliminar Contrata', item);
+                setCompanySelected(item);
+                setOpenModalCompanyDelete(true);
+                break;
+            case 'e-a':
+                console.log('Eliminar Anexo', item);
+                setFileStatusSelected(item);
+                setOpenModalFileStatusDelete(true);
+                break;
+            default:
+                break;
+        }
+    }, []);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Detalle del Consolidado" />
@@ -174,56 +203,56 @@ export default function ConsolidatedDetail() {
                                                     case 'anexo24':
                                                         return (
                                                             <DataTable
-                                                                columns={annexGetColumns()}
+                                                                columns={annexGetColumns(handleActionClick)}
                                                                 data={Array.isArray(annex24s) ? (annex24s as Annex[]) : []}
                                                             />
                                                         );
                                                     case 'anexo25':
                                                         return (
                                                             <DataTable
-                                                                columns={annexGetColumns()}
+                                                                columns={annexGetColumns(handleActionClick)}
                                                                 data={Array.isArray(annex25s) ? (annex25s as Annex[]) : []}
                                                             />
                                                         );
                                                     case 'anexo26':
                                                         return (
                                                             <DataTable
-                                                                columns={annexGetColumns()}
+                                                                columns={annexGetColumns(handleActionClick)}
                                                                 data={Array.isArray(annex26s) ? (annex26s as Annex[]) : []}
                                                             />
                                                         );
                                                     case 'anexo27':
                                                         return (
                                                             <DataTable
-                                                                columns={annexGetColumns()}
+                                                                columns={annexGetColumns(handleActionClick)}
                                                                 data={Array.isArray(annex27s) ? (annex27s as Annex[]) : []}
                                                             />
                                                         );
                                                     case 'anexo28':
                                                         return (
                                                             <DataTable
-                                                                columns={annex28GetColumns()}
+                                                                columns={annex28GetColumns(handleActionClick)}
                                                                 data={Array.isArray(annex28s) ? (annex28s as Annex28[]) : []}
                                                             />
                                                         );
                                                     case 'anexo30':
                                                         return (
                                                             <DataTable
-                                                                columns={annex30GetColumns()}
+                                                                columns={annex30GetColumns(handleActionClick)}
                                                                 data={Array.isArray(annex30s) ? (annex30s as Annex30[]) : []}
                                                             />
                                                         );
                                                     case 'minem1':
                                                         return (
                                                             <DataTable
-                                                                columns={minem1GetColumns()}
+                                                                columns={minem1GetColumns(handleActionClick)}
                                                                 data={Array.isArray(minemTemplate1) ? (minemTemplate1 as MinemTemplate1[]) : []}
                                                             />
                                                         );
                                                     case 'minem2':
                                                         return (
                                                             <DataTable
-                                                                columns={minem2GetColumns()}
+                                                                columns={minem2GetColumns(handleActionClick)}
                                                                 data={Array.isArray(minemTemplate2) ? (minemTemplate2 as MinemTemplate2[]) : []}
                                                             />
                                                         );
@@ -249,7 +278,7 @@ export default function ConsolidatedDetail() {
                             <CardTitle>Contratas que subieron sus Excel</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <DataTable columns={getColumns()} data={companyWithData} />
+                            <DataTable columns={getColumns(handleActionClick)} data={companyWithData} />
                         </CardContent>
                     </Card>
                     <Card>
@@ -257,11 +286,22 @@ export default function ConsolidatedDetail() {
                             <CardTitle>Contratas que no subieron sus Excel</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <DataTable columns={getColumns()} data={companyWithoutData} />
+                            <DataTable columns={getColumns(handleActionClick)} data={companyWithoutData} />
                         </CardContent>
                     </Card>
                 </div>
             </div>
+            {companySelected && (
+                <DeleteCompany
+                    isOpen={openModalCompanyDelete}
+                    onOpenChange={setOpenModalCompanyDelete}
+                    company={companySelected}
+                    consolidated_id={consolidated.id}
+                />
+            )}
+            {fileStatusSelected && (
+                <DeleteFileStatus isOpen={openModalFileStatusDelete} onOpenChange={setOpenModalFileStatusDelete} fileStatus={fileStatusSelected} />
+            )}
         </AppLayout>
     );
 }

@@ -70,6 +70,16 @@ class ConsolidatedController extends Controller
     public function store(Request $request)
     {
         try {
+
+            // Verificar si el consolidado ya existe y está cerrado
+            $existingConsolidated = Consolidated::where('year', $request['year'])
+                ->where('month', $request['month'])
+                ->first();
+
+            if ($existingConsolidated && $existingConsolidated->is_closed) {
+                return redirect()->route('consolidated.index')->with('error', 'El consolidado ya existe y está cerrado.');
+            }
+
             $data = $this->consolidationCreationService->store($request);
 
             // Generar y guardar los archivos Excel en la carpeta 'public/consolidated'
@@ -164,5 +174,14 @@ class ConsolidatedController extends Controller
         $consolidated->save();
 
         return redirect()->route('consolidated.index')->with('success', 'Consolidado abierto correctamente' . $consolidated->id);
+    }
+
+    public function deleteCompany(Request $request, $id)
+    {
+        $companyConsolidated = CompanyConsolidated::where('company_id', $id)->where('consolidated_id', $request->consolidated_id)->first();
+
+        $companyConsolidated->delete();
+
+        return redirect()->back()->with('success', 'Empresa eliminada del consolidado correctamente');
     }
 }

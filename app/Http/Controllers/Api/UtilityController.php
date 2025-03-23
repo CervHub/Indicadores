@@ -22,6 +22,45 @@ use App\Models\Log as LogModel;
 
 class UtilityController extends Controller
 {
+    public function getReportsMetrics(Request $request, $type)
+    {
+        $year = $request->year;
+        $company_id = $request->company_id;
+        $company_report_id = $request->company_report_id;
+        $tipo_reporte = $request->tipo_reporte;
+
+        $query = Module::select('modules.id', 'modules.fecha_reporte', 'modules.tipo_reporte', 'modules.estado', 'category_companies.nombre as category_company_name', 'modules.category_company_id', 'modules.company_id', 'modules.company_report_id', 'modules.levels')
+            ->join('category_companies', 'modules.category_company_id', '=', 'category_companies.id')
+            ->whereYear('modules.fecha_reporte', $year);
+
+        if ($company_id) {
+            $query->where('modules.company_id', $company_id);
+        }
+
+        if ($company_report_id) {
+            $query->where('modules.company_report_id', $company_report_id);
+        }
+
+        if ($tipo_reporte) {
+            $query->where('modules.tipo_reporte', $tipo_reporte);
+        }
+
+        $reports = $query->get();
+
+        // Extraer solo el campo gerencia de levels
+        $reports->transform(function ($report) {
+            $levels = json_decode($report->levels, true);
+            $report->gerencia = $levels['gerencia'] ?? null;
+            unset($report->levels); // Eliminar el campo levels si no es necesario
+            return $report;
+        });
+
+        return response()->json([
+            'status' => true,
+            'data' => $reports
+        ]);
+    }
+
     private function putLog(Request $request, $action, $model, $id, $status, $error_message)
     {
         $log = new LogModel();
@@ -143,9 +182,6 @@ class UtilityController extends Controller
             return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 200);
         }
     }
-
-
-
 
 
     public function storeReport(Request $request, $company_id)

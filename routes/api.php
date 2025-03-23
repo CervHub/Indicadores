@@ -66,7 +66,7 @@ Route::get('/connection', function () {
  *       "error": "Las credenciales proporcionadas son incorrectas."
  *     }
  */
-//Route::post('/authenticate', [UtilityController::class, 'authenticate']);
+Route::post('/authenticate', [UtilityController::class, 'authenticate']);
 
 
 Route::get('/entities/{entity_id}/users', [EntityUserController::class, 'users'])->name('entity.users');
@@ -117,3 +117,5 @@ Route::get('user/{dni}', [UtilityController::class, 'getUser'])->name('user.show
 Route::get('companies', [UtilityController::class, 'getCompanies'])->name('contratas');
 
 Route::get('report/{report_id}', [UtilityController::class, 'getReportJson']);
+
+Route::post('reports/metrics/{type}', [UtilityController::class, 'getReportsMetrics'])->name('getReportsMetrics');
