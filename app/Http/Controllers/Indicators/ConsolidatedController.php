@@ -84,7 +84,6 @@ class ConsolidatedController extends Controller
 
             // Generar y guardar los archivos Excel en la carpeta 'public/consolidated'
             $filePaths = $this->saveExcelToPublic($data, $request['year'], $request['month']);
-
             $consolidated = Consolidated::updateOrCreate(
                 [
                     'year' => $request['year'],

@@ -39,12 +39,19 @@ const InfoCard = ({ title, buttons, info }: InfoCardProps) => (
         </CardHeader>
         <CardContent>
             {buttons.map(({ text, type, disabled }, index) => (
-                <Link key={index} href={route('dashboard.type', { type })} method="get" className="mb-2 flex w-full items-center gap-2">
-                    <Button variant="outline" className="flex w-full items-center gap-2" disabled={disabled}>
+                disabled ? (
+                    <Button key={index} variant="outline" className="flex w-full items-center gap-2 mb-2" disabled>
                         <span className="flex-1 overflow-hidden text-left text-ellipsis whitespace-nowrap">{text}</span>
                         <ArrowRight className="h-5 w-5 flex-shrink-0" />
                     </Button>
-                </Link>
+                ) : (
+                    <Link key={index} href={route('dashboard.type', { type })} method="get" className="mb-2 flex w-full items-center gap-2">
+                        <Button variant="outline" className="flex w-full items-center gap-2">
+                            <span className="flex-1 overflow-hidden text-left text-ellipsis whitespace-nowrap">{text}</span>
+                            <ArrowRight className="h-5 w-5 flex-shrink-0" />
+                        </Button>
+                    </Link>
+                )
             ))}
         </CardContent>
     </Card>

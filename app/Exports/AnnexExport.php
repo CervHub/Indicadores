@@ -79,7 +79,7 @@ class AnnexExport
                 }
 
                 // Llamar a la función específica para modificar la hoja
-                $this->modifySheet($sheet, $sheetName, $index + 1, $data);
+                $this->modifySheet($sheet, $sheetName, $index + 1, $data, $year, $monthName, $fileName);
 
                 // Ajustar el alto de las filas automáticamente
                 foreach ($sheet->getRowIterator() as $row) {
@@ -96,7 +96,7 @@ class AnnexExport
             $safeFileName = str_replace('/', '-', $fileName);
 
             // Definir la ruta y el nombre del archivo
-            $filePath = "{$directoryPath}/{$safeFileName} - {$monthName}.xlsx";
+            $filePath = "{$directoryPath}/{$year} - {$monthName} - {$safeFileName}.xlsx";
 
             // Mover el archivo temporal a la carpeta 'public/consolidateds'
             rename($tempPath, $filePath);
@@ -112,26 +112,26 @@ class AnnexExport
     /**
      * Modifica una hoja específica.
      */
-    private function modifySheet($sheet, $sheetName, $fileIndex, $data)
+    private function modifySheet($sheet, $sheetName, $fileIndex, $data, $year, $monthName, $fileName)
     {
         switch ($sheetName) {
             case 'ANEXO 24':
-                $this->modifyAnexo($sheet, $sheetName, $data['annex24'] ?? []);
+                $this->modifyAnexo($sheet, $sheetName, $data['annex24'] ?? [], $year, $monthName, $fileName);
                 break;
             case 'ANEXO 25':
-                $this->modifyAnexo($sheet, $sheetName, $data['annex25'] ?? []);
+                $this->modifyAnexo($sheet, $sheetName, $data['annex25'] ?? [], $year, $monthName, $fileName);
                 break;
             case 'ANEXO 26':
-                $this->modifyAnexo($sheet, $sheetName, $data['annex26'] ?? []);
+                $this->modifyAnexo($sheet, $sheetName, $data['annex26'] ?? [], $year, $monthName, $fileName);
                 break;
             case 'ANEXO 27':
-                $this->modifyAnexo($sheet, $sheetName, $data['annex27'] ?? []);
+                $this->modifyAnexo($sheet, $sheetName, $data['annex27'] ?? [], $year, $monthName, $fileName);
                 break;
             case 'ANEXO 28':
-                $this->modifyAnexo28($sheet, $sheetName, $data['annex28'] ?? []);
+                $this->modifyAnexo28($sheet, $sheetName, $data['annex28'] ?? [], $year, $monthName, $fileName);
                 break;
             case 'ANEXO 30':
-                $this->modifyAnexo30($sheet, $sheetName, $data['annex30'] ?? []);
+                $this->modifyAnexo30($sheet, $sheetName, $data['annex30'] ?? [], $year, $monthName, $fileName);
                 break;
             case 'PLANTILLA MINEM 1':
                 $this->modifyPlantillaMinem1($sheet, $sheetName, $data['minem1'] ?? []);
@@ -142,7 +142,7 @@ class AnnexExport
         }
     }
 
-    private function modifyAnexo($sheet, $sheetName, $data)
+    private function modifyAnexo($sheet, $sheetName, $data, $year, $monthName, $fileName)
     {
         $sections = [
             'Titular' => [
@@ -206,9 +206,16 @@ class AnnexExport
         for ($col = 1; $col <= 26; $col++) {
             $sheet->setCellValueByColumnAndRow($col + 1, $currentRow - 1, $totals[$col]);
         }
+
+        // Escribir en B6
+        $sheet->setCellValue("B6", $fileName);
+
+        // Escribir en la A4
+        $text = "FECHA:  MES {$monthName},{$year}                       U.E.A.:                                                         CONCESIÓN:                     ";
+        $sheet->setCellValue("A4", $text);
     }
 
-    private function modifyAnexo28($sheet, $sheetName, $data)
+    private function modifyAnexo28($sheet, $sheetName, $data, $year, $monthName, $fileName)
     {
         $sections = [
             'Titular' => [
@@ -313,9 +320,16 @@ class AnnexExport
         for ($col = 3; $col <= 28; $col++) {
             $sheet->setCellValueByColumnAndRow($col, $currentRow - 1, $totals[$col - 1]);
         }
+
+        // Escribir en B6
+        $sheet->setCellValue("I6", $fileName);
+
+        // Escribir en la A4
+        $text = "ESTADÍSTICA DE SEGURIDAD DEL MES {$monthName} {$year},   EN LA  U.E.A.              , CONCESIÓN                           ";
+        $sheet->setCellValue("A4", $text);
     }
 
-    private function modifyAnexo30($sheet, $sheetName, $data)
+    private function modifyAnexo30($sheet, $sheetName, $data, $year, $monthName, $fileName)
     {
         $sections = [
             'Titular' => [
@@ -361,6 +375,13 @@ class AnnexExport
                 $currentRow++;
             }
         }
+
+        // Escribir en B6
+        $sheet->setCellValue("K6", $fileName);
+
+        // Escribir en la A4
+        $text = "FECHA:  MES {$monthName},{$year}";
+        $sheet->setCellValue("A6", $text);
     }
 
     private function modifyPlantillaMinem1($sheet, $fileIndex, $data)
