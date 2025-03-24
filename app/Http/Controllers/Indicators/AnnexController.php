@@ -60,6 +60,15 @@ class AnnexController extends Controller
 
     public function store(Request $request)
     {
+        $consolidatedIsClosed = Consolidated::where('year', $request->year)
+            ->where('month', $request->month)
+            ->where('is_closed', true)
+            ->first();
+
+        if ($consolidatedIsClosed) {
+            return redirect()->back()->with('error', 'No se puede subir anexos para un periodo cerrado.');
+        }
+
         $request->merge([
             'user_id' => Auth::id(),
             'contractor_company_id' => Auth::user()->company_id,

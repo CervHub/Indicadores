@@ -5,6 +5,8 @@ import { FormEventHandler, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
+import { toast } from 'sonner';
+
 type DeletePersonForm = {
     id: string;
 };
@@ -20,7 +22,14 @@ type DeletePersonProps = {
 };
 
 export default function DeletePerson({ isOpen = false, onOpenChange, selectedItem }: DeletePersonProps) {
-    const { data, setData, delete: destroy, processing, errors, reset } = useForm<Required<DeletePersonForm>>({
+    const {
+        data,
+        setData,
+        delete: destroy,
+        processing,
+        errors,
+        reset,
+    } = useForm<Required<DeletePersonForm>>({
         id: selectedItem.id,
     });
 
@@ -42,15 +51,23 @@ export default function DeletePerson({ isOpen = false, onOpenChange, selectedIte
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         destroy(route('contrata.personal.destroy', { personal: data.id }), {
-            onSuccess: (response) => {
-                reset();
-                setIsDialogOpen(false);
-                if (onOpenChange) onOpenChange(false);
-                console.log('Eliminación exitosa:', response);
+            onSuccess: (page) => {
+                const flash = page.props.flash;
+
+                if (flash.success) {
+                    toast.success(flash.success);
+                    setIsDialogOpen(false);
+                    if (onOpenChange) onOpenChange(false);
+                }
+
+                if (flash.error) {
+                    toast.error(flash.error);
+                    setIsDialogOpen(true);
+                }
             },
             onError: (errors) => {
                 setIsDialogOpen(true);
-                console.log('Errores en la eliminación:', errors);
+                toast.error('Ocurrió un error al eliminar el personal.');
             },
         });
     };

@@ -13,7 +13,8 @@ class ManagementController extends Controller
 {
     public function index(): Response
     {
-        $entities = Entity::where('company_id', Auth::user()->company->id)
+        $companyId = 1;
+        $entities = Entity::where('company_id', $companyId)
             ->where('nivel', 1)
             ->get();
         return Inertia::render('management', [

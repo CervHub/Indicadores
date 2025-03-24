@@ -6,6 +6,8 @@ import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
+import { toast } from 'sonner';
+
 type CloseReportProps = {
     report_id: string;
     isDialogOpen: boolean;
@@ -45,21 +47,28 @@ export default function CloseReport({ report_id, isDialogOpen, setIsDialogOpen }
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post(route('finish.store', { id: report_id }), {
-            onSuccess: (response) => {
-                reset();
-                setIsDialogOpen(false);
-                console.log('Reporte cerrado exitosamente:', response);
+            onSuccess: (page) => {
+                const flash = page.props.flash;
+
+                if (flash.success) {
+                    toast.success(flash.success);
+                    setIsDialogOpen(false);
+                    reset();
+                }
+
+                if (flash.error) {
+                    toast.error(flash.error);
+                }
             },
             onError: (errors) => {
                 setIsDialogOpen(true);
-                console.log('Errores al cerrar el reporte:', errors);
+                toast.error('Ocurrió un error al cerrar el reporte.');
             },
         });
     };
 
     return (
         <div>
-            {flash?.success && <div className="mb-4 text-green-600">{flash.success}</div>}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>

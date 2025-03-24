@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 import { months } from '@/lib/utils';
 
+import { usePage } from '@inertiajs/react';
+
 const initialChartConfig = {
     visitors: {
         label: 'Número de reporte',
@@ -45,14 +47,6 @@ const buildChartData = (rawData: any[], titles: { [key: string]: string }, month
             fill: colors[index % colors.length],
         };
     });
-
-    console.log('filteredData:', filteredData);
-    console.log('newChartData:', newChartData);
-    console.log('Month:', month);
-    console.log('Status:', status);
-    console.log('Company:', company);
-    console.log('Entity:', entity);
-    console.log('rawData:', rawData);
 
     return newChartData.every((item) => item.visitors === 0) ? [{ report: 'Sin datos', visitors: 0, fill: '#CCCCCC' }] : newChartData;
 };
@@ -93,7 +87,7 @@ export function ChartCat({ titles, companies, entities }: ChartCatProps) {
     const [rawData, setRawData] = React.useState<any[]>([]);
     const [chartData, setChartData] = React.useState<any[]>([]);
     const [loading, setLoading] = React.useState(true);
-
+    const companyId = usePage().props.auth.user.company_id ?? null;
     const years = React.useMemo(() => {
         const currentYear = new Date().getFullYear();
         return Array.from({ length: currentYear - 2022 }, (_, i) => (2023 + i).toString());
@@ -105,6 +99,10 @@ export function ChartCat({ titles, companies, entities }: ChartCatProps) {
             try {
                 const formData = new FormData();
                 formData.append('year', selectedYear);
+                if (companyId) {
+                    formData.append('company_id', companyId.toString());
+                    formData.append('company_report_id', companyId.toString());
+                }
 
                 const response = await axios.post(route('getReportsMetrics', { type: 'cat' }), formData);
                 setRawData(response.data.data);
@@ -130,6 +128,7 @@ export function ChartCat({ titles, companies, entities }: ChartCatProps) {
     const statusOptions = [
         { value: 'all', label: 'Todos' },
         { value: 'Generado', label: 'Generado' },
+        { value: 'Revisado', label: 'Revisado' },
         { value: 'Finalizado', label: 'Finalizado' },
     ];
     const companyOptions = [
@@ -147,34 +146,26 @@ export function ChartCat({ titles, companies, entities }: ChartCatProps) {
         <Card>
             <CardHeader className="flex flex-col gap-4 border-b py-5 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex-1 text-center sm:text-left">
-                    <CardTitle>Pie Chart - Donut with Text</CardTitle>
-                    <CardDescription>Reporte de seguridad</CardDescription>
+                    <CardTitle>Reporte Anual</CardTitle>
+                    <CardDescription>Distribución por tipo: Actos y condiciones subestándares e incidentes</CardDescription>
                 </div>
                 <div className="flex flex-wrap justify-center gap-4 sm:justify-end">
-                    <CustomSelect
-                        value={selectedYear}
-                        onValueChange={setSelectedYear}
-                        options={yearOptions}
-                        placeholder="Seleccione un año"
-                    />
-                    <CustomSelect
-                        value={selectedMonth}
-                        onValueChange={setSelectedMonth}
-                        options={monthOptions}
-                        placeholder="Seleccione un mes"
-                    />
+                    <CustomSelect value={selectedYear} onValueChange={setSelectedYear} options={yearOptions} placeholder="Seleccione un año" />
+                    <CustomSelect value={selectedMonth} onValueChange={setSelectedMonth} options={monthOptions} placeholder="Seleccione un mes" />
                     <CustomSelect
                         value={selectedStatus}
                         onValueChange={setSelectedStatus}
                         options={statusOptions}
                         placeholder="Seleccione un estado"
                     />
-                    <CustomSelect
-                        value={selectedCompany}
-                        onValueChange={setSelectedCompany}
-                        options={companyOptions}
-                        placeholder="Seleccione una compañía"
-                    />
+                    {!companyId && (
+                        <CustomSelect
+                            value={selectedCompany}
+                            onValueChange={setSelectedCompany}
+                            options={companyOptions}
+                            placeholder="Seleccione una compañía"
+                        />
+                    )}
                     <CustomSelect
                         value={selectedEntity}
                         onValueChange={setSelectedEntity}

@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { findFieldByValue, months } from '@/lib/utils';
 
+import { toast } from 'sonner';
+
 type ConsolidatedForm = {
     id: string;
 };
@@ -47,15 +49,24 @@ export default function OpenConsolidated({ isOpen = false, onOpenChange, selecte
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         patch(route('consolidated.open', { id: data.id }), {
-            onSuccess: (response) => {
-                reset();
-                setIsDialogOpen(false);
-                if (onOpenChange) onOpenChange(false);
-                console.log('Solicitud de apertura exitosa:', response);
+            onSuccess: (page) => {
+                const flash = page.props.flash;
+                if (flash.success) {
+                    setIsDialogOpen(false);
+                    reset();
+                    toast.success(flash.success);
+
+                    if (onOpenChange) onOpenChange(false);
+                }
+                if (flash.error) {
+                    setIsDialogOpen(false);
+                    toast.error(flash.error);
+                }
             },
             onError: (errors) => {
                 setIsDialogOpen(true);
-                console.log('Errores en la solicitud de apertura:', errors);
+
+                toast.error('Ocurrió un error al abrir el consolidado');
             },
         });
     };

@@ -23,7 +23,7 @@ export type Reportability = {
     company_report_name: string;
 };
 
-export const getColumns = (handleAction: (action: string, id: number) => void): ColumnDef<Reportability>[] => [
+export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability>[] => [
     {
         accessorKey: 'id',
         header: 'ID',
@@ -58,9 +58,31 @@ export const getColumns = (handleAction: (action: string, id: number) => void): 
         header: 'Estado',
         cell: ({ row }) => {
             const estado = row.original.estado;
+            let badgeClass = '';
+            let badgeText = '';
+
+            switch (estado) {
+                case 'Generado':
+                    badgeClass = 'bg-blue-500 text-white';
+                    badgeText = 'Generado';
+                    break;
+                case 'Revisado':
+                    badgeClass = 'bg-orange-500 text-white';
+                    badgeText = 'Revisado';
+                    break;
+                case 'Finalizado':
+                    badgeClass = 'bg-green-600 text-white';
+                    badgeText = 'Finalizado';
+                    break;
+                default:
+                    badgeClass = 'bg-gray-500 text-white';
+                    badgeText = estado;
+                    break;
+            }
+
             return (
-                <Badge variant={'default'} className={estado === 'Generado' ? 'bg-green-600 text-white' : 'bg-yellow-600 text-black'}>
-                    {estado}
+                <Badge variant={'default'} className={badgeClass}>
+                    {badgeText}
                 </Badge>
             );
         },
@@ -90,7 +112,7 @@ export const getColumns = (handleAction: (action: string, id: number) => void): 
                             onClick={handleDetalleClick}
                             disabled={detalleClicked}
                         >
-                            <Eye className="mr-1 h-3 w-3" /> Detalle
+                            <Eye className="h-3 w-3" /> {isSecurityEngineer ? 'Revisar' : 'Detalle'}
                         </Button>
                     </Link>
                     <Button

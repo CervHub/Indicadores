@@ -29,6 +29,16 @@ class ContrataController extends Controller
     {
         try {
             DB::transaction(function () use ($request) {
+                // Verificar si ya existe una empresa con el mismo nombre, correo o RUC
+                $existingCompany = Company::where('ruc', $request->ruc)
+                    ->orWhere('email', $request->email)
+                    ->orWhere('nombre', $request->nombre)
+                    ->first();
+
+                if ($existingCompany) {
+                    throw new \Exception('Ya existe una empresa con el mismo nombre, correo electrónico o RUC.');
+                }
+
                 // Crear la empresa si no existe
                 $company = Company::firstOrCreate(
                     ['ruc' => $request->ruc],
@@ -79,10 +89,10 @@ class ContrataController extends Controller
                 $company = Company::findOrFail($id);
 
                 // Verificar si el RUC o el email ya existen para otra empresa
-                $existingCompany = Company::where('ruc', $request->ruc)
-                    ->orWhere('email', $request->email)
-                    ->where('id', '<>', $id)
-                    ->first();
+                $existingCompany = Company::where(function ($query) use ($request, $id) {
+                    $query->where('ruc', $request->ruc)
+                        ->orWhere('email', $request->email);
+                })->where('id', '<>', $id)->first();
 
                 if ($existingCompany) {
                     throw new \Exception('Ya existe una empresa con el mismo RUC o email.');
@@ -90,7 +100,7 @@ class ContrataController extends Controller
 
                 // Verificar si el email ya existe para otro usuario
                 $existingUser = User::where('email', $request->email)
-                    ->where('company_id', '<>', $id)
+                    ->where('company_id', '<>', $company->id)
                     ->first();
 
                 if ($existingUser) {
@@ -128,11 +138,19 @@ class ContrataController extends Controller
 
     public function delete($id)
     {
-
         try {
-            $contractor = Company::findOrFail($id);
-            $contractor->estado = false;
-            $contractor->save();
+            DB::transaction(function () use ($id) {
+                $contractor = Company::findOrFail($id);
+                $contractor->estado = false;
+                $contractor->save();
+
+                // Eliminar la sesión de todos los usuarios de la empresa
+                $users = User::where('company_id', $contractor->id)->get();
+                foreach ($users as $user) {
+                    DB::table('sessions')->where('user_id', $user->id)->delete();
+                }
+            });
+
             return back()->with('success', 'Eliminada correctamente.');
         } catch (\Exception $e) {
             return back()->with('error', 'Hubo un problema: ' . $e->getMessage());

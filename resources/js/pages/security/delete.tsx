@@ -46,11 +46,9 @@ export default function DeleteAccess({ isOpen = false, onOpenChange, selectedIte
                 reset();
                 setIsDialogOpen(false);
                 if (onOpenChange) onOpenChange(false);
-                console.log('Acceso eliminado exitosamente:', response);
             },
             onError: (errors) => {
                 setIsDialogOpen(true);
-                console.log('Errores al eliminar el acceso:', errors);
             },
         });
     };

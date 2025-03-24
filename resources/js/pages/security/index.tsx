@@ -24,15 +24,12 @@ export default function Security() {
     }));
 
     const handleAction = (action: string, id: number) => {
-        console.log(`Action: ${action}, ID: ${id}`);
         const person = security_users.find((p) => p.id === id);
         setSelectedPerson(person || null);
 
         if (action === 'eliminar') {
             setIsDeleteDialogOpen(true);
-            console.log(`Eliminar: ${id}`);
-            console.log(`Person: ${person}`);
-            console.log(`IsDelete: ${isDeleteDialogOpen}`);
+
         }
     };
 

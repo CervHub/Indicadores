@@ -1,12 +1,13 @@
 import { useForm, usePage } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler, useState, useEffect } from 'react';
+import { FormEventHandler, useEffect, useState } from 'react';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 type ContractorForm = {
     ruc: string;
@@ -30,37 +31,43 @@ export default function CreateContractor() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     useEffect(() => {
-        setData('email', `${data.ruc}@cerv.com.pe`);
+        setData('email', `${data.ruc}@code.com.pe`);
     }, [data.ruc]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post(route('admin.contractor.store'), {
-            onSuccess: (response) => {
-                reset();
-                setIsDialogOpen(false);
-                console.log('Solicitud de creación exitosa:', response);
+            onSuccess: (page) => {
+                const flash = page.props.flash;
+                if (flash.success) {
+                    setIsDialogOpen(false);
+                    reset();
+                    toast.success(flash.success);
+                }
+                if (flash.error) {
+                    setIsDialogOpen(true);
+                    toast.error(flash.error);
+                }
             },
             onError: (errors) => {
                 setIsDialogOpen(true);
-                console.log('Errores en la solicitud de creación:', errors);
+                toast.error('Ocurrió un error al intentar crear el contratista.');
             },
         });
     };
 
     return (
         <div>
-            {flash?.success && <div className="mb-4 text-green-600">{flash.success}</div>}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <div className="flex justify-start">
                     <DialogTrigger asChild>
-                        <Button className="inline-block px-4 py-2">Agregar Contratista</Button>
+                        <Button className="inline-block px-4 py-2">Crear Empresa</Button>
                     </DialogTrigger>
                 </div>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Agregar Contratista</DialogTitle>
-                        <DialogDescription>Complete los campos para agregar un nuevo contratista.</DialogDescription>
+                        <DialogTitle>Crear Empresa</DialogTitle>
+                        <DialogDescription>Complete los campos para crear una nueva empresa.</DialogDescription>
                     </DialogHeader>
                     <form onSubmit={submit} className="space-y-3" method="post" action={route('admin.contractor.store')}>
                         <div className="grid gap-2">
@@ -104,16 +111,9 @@ export default function CreateContractor() {
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                type="text"
-                                required
-                                value={`${data.ruc}@cerv.com.pe`}
-                                disabled
-                                placeholder="Email"
-                            />
+                            <Input id="email" type="text" required value={`${data.ruc}@code.com.pe`} disabled placeholder="Email" />
                         </div>
-                        <Button type="submit" className="mt-2 w-full" disabled={processing}>
+                        <Button type="submit" className="mt-2 w-auto" disabled={processing}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             Guardar
                         </Button>

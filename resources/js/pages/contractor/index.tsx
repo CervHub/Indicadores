@@ -4,10 +4,10 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useCallback, useState } from 'react';
+import ActivateContractor from './activate';
 import CreateContractor from './create';
 import DeleteContractor from './delete';
 import EditContractor from './edit';
-import ActivateContractor from './activate';
 import ViewContractor from './view';
 
 interface ContractorCompanyType {
@@ -37,7 +37,6 @@ export default function ContractorDashboard() {
 
     const handleActionClick = useCallback(
         (id: string, action: string) => {
-            console.log(`Action: ${action}, ID: ${id}`);
             const selectedContractor = contractors.find((contractor) => contractor.id === id) || null;
             setContractor(selectedContractor);
 

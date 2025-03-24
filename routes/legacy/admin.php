@@ -61,3 +61,7 @@ Route::get('admin/analysis', [AnalysisController::class, 'index'])->name('admin.
 Route::get('admin/analysis/category', [AnalysisController::class, 'category'])->name('admin.analysis.category');
 Route::get('admin/analysis/category/{category_name}', [AnalysisController::class, 'categoryDetail'])->name('admin.analysis.category.detail');
 Route::get('admin/analysis/year', [AnalysisController::class, 'categoryYear'])->name('admin.analysis.category.year');
+
+
+//Descargar reportes en un rango de fechas
+Route::get('reportability/download/{start_date}/{end_date}', [ReportabilityController::class, 'downloadRange'])->name('reportability.download');

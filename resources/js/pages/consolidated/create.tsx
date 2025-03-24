@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { months } from '@/lib/utils';
+import { toast } from 'sonner';
 
 type ConsolidatedForm = {
     year: number;
@@ -34,14 +35,21 @@ export default function CreateConsolidated() {
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post(route('consolidated.store'), {
-            onSuccess: (response) => {
-                reset();
-                setIsDialogOpen(false);
-                console.log('Solicitud de creación exitosa:', response);
+            onSuccess: (page) => {
+                const flash = page.props.flash;
+                if (flash.success) {
+                    setIsDialogOpen(false);
+                    reset();
+                    toast.success(flash.success);
+                }
+                if (flash.error) {
+                    setIsDialogOpen(true);
+                    toast.error(flash.error);
+                }
             },
             onError: (errors) => {
                 setIsDialogOpen(true);
-                console.log('Errores en la solicitud de creación:', errors);
+                toast.error('Ocurrió un error al intentar crear el consolidado.');
             },
         });
     };

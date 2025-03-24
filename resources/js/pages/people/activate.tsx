@@ -5,6 +5,8 @@ import { FormEventHandler, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
+import { toast } from 'sonner';
+
 type ActivatePersonForm = {
     id: string;
 };
@@ -49,15 +51,24 @@ export default function ActivatePerson({ isOpen = false, onOpenChange, selectedI
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         activate(route('contrata.personal.activate', { personal: data.id }), {
-            onSuccess: (response) => {
-                reset();
-                setIsDialogOpen(false);
-                if (onOpenChange) onOpenChange(false);
-                console.log('Activación exitosa:', response);
+            onSuccess: (page) => {
+                const flash = page.props.flash;
+
+                if (flash.success) {
+                    toast.success(flash.success);
+                    setIsDialogOpen(false);
+                    if (onOpenChange) onOpenChange(false);
+                }
+
+                if (flash.error) {
+                    toast.error(flash.error);
+                    setIsDialogOpen(true);
+                }
             },
             onError: (errors) => {
                 setIsDialogOpen(true);
-                console.log('Errores en la activación:', errors);
+
+                toast.error('Ocurrió un error al activar al personal. Por favor, inténtelo de nuevo.');
             },
         });
     };

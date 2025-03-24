@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+import { toast } from 'sonner';
+
 type PersonForm = {
     id: number;
     doi: string;
@@ -58,15 +60,23 @@ export default function EditPerson({ isOpen = false, onOpenChange, person }: Edi
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         put(route('contrata.personal.update', person?.id), {
-            onSuccess: (response) => {
-                reset();
-                setIsDialogOpen(false);
-                if (onOpenChange) onOpenChange(false);
-                console.log('Solicitud de actualización exitosa:', response);
+            onSuccess: (page) => {
+                const flash = page.props.flash;
+
+                if (flash.success) {
+                    toast.success(flash.success);
+                    reset();
+                    setIsDialogOpen(false);
+                    if (onOpenChange) onOpenChange(false);
+                }
+
+                if (flash.error) {
+                    toast.error(flash.error);
+                }
             },
             onError: (errors) => {
                 setIsDialogOpen(true);
-                console.log('Errores en la solicitud de actualización:', errors);
+                toast.error('Ocurrió un error al intentar actualizar la persona.');
             },
         });
     };

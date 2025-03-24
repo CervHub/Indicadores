@@ -4,6 +4,7 @@ import { FormEventHandler } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 type ContractorForm = {
     id: string;
@@ -40,14 +41,21 @@ export default function ActivateContractor({
         e.preventDefault();
         if (contractor) {
             post(route('admin.contractor.activate', { contrata: contractor.id }), {
-                onSuccess: (response) => {
-                    reset();
-                    setIsDialogOpen(false);
-                    console.log('Solicitud de activación exitosa:', response);
+                onSuccess: (page) => {
+                    const flash = page.props.flash;
+                    if (flash.success) {
+                        setIsDialogOpen(false);
+                        reset();
+                        toast.success(flash.success);
+                    }
+                    if (flash.error) {
+                        setIsDialogOpen(true);
+                        toast.error(flash.error);
+                    }
                 },
                 onError: (errors) => {
                     setIsDialogOpen(true);
-                    console.log('Errores en la solicitud de activación:', errors);
+                    toast.error('Ocurrió un error al activar la empresa.');
                 },
             });
         }
@@ -55,13 +63,12 @@ export default function ActivateContractor({
 
     return (
         <div>
-            {flash?.success && <div className="mb-4 text-green-600">{flash.success}</div>}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Activar Contratista</DialogTitle>
+                        <DialogTitle>Activar Empresa</DialogTitle>
                         <DialogDescription>
-                            ¿Está seguro de que desea activar este contratista?
+                            ¿Está seguro de que desea activar esta empresa?
                             <br />
                             <strong>Nombre:</strong> {contractor?.nombre}
                             <br />
@@ -74,7 +81,7 @@ export default function ActivateContractor({
                         method="post"
                         action={route('admin.contractor.activate', { contrata: contractor?.id })}
                     >
-                        <Button type="submit" className="mt-2 w-full" disabled={processing}>
+                        <Button type="submit" className="mt-2 w-auto" disabled={processing}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             Confirmar Activación
                         </Button>

@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+import { toast } from 'sonner';
 type PersonForm = {
     doi: string;
     email: string;
@@ -41,15 +42,24 @@ export default function CreatePerson({ isOpen = false, onOpenChange }: CreatePer
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post(route('contrata.personal.store'), {
-            onSuccess: (response) => {
-                reset();
-                setIsDialogOpen(false);
-                if (onOpenChange) onOpenChange(false);
-                console.log('Solicitud de creación exitosa:', response);
+            onSuccess: (page) => {
+                const flash = page.props.flash;
+
+                if (flash.success) {
+                    toast.success(flash.success);
+                    setIsDialogOpen(false);
+                    reset();
+                    if (onOpenChange) onOpenChange(false);
+                }
+
+                if (flash.error) {
+                    toast.error(flash.error);
+                }
             },
             onError: (errors) => {
                 setIsDialogOpen(true);
-                console.log('Errores en la solicitud de creación:', errors);
+
+                toast.error('Ocurrió un error al crear la persona.');
             },
         });
     };

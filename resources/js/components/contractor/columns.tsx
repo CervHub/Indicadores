@@ -4,13 +4,14 @@ import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, Edit, Trash, Eye, CheckCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge'; // Importa el componente Badge
 
 // Este tipo define la forma de nuestros datos.
 export type Contractor = {
     id: string;
     ruc: string;
     nombre: string;
-    email: string;
+    descripcion: string; // Añadido el campo descripcion
     estado: string; // Añadido el campo estado
 };
 
@@ -34,8 +35,20 @@ export const getColumns = (handleActionClick: (id: string, action: string) => vo
         header: 'RUC',
     },
     {
-        accessorKey: 'email',
-        header: 'Email',
+        accessorKey: 'descripcion',
+        header: 'Descripción',
+    },
+    {
+        accessorKey: 'estado',
+        header: 'Estado',
+        cell: ({ row }) => {
+            const contractor = row.original;
+            return (
+                <Badge variant={contractor.estado === '0' ? 'destructive' : 'success'}>
+                    {contractor.estado === '0' ? 'Inactiva' : 'Activa'}
+                </Badge>
+            );
+        },
     },
     {
         id: 'actions',
@@ -52,7 +65,7 @@ export const getColumns = (handleActionClick: (id: string, action: string) => vo
                         <Eye className="h-4 w-4" />
                     </Button>
                     <Button
-                        variant="secondary"
+                        variant="warning"
                         className="h-8 w-8 p-0"
                         onClick={() => handleActionClick(contractor.id, 'edit')}
                     >

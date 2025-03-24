@@ -4,6 +4,7 @@ import { FormEventHandler } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 type ContractorForm = {
     id: string;
@@ -40,14 +41,22 @@ export default function DeleteContractor({
         e.preventDefault();
         if (contractor) {
             post(route('admin.contractor.destroy', { contrata: contractor.id }), {
-                onSuccess: (response) => {
-                    reset();
-                    setIsDialogOpen(false);
-                    console.log('Solicitud de eliminación exitosa:', response);
+                onSuccess: (page) => {
+                    const flash = page.props.flash;
+                    if (flash.success) {
+                        setIsDialogOpen(false);
+                        reset();
+                        toast.success(flash.success);
+                    }
+
+                    if (flash.error) {
+                        setIsDialogOpen(true);
+                        toast.error(flash.error);
+                    }
                 },
                 onError: (errors) => {
                     setIsDialogOpen(true);
-                    console.log('Errores en la solicitud de eliminación:', errors);
+                    toast.error('Ocurrió un error al intentar desactivar la empresa.');
                 },
             });
         }
@@ -55,13 +64,12 @@ export default function DeleteContractor({
 
     return (
         <div>
-            {flash?.success && <div className="mb-4 text-green-600">{flash.success}</div>}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Eliminar Contratista</DialogTitle>
+                        <DialogTitle>Desactivar Empresa</DialogTitle>
                         <DialogDescription>
-                            ¿Está seguro de que desea eliminar este contratista?
+                            ¿Está seguro de que desea desactivar esta empresa?
                             <br />
                             <strong>Nombre:</strong> {contractor?.nombre}
                             <br />
@@ -74,9 +82,9 @@ export default function DeleteContractor({
                         method="post"
                         action={route('admin.contractor.destroy', { contrata: contractor?.id })}
                     >
-                        <Button type="submit" className="mt-2 w-full" disabled={processing}>
+                        <Button type="submit" className="mt-2 w-auto" disabled={processing}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                            Confirmar Eliminación
+                            Confirmar Desactivación
                         </Button>
                     </form>
                 </DialogContent>

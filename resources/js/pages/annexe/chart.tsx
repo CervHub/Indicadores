@@ -33,7 +33,6 @@ function transformData(data: any) {
 }
 
 function getheader(data: any) {
-    console.log(data);
     const totalEmployees = data.minem_template1?.reduce((sum: number, item: any) => sum + (item.total_employees ? parseFloat(item.total_employees) : 0), 0) || 0;
     const totalHours = data.minem_template1?.reduce((sum: number, item: any) => sum + (item.total_hours_employees ? parseFloat(item.total_hours_employees) : 0), 0) || 0;
     return { totalEmployees, totalHours };

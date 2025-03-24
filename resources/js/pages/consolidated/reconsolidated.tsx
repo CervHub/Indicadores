@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { months } from '@/lib/utils';
 
+import { toast } from 'sonner';
+
 type ConsolidatedForm = {
     year: number;
     month: number;
@@ -50,15 +52,23 @@ export default function ReConsolidated({ initialYear, initialMonth, isOpen = fal
     const submit = (e?: React.FormEvent) => {
         if (e) e.preventDefault();
         post(route('consolidated.store'), {
-            onSuccess: (response) => {
-                reset();
-                setIsDialogOpen(false);
-                if (onOpenChange) onOpenChange(false);
-                console.log('Solicitud de reconsolidación exitosa:', response);
+            onSuccess: (page) => {
+                const flash = page.props.flash;
+                if (flash.success) {
+                    toast.success(flash.success);
+                    setIsDialogOpen(false);
+                    reset();
+                    if (onOpenChange) onOpenChange(false);
+                }
+
+                if (flash.error) {
+                    setIsDialogOpen(false);
+                    toast.error(flash.error);
+                }
             },
             onError: (errors) => {
                 setIsDialogOpen(true);
-                console.log('Errores en la solicitud de reconsolidación:', errors);
+                toast.error('Ocurrió un error al reconsolidar');
             },
         });
     };

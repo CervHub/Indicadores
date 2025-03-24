@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 type ContractorForm = {
     id: string;
@@ -14,7 +15,6 @@ type ContractorForm = {
     nombre: string | null;
     descripcion: string | null;
     email: string | null;
-    password: string | null;
 };
 
 export default function EditContractor({
@@ -36,7 +36,6 @@ export default function EditContractor({
         nombre: contractor?.nombre || '',
         descripcion: contractor?.descripcion || '',
         email: contractor?.email || '',
-        password: '',
     });
 
     useEffect(() => {
@@ -47,27 +46,34 @@ export default function EditContractor({
                 nombre: contractor.nombre,
                 descripcion: contractor.descripcion,
                 email: contractor.email,
-                password: '',
             });
         }
     }, [contractor, setData]);
 
     useEffect(() => {
-        setData('email', `${data.ruc}@cerv.com.pe`);
+        setData('email', `${data.ruc}@code.com.pe`);
     }, [data.ruc]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         if (contractor) {
             put(route('admin.contractor.update', { contrata: contractor.id }), {
-                onSuccess: (response) => {
-                    reset();
-                    setIsDialogOpen(false);
-                    console.log('Solicitud de actualización exitosa:', response);
+                onSuccess: (page) => {
+                    const props = page.props as { flash: { success?: string } };
+                    const success = props.flash.success;
+                    const error = props.flash.error;
+
+                    if (success) {
+                        setIsDialogOpen(false);
+                        toast.success(success);
+                    }
+                    if (error) {
+                        toast.error(error);
+                    }
                 },
                 onError: (errors) => {
                     setIsDialogOpen(true);
-                    console.log('Errores en la solicitud de actualización:', errors);
+                    toast.error('Ocurrió un error al intentar actualizar la empresa.');
                 },
             });
         }
@@ -75,12 +81,11 @@ export default function EditContractor({
 
     return (
         <div>
-            {flash?.success && <div className="mb-4 text-green-600">{flash.success}</div>}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Editar Contratista</DialogTitle>
-                        <DialogDescription>Complete los campos para editar el contratista.</DialogDescription>
+                        <DialogTitle>Editar Empresa</DialogTitle>
+                        <DialogDescription>Complete los campos para editar la  empresa.</DialogDescription>
                     </DialogHeader>
                     <form
                         onSubmit={submit}
@@ -129,28 +134,9 @@ export default function EditContractor({
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                type="text"
-                                required
-                                value={`${data.ruc}@cerv.com.pe`}
-                                disabled
-                                placeholder="Email"
-                            />
+                            <Input id="email" type="text" required value={`${data.ruc}@code.com.pe`} disabled placeholder="Email" />
                         </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">Contraseña</Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                value={data.password}
-                                onChange={(e) => setData('password', e.target.value)}
-                                disabled={processing}
-                                placeholder="Contraseña"
-                            />
-                            <InputError message={errors.password} />
-                        </div>
-                        <Button type="submit" className="mt-2 w-full" disabled={processing}>
+                        <Button type="submit" className="mt-2 w-auto" disabled={processing}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             Guardar
                         </Button>

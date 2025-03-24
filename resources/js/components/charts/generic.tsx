@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+import { usePage } from '@inertiajs/react';
+
 import { months } from '@/lib/utils';
 
 const initialChartConfig = {
@@ -44,7 +46,6 @@ const buildChartData = (
     const statusFilteredData = status === 'all' ? filteredData : filteredData.filter((item) => item.estado === status);
     const companyFilteredData = company === 'all' ? statusFilteredData : statusFilteredData.filter((item) => item.company_id.toString() === company);
     const entityFilteredData = entity === 'all' ? companyFilteredData : companyFilteredData.filter((item) => item.gerencia.toString() === entity);
-    console.log('Categories: ', categories);
     const newChartData = categories.map((category, index) => {
         const count = entityFilteredData.filter((item) => parseInt(item.category_company_id) === parseInt(category.id)).length;
         return {
@@ -54,9 +55,7 @@ const buildChartData = (
         };
     });
 
-    console.log('rawData:', rawData);
-
-    return newChartData.every((item) => item.visitors === 0) ? [{ report: 'Sin datos', visitors: 0, fill: '#CCCCCC' }] : newChartData;
+    return newChartData;
 };
 
 interface SelectOption {
@@ -86,7 +85,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ value, onValueChange, optio
     </Select>
 );
 
-export function Generic({ pageType, companies, entities, categoriesData }: ChartCatProps) {
+export function Generic({ title, pageType, companies, entities, categoriesData }: ChartCatProps) {
     const [selectedYear, setSelectedYear] = React.useState(new Date().getFullYear().toString());
     const [selectedMonth, setSelectedMonth] = React.useState('all');
     const [selectedStatus, setSelectedStatus] = React.useState('all');
@@ -95,6 +94,7 @@ export function Generic({ pageType, companies, entities, categoriesData }: Chart
     const [rawData, setRawData] = React.useState<any[]>([]);
     const [chartData, setChartData] = React.useState<any[]>([]);
     const [loading, setLoading] = React.useState(true);
+    const companyId = usePage().props.auth.user.company_id ?? null;
 
     const years = React.useMemo(() => {
         const currentYear = new Date().getFullYear();
@@ -108,6 +108,11 @@ export function Generic({ pageType, companies, entities, categoriesData }: Chart
                 const formData = new FormData();
                 formData.append('year', selectedYear);
                 formData.append('tipo_reporte', pageType);
+
+                if (companyId) {
+                    formData.append('company_id', companyId.toString());
+                    formData.append('company_report_id', companyId.toString());
+                }
 
                 const response = await axios.post(route('getReportsMetrics', { type: 'cat' }), formData);
                 setRawData(response.data.data);
@@ -148,7 +153,6 @@ export function Generic({ pageType, companies, entities, categoriesData }: Chart
 
     // Ordenar chartData por cantidad de visitantes de mayor a menor
     const sortedChartData = [...chartData].sort((a, b) => b.visitors - a.visitors);
-
     return (
         <div className="space-y-4">
             <Card>
@@ -162,12 +166,14 @@ export function Generic({ pageType, companies, entities, categoriesData }: Chart
                             options={statusOptions}
                             placeholder="Seleccione un estado"
                         />
-                        <CustomSelect
-                            value={selectedCompany}
-                            onValueChange={setSelectedCompany}
-                            options={companyOptions}
-                            placeholder="Seleccione una compañía"
-                        />
+                        {!companyId && (
+                            <CustomSelect
+                                value={selectedCompany}
+                                onValueChange={setSelectedCompany}
+                                options={companyOptions}
+                                placeholder="Seleccione una compañía"
+                            />
+                        )}
                         <CustomSelect
                             value={selectedEntity}
                             onValueChange={setSelectedEntity}
@@ -181,8 +187,8 @@ export function Generic({ pageType, companies, entities, categoriesData }: Chart
                 <Card className="h-[500px]">
                     <CardHeader className="flex flex-col gap-4 border-b py-5 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex-1 text-center sm:text-left">
-                            <CardTitle>Pie Chart - Donut with Text</CardTitle>
-                            <CardDescription>Reporte de seguridad</CardDescription>
+                            <CardTitle>Reporte Anual</CardTitle>
+                            <CardDescription>{ title }</CardDescription>
                         </div>
                     </CardHeader>
                     <CardContent className="flex h-full justify-center">
@@ -218,37 +224,46 @@ export function Generic({ pageType, companies, entities, categoriesData }: Chart
                     </CardContent>
                 </Card>
                 <Card className="col-span-2 m-0 h-[500px] p-0">
-                    <div className="max-h-full overflow-y-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="sticky top-0 bg-gray-50">
+                    <div className="max-h-full overflow-y-auto rounded-sm">
+                        <table className="min-w-full divide-y divide-gray-200 rounded-full dark:divide-gray-700">
+                            <thead className="sticky top-0 rounded-full bg-gray-50 dark:bg-gray-800">
                                 <tr>
-                                    <th scope="col" className="px-2 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                    <th
+                                        scope="col"
+                                        className="px-2 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400"
+                                    >
                                         Categoría
                                     </th>
-                                    <th scope="col" className="px-2 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                    <th
+                                        scope="col"
+                                        className="px-2 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400"
+                                    >
                                         Total
                                     </th>
-                                    <th scope="col" className="px-2 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                    <th
+                                        scope="col"
+                                        className="px-2 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400"
+                                    >
                                         Porcentaje
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-200 bg-white">
+                            <tbody className="divide-y divide-gray-200 rounded-b-sm bg-white dark:divide-gray-700 dark:bg-gray-900">
                                 {sortedChartData.map((data, index) => (
                                     <tr key={index}>
-                                        <td className="max-w-[300px] truncate px-2 py-1 text-sm font-medium whitespace-nowrap text-gray-900">
+                                        <td className="max-w-[300px] truncate px-2 py-1 text-sm font-medium whitespace-nowrap text-gray-900 dark:text-gray-100">
                                             {data.report}
                                         </td>
-                                        <td className="px-2 py-1 text-sm whitespace-nowrap text-gray-500">{data.visitors}</td>
-                                        <td className="px-2 py-1 text-sm whitespace-nowrap text-gray-500">
-                                            {((data.visitors / totalVisitors) * 100).toFixed(2)}%
+                                        <td className="px-2 py-1 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">{data.visitors}</td>
+                                        <td className="px-2 py-1 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                                            {totalVisitors === 0 ? '0%' : ((data.visitors / totalVisitors) * 100).toFixed(2) + '%'}
                                         </td>
                                     </tr>
                                 ))}
-                                <tr className="sticky bottom-0 bg-gray-50">
-                                    <td className="px-2 py-1 text-sm font-medium whitespace-nowrap text-gray-900">Total</td>
-                                    <td className="px-2 py-1 text-sm whitespace-nowrap text-gray-500">{totalVisitors}</td>
-                                    <td className="px-2 py-1 text-sm whitespace-nowrap text-gray-500">100%</td>
+                                <tr className="sticky bottom-0 bg-gray-50 dark:bg-gray-800">
+                                    <td className="px-2 py-1 text-sm font-medium whitespace-nowrap text-gray-900 dark:text-gray-100">Total</td>
+                                    <td className="px-2 py-1 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">{totalVisitors}</td>
+                                    <td className="px-2 py-1 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">100%</td>
                                 </tr>
                             </tbody>
                         </table>

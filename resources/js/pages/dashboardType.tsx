@@ -1,4 +1,6 @@
+import { ChartCat } from '@/components/charts/cat'; // Asegúrate de importar ChartCat
 import { Generic } from '@/components/charts/generic';
+import LineChartComponentCAT from '@/components/charts/line-chart-cat';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
@@ -14,9 +16,8 @@ export default function Dashboard({ type }: DashboardProps) {
     const { type: pageType, companies, titles, entities } = props;
     const [categoriesData, setCategoriesData] = useState(null);
     const [loading, setLoading] = useState(true);
-
     useEffect(() => {
-        if (['actos', 'condiciones', 'incidentes'].includes(pageType)) {
+        if (pageType && companies && ['actos', 'condiciones', 'incidentes'].includes(pageType)) {
             const companyId = 1; // Ajusta esto según tu lógica para obtener el ID de la empresa
             axios
                 .get(route('categories', { company_id: companyId, name: pageType }))
@@ -31,6 +32,8 @@ export default function Dashboard({ type }: DashboardProps) {
                 .finally(() => {
                     setLoading(false);
                 });
+        } else {
+            setLoading(false);
         }
     }, [pageType, companies]);
 
@@ -68,12 +71,24 @@ export default function Dashboard({ type }: DashboardProps) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={option.text || 'Dashboard'} />
+            <Head title={option?.text || 'Dashboard'} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {loading ? (
                     <div>Loading...</div>
+                ) : pageType === 'cat' ? (
+                    <ChartCat titles={titles} companies={companies} entities={entities} />
+                ) : pageType === 'yr' ? (
+                    <LineChartComponentCAT />
+                ) : pageType === 'insp.yr' ? (
+                    <div>En implementación</div>
+                ) : pageType === 'insp' ? (
+                    <div>En implementación</div>
+                ) : pageType === 'insp.det' ? (
+                    <div>En implementación</div>
+                ) : pageType === 'actos' || pageType === 'condiciones' || pageType === 'incidentes' ? (
+                    <Generic title={option?.text} pageType={pageType} companies={companies} entities={entities} categoriesData={categoriesData} />
                 ) : (
-                    <Generic pageType={pageType} companies={companies} entities={entities} categoriesData={categoriesData} />
+                    <div>Gráfico no encontrado</div>
                 )}
             </div>
         </AppLayout>

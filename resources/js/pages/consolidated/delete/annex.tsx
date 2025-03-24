@@ -5,6 +5,8 @@ import { FormEventHandler, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
+import { toast } from 'sonner';
+
 type DeleteFileStatusForm = {
     id: string;
 };
@@ -47,15 +49,23 @@ export default function DeleteFileStatus({ isOpen = false, onOpenChange, fileSta
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         destroy(route('annexes.destroy', { annex: data.id }), {
-            onSuccess: (response) => {
-                console.log('Success:', response);
-                reset();
-                setIsDialogOpen(false);
-                if (onOpenChange) onOpenChange(false);
+            onSuccess: (page) => {
+                const flash = page.props.flash;
+
+                if (flash.success) {
+                    toast.success(flash.success);
+                    setIsDialogOpen(false);
+                    reset();
+                    if (onOpenChange) onOpenChange(false);
+                }
+                if (flash.error) {
+                    setIsDialogOpen(false);
+                    toast.error(flash.error);
+                }
             },
             onError: (errors) => {
-                console.error('Errors:', errors);
                 setIsDialogOpen(true);
+                toast.error('Ocurrió un error al eliminar el anexo.');
             },
         });
     };
@@ -74,6 +84,8 @@ export default function DeleteFileStatus({ isOpen = false, onOpenChange, fileSta
                         <DialogTitle>Eliminar Excel Subidos</DialogTitle>
                         <DialogDescription className="text-justify">
                             Empresa: <strong>{fileStatus.company}</strong>, UEA: <strong>{fileStatus.uea}</strong>
+                            <br />
+                            <hr />
                             ¿Está seguro de que desea eliminar los anexos y minem? Esta acción no se puede deshacer.
                         </DialogDescription>
                     </DialogHeader>

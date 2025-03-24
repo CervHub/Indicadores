@@ -16,14 +16,14 @@ const mainNavItems: NavItem[] = [
         roles: ['admin', 'security', 'company'], // Add roles property
     },
     {
-        title: 'Contratistas',
+        title: 'Empresas',
         url: '/contractor',
         icon: HousePlus,
         isActive: window.location.pathname === '/contractor',
         roles: ['admin'],
     },
     {
-        title: 'Anexos',
+        title: 'Indicadores',
         url: '/annexes',
         icon: FileArchive,
         isActive: window.location.pathname === '/annexes',
@@ -62,7 +62,7 @@ const mainNavItems: NavItem[] = [
         url: '/contrata/personal',
         icon: UserCheck,
         isActive: window.location.pathname === '/contrata/personal',
-        roles: ['admin', 'company', 'security'],
+        roles: ['company', 'security'],
     },
     {
         title: 'Ingeniero de Seguridad',

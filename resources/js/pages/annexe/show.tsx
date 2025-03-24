@@ -54,8 +54,8 @@ function InfoCard({ data }: InfoCardProps) {
     return (
         <Card className="h-full w-full">
             <CardHeader>
-                <CardTitle>Información del Cliente</CardTitle>
-                <CardDescription>Detalles del cliente.</CardDescription>
+                <CardTitle>Información del Indicador</CardTitle>
+                <CardDescription>Detalles del indicador.</CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="grid w-full grid-cols-1 items-center gap-4 md:grid-cols-2">

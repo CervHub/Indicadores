@@ -30,6 +30,9 @@ class AuthenticatedSessionController extends Controller
 
     public function store(LoginRequest $request): RedirectResponse
     {
+        if ($request->has('email') && !str_contains($request->email, '@')) {
+            $request->merge(['email' => $request->email . '@code.com.pe']);
+        }
         $request->authenticate();
 
         $user = Auth::user();

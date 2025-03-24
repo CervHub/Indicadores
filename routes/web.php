@@ -7,7 +7,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinishController;
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    return redirect()->route('login');
+    // return Inertia::render('welcome');
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {

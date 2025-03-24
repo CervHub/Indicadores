@@ -1,8 +1,9 @@
 import { usePage } from '@inertiajs/react';
-import { LoaderCircle, Clipboard, RefreshCw, Eye } from 'lucide-react';
-import { useState } from 'react';
 import axios from 'axios';
+import { Eye, LoaderCircle, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'react-toastify';
+import { useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -72,20 +73,12 @@ export default function ViewContractor({
             setLoading(false);
         }
     };
-
-    const copyToClipboard = () => {
-        if (password) {
-            navigator.clipboard.writeText(password);
-            toast.success('Contraseña copiada al portapapeles', {
-                duration: 10000,
-                closeButton: true,
-            });
-        }
-    };
+    useEffect(() => {
+        setPassword(null);
+    }, [contractor]);
 
     return (
         <div>
-            {flash?.success && <div className="mb-4 text-green-600">{flash.success}</div>}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
@@ -99,24 +92,13 @@ export default function ViewContractor({
                             {error && <div className="text-red-600">{error}</div>}
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-3">
+                    <div className="flex space-x-3">
                         <Button onClick={fetchPassword} className="mt-2 w-auto" disabled={loading}>
-                            {loading && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                            <Eye className="h-4 w-4" />
-                            Mostrar Contraseña
+                            {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
                         </Button>
-                        {password ? (
-                            <Button onClick={copyToClipboard} className="mt-2 w-auto">
-                                <Clipboard className="h-4 w-4" />
-                                Copiar Contraseña
-                            </Button>
-                        ) : (
-                            <Button onClick={resetPassword} className="mt-2 w-auto" disabled={loading}>
-                                {loading && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                                <RefreshCw className="h-4 w-4" />
-                                Restablecer Contraseña
-                            </Button>
-                        )}
+                        <Button onClick={resetPassword} className="mt-2 w-auto" disabled={loading}>
+                            {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                        </Button>
                     </div>
                 </DialogContent>
             </Dialog>

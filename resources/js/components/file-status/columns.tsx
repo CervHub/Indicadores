@@ -114,12 +114,12 @@ export const getColumns = (contractorCompanyTypes: ContractorCompanyType[], ueas
                             <Badge variant={variant}>{`${percentage}%`}</Badge>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>Annex 24: {row.original.annex24}</p>
-                            <p>Annex 25: {row.original.annex25}</p>
-                            <p>Annex 26: {row.original.annex26}</p>
-                            <p>Annex 27: {row.original.annex27}</p>
-                            <p>Annex 28: {row.original.annex28}</p>
-                            <p>Annex 30: {row.original.annex30}</p>
+                            <p>Anexo 24: {row.original.annex24}</p>
+                            <p>Anexo 25: {row.original.annex25}</p>
+                            <p>Anexo 26: {row.original.annex26}</p>
+                            <p>Anexo 27: {row.original.annex27}</p>
+                            <p>Anexo 28: {row.original.annex28}</p>
+                            <p>Anexo 30: {row.original.annex30}</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -141,8 +141,8 @@ export const getColumns = (contractorCompanyTypes: ContractorCompanyType[], ueas
                             <Badge variant={variant}>{`${percentage}%`}</Badge>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>Minem Template 1: {row.original.minem_template_1}</p>
-                            <p>Minem Template 2: {row.original.minem_template_2}</p>
+                            <p>Plantilla Minem 1: {row.original.minem_template_1}</p>
+                            <p>Plantilla Minem 2: {row.original.minem_template_2}</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -164,7 +164,6 @@ export const getColumns = (contractorCompanyTypes: ContractorCompanyType[], ueas
             const fileStatus = row.original;
 
             const handleDownloadClick = (file: string) => {
-                console.log(`Downloading file from: ${window.location.origin}/${file}`);
             };
 
             const fileUrl = `${window.location.origin}/${fileStatus.file}`;

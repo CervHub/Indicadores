@@ -51,25 +51,25 @@ interface InfoCardProps {
 
 function InfoCard({ data }: InfoCardProps) {
     return (
-        <Card className="h-full w-full">
+        <Card className="flex h-full w-full flex-col justify-between">
             <CardHeader>
-                <CardTitle>Información del Cliente</CardTitle>
-                <CardDescription>Detalles del cliente.</CardDescription>
+                <CardTitle>Instrucciones:</CardTitle>
+                <CardDescription>
+                    <ul className="list-disc pl-5">
+                        <li>En este apartado verás el resumen general del consolidado por UEA, año, mes.</li>
+                        <li>
+                            Si deseas quitar alguna empresa, solo debes quitar la empresa de las tablas de las contratas que subieron data y de las
+                            que no subieron data.
+                        </li>
+                        <li>
+                            Para eliminar algún registro de una empresa, solo tienes que eliminar del historial de registros y se eliminarán todos los
+                            datos subidos para este año y mes.
+                        </li>
+                    </ul>
+                </CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="grid w-full grid-cols-1 items-center gap-4 md:grid-cols-2">
-                    <div className="col-span-2 flex flex-col space-y-1.5">
-                        <Label>UEA:</Label>
-                        <Input value={data.uea || 'N/A'} readOnly />
-                    </div>
-                    <div className="span flex flex-col space-y-1.5">
-                        <Label>TIPO DE CLIENTE:</Label>
-                        <Input value={data.contractorCompanyType || 'N/A'} readOnly />
-                    </div>
-                    <div className="flex flex-col space-y-1.5">
-                        <Label>FECHA DE CREACION:</Label>
-                        <Input value={data.creationDate || 'N/A'} readOnly />
-                    </div>
                     <div className="flex flex-col space-y-1.5">
                         <Label>MES:</Label>
                         <Input value={data.month || 'N/A'} readOnly />
@@ -151,12 +151,10 @@ export default function ConsolidatedDetail() {
     const handleActionClick = useCallback((item: object, action: string) => {
         switch (action) {
             case 'e-c':
-                console.log('Eliminar Contrata', item);
                 setCompanySelected(item);
                 setOpenModalCompanyDelete(true);
                 break;
             case 'e-a':
-                console.log('Eliminar Anexo', item);
                 setFileStatusSelected(item);
                 setOpenModalFileStatusDelete(true);
                 break;

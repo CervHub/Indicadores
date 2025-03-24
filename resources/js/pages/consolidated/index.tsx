@@ -41,11 +41,9 @@ export default function ConsolidatedDashboard() {
             setSelectedItem(selectedConsolidated);
             switch (action) {
                 case 'open':
-                    console.log('Open consolidated: ', selectedConsolidated);
                     setOpenModal(true);
                     break;
                 case 'close':
-                    console.log('Close consolidated: ', selectedConsolidated);
                     setCloseModal(true);
                     break;
                 case 'reconsolidate':
@@ -66,7 +64,6 @@ export default function ConsolidatedDashboard() {
         if (selectedConsolidated) {
             const fileUrl = `${window.location.origin}/${selectedConsolidated[uea]}`;
             if (fileUrl) {
-                console.log('File URL: ', fileUrl);
                 fetch(fileUrl)
                     .then((response) => response.blob())
                     .then((blob) => {
@@ -78,7 +75,6 @@ export default function ConsolidatedDashboard() {
                         document.body.appendChild(a);
                         a.click();
                         window.URL.revokeObjectURL(url);
-                        console.log('Download: ', selectedConsolidated, 'UEA: ', uea);
                     })
                     .catch((error) => console.error('Download error: ', error));
             } else {

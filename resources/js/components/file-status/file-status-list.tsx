@@ -96,7 +96,6 @@ export const getColumns = (contractorCompanyTypes: ContractorCompanyType[], ueas
             const fileStatus = row.original;
 
             const handleDownloadClick = (file: string) => {
-                console.log(`Downloading file from: ${window.location.origin}/${file}`);
             };
 
             const fileUrl = `${window.location.origin}/${fileStatus.file}`;

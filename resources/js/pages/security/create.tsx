@@ -29,11 +29,9 @@ export default function GrantPermission({ data: userOptions }: GrantPermissionPr
             onSuccess: (response) => {
                 reset();
                 setIsDialogOpen(false);
-                console.log('Permiso otorgado exitosamente:', response);
             },
             onError: (errors) => {
                 setIsDialogOpen(true);
-                console.log('Errores al otorgar permiso:', errors);
             },
         });
     };

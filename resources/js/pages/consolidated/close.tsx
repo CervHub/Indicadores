@@ -5,7 +5,7 @@ import { FormEventHandler, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { findFieldByValue, months } from '@/lib/utils';
-
+import { toast } from 'sonner';
 type ConsolidatedForm = {
     id: string;
 };
@@ -43,15 +43,23 @@ export default function CloseConsolidated({ isOpen = false, onOpenChange, select
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         patch(route('consolidated.close', { id: data.id }), {
-            onSuccess: (response) => {
-                reset();
-                setIsDialogOpen(false);
-                if (onOpenChange) onOpenChange(false);
-                console.log('Solicitud de cierre exitosa:', response);
+            onSuccess: (page) => {
+                const flash = page.props.flash;
+                if (flash.success) {
+                    setIsDialogOpen(false);
+                    reset();
+                    toast.success(flash.success);
+
+                    if (onOpenChange) onOpenChange(false);
+                }
+                if (flash.error) {
+                    setIsDialogOpen(false);
+                    toast.error(flash.error);
+                }
             },
             onError: (errors) => {
                 setIsDialogOpen(true);
-                console.log('Errores en la solicitud de cierre:', errors);
+                toast.error('Ocurrió un error al cerrar el consolidado');
             },
         });
     };

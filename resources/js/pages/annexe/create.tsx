@@ -67,13 +67,13 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        if (validateRules()) {
-            toast.error('No se puede subir un anexo para el mes seleccionado.', {
-                duration: 10000,
-                closeButton: true,
-            });
-            return;
-        }
+        // if (validateRules()) {
+        //     toast.error('No se puede subir un anexo para el mes seleccionado.', {
+        //         duration: 10000,
+        //         closeButton: true,
+        //     });
+        //     return;
+        // }
         post(route('annexes.store'), {
             onSuccess: (page) => {
                 const flash = page.props?.flash;
@@ -112,7 +112,7 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <div className="flex justify-between">
                     <DialogTrigger asChild>
-                        <Button className="inline-block px-4 py-2">Agregar Anexos</Button>
+                        <Button className="inline-block px-4 py-2">Agregar Indicador</Button>
                     </DialogTrigger>
                     <Button variant="success" className="ml-2" onClick={() => (window.location.href = '/formats/format.xlsx')}>
                         <FilePieChart className="mr-2 h-4 w-4" />
@@ -121,8 +121,8 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
                 </div>
                 <DialogContent className="sm:max-w-[425px]" onInteractOutside={(e) => e.preventDefault()}>
                     <DialogHeader>
-                        <DialogTitle>Agregar Contratista</DialogTitle>
-                        <DialogDescription>Complete los campos para agregar un nuevo contratista.</DialogDescription>
+                        <DialogTitle>Agregar Indicador</DialogTitle>
+                        <DialogDescription>Complete los campos para agregar un nuevo indicador.</DialogDescription>
                     </DialogHeader>
                     <form onSubmit={submit} className="space-y-3" method="post" action={route('contractor.store')} encType="multipart/form-data">
                         <div className="grid gap-2">

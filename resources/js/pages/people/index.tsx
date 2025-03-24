@@ -28,7 +28,6 @@ export default function ReportabilityPage() {
     const [isActivateDialogOpen, setIsActivateDialogOpen] = useState(false);
 
     const handleAction = (action: string, id: number) => {
-        console.log(`Action: ${action}, ID: ${id}`);
         const person = people.find((p) => p.id === id);
         setSelectedPerson(person || null);
 

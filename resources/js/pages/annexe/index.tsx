@@ -7,7 +7,7 @@ import CreateAnnex from './create'
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Anexos',
+        title: 'Indicadores',
         href: '/annexe',
     },
 ];

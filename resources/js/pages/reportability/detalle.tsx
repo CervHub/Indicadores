@@ -1,3 +1,4 @@
+import Stepper from '@/components/stepper';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -21,12 +22,16 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function ReportabilityPage() {
-    const { reportability_id, reportability } = usePage<{ reportability_id: number; reportability: any }>().props;
-
+    const { reportability_id, reportability, isSecurityEngineer } = usePage<{
+        reportability_id: number;
+        reportability: any;
+        isSecurityEngineer: boolean;
+    }>().props;
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [iframeKey, setIframeKey] = useState(0);
+    const [currentStep, setCurrentStep] = useState(getCurrentStep(reportability.estado));
 
     const urlPdf = route('company.reportability.download', { reportability_id });
 
@@ -42,7 +47,21 @@ export default function ReportabilityPage() {
 
     useEffect(() => {
         setIframeKey((prevKey) => prevKey + 1);
-    }, []);
+        setCurrentStep(getCurrentStep(reportability.estado));
+    }, [reportability.estado]);
+
+    function getCurrentStep(estado: string) {
+        switch (estado) {
+            case 'Generado':
+                return 0;
+            case 'Revisado':
+                return 1;
+            case 'Finalizado':
+                return 2;
+            default:
+                return 0;
+        }
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -51,7 +70,7 @@ export default function ReportabilityPage() {
                 <div className="grid h-full grid-cols-12 gap-4">
                     <Card className="col-span-12 h-full md:col-span-8">
                         <CardHeader>
-                            <CardTitle>PDF Report</CardTitle>
+                            <CardTitle>Reporte</CardTitle>
                         </CardHeader>
                         <CardContent>
                             {loading && <p>Cargando PDF...</p>}
@@ -60,7 +79,7 @@ export default function ReportabilityPage() {
                                 key={iframeKey}
                                 src={urlPdf}
                                 width="100%"
-                                height="550px"
+                                height="759"
                                 onLoad={handleLoad}
                                 onError={handleError}
                                 style={{ display: loading || error ? 'none' : 'block' }}
@@ -72,8 +91,10 @@ export default function ReportabilityPage() {
                             <CardHeader>
                                 <CardTitle>Detalles del reporte</CardTitle>
                             </CardHeader>
+                            <br />
                             <CardContent className="flex flex-col gap-2 space-y-2">
-                                <div className="space-y-2">
+                                <Stepper currentStep={currentStep} />
+                                <div className="space-y-2 d-none">
                                     <Label htmlFor="estado">Estado</Label>
                                     <Input id="estado" type="text" value={reportability.estado} disabled />
                                 </div>
@@ -104,7 +125,7 @@ export default function ReportabilityPage() {
                                 variant="destructive"
                                 className="mt-4 w-auto"
                                 onClick={() => setIsDialogOpen(true)}
-                                disabled={reportability.estado === 'Finalizado'}
+                                disabled={reportability.estado === 'Finalizado' || !isSecurityEngineer}
                             >
                                 Finalizar Reporte
                             </Button>
