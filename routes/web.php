@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Company\ReportabilityController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FinishController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -12,6 +13,7 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('dashboard/{type}', [DashboardController::class, 'type'])->name('dashboard.type');
+    Route::post('finish/{id}', [FinishController::class, 'store'])->name('finish.store');
 });
 
 Route::get('view/reportability/download/{reportability_id}', [ReportabilityController::class, 'download'])->name('company.reportability.download');

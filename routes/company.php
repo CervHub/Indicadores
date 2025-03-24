@@ -71,7 +71,9 @@ Route::get('admin/analysis/inspeccion/detalle', [AnalysisController::class, 'ins
 Route::get('admin/analysis/inspeccion/year', [AnalysisController::class, 'inspeccionYear'])->name('company.analysis.inspeccion.year');
 
 // Crear contratistas`
-Route::get('admin/contractor', [ContrataController::class, 'index'])->name('admin.contractor');
-Route::post('admin/contractor/store', [ContrataController::class, 'store'])->name('admin.contractor.store');
-Route::put('admin/contractor/{contrata}', [ContrataController::class, 'update'])->name('admin.contractor.update');
-Route::delete('admin/contractor/{contrata}', [ContrataController::class, 'destroy'])->name('admin.contractor.destroy');
+Route::post('contractor/store', [ContrataController::class, 'store'])->name('admin.contractor.store');
+Route::put('contractor/{contrata}', [ContrataController::class, 'update'])->name('admin.contractor.update');
+Route::post('contractor/{contrata}', [ContrataController::class, 'delete'])->name('admin.contractor.destroy');
+Route::post('contractor/activate/{contrata}', [ContrataController::class, 'activate'])->name('admin.contractor.activate');
+Route::post('contractor/show/password/{contrata}', [ContrataController::class, 'showPassword'])->name('admin.contractor.show.password');
+Route::post('contractor/reset/{contrata}', [ContrataController::class, 'resetPassword'])->name('admin.contractor.reset.password');

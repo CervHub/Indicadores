@@ -97,4 +97,14 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Role::class);
     }
+
+    public function securityEngineer()
+    {
+        return $this->hasOne(SecurityEngineer::class);
+    }
+
+    public function isSecurityEngineer(): bool
+    {
+        return $this->securityEngineer()->exists();
+    }
 }

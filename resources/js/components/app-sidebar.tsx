@@ -69,7 +69,7 @@ const mainNavItems: NavItem[] = [
         url: '/admin/security-engineer',
         icon: ShieldPlusIcon,
         isActive: window.location.pathname === '/admin/security-engineer',
-        roles: ['admin'],
+        roles: ['company'],
     },
 ];
 

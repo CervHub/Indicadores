@@ -1,39 +1,20 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown } from 'lucide-react';
-import { MoreHorizontal } from 'lucide-react';
+import { ArrowUpDown, Edit, Trash, Eye, CheckCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 // Este tipo define la forma de nuestros datos.
 export type Contractor = {
     id: string;
-    name: string;
-    business_name?: string;
-    email?: string;
-    phone_number?: string;
-    address?: string;
-    city?: string;
-    country?: string;
-    ruc_number: string;
-    contractor_company_type_id: string;
+    ruc: string;
+    nombre: string;
+    email: string;
+    estado: string; // Añadido el campo estado
 };
 
-interface ContractorCompanyType {
-    id: number;
-    name: string;
-}
-
-export const getColumns = (contractorCompanyTypes: ContractorCompanyType[]): ColumnDef<Contractor>[] => [
+export const getColumns = (handleActionClick: (id: string, action: string) => void): ColumnDef<Contractor>[] => [
     {
         accessorKey: 'nombre',
         header: ({ column }) => {
@@ -49,16 +30,12 @@ export const getColumns = (contractorCompanyTypes: ContractorCompanyType[]): Col
           },
     },
     {
-        accessorKey: 'descripcion',
-        header: 'Business Name',
-    },
-    {
         accessorKey: 'ruc',
-        header: 'RUC Number',
+        header: 'RUC',
     },
     {
         accessorKey: 'email',
-        header: 'Contractor Company Type',
+        header: 'Email',
     },
     {
         id: 'actions',
@@ -66,22 +43,39 @@ export const getColumns = (contractorCompanyTypes: ContractorCompanyType[]): Col
             const contractor = row.original;
 
             return (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
+                <div className="flex space-x-2">
+                    <Button
+                        variant="secondary"
+                        className="h-8 w-8 p-0"
+                        onClick={() => handleActionClick(contractor.id, 'detail')}
+                    >
+                        <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="secondary"
+                        className="h-8 w-8 p-0"
+                        onClick={() => handleActionClick(contractor.id, 'edit')}
+                    >
+                        <Edit className="h-4 w-4" />
+                    </Button>
+                    {contractor.estado === '0' ? (
+                        <Button
+                            variant="success"
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleActionClick(contractor.id, 'activate')}
+                        >
+                            <CheckCircle className="h-4 w-4" />
                         </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => navigator.clipboard.writeText(contractor.id)}>Copy contractor ID</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>View contractor</DropdownMenuItem>
-                        <DropdownMenuItem>Edit contractor</DropdownMenuItem>
-                        <DropdownMenuItem>Delete contractor</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                    ) : (
+                        <Button
+                            variant="destructive"
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleActionClick(contractor.id, 'delete')}
+                        >
+                            <Trash className="h-4 w-4" />
+                        </Button>
+                    )}
+                </div>
             );
         },
     },

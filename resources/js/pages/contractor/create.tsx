@@ -1,45 +1,41 @@
 import { useForm, usePage } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler, useState } from 'react';
+import { FormEventHandler, useState, useEffect } from 'react';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-interface ContractorCompanyType {
-    id: number;
-    name: string;
-    // otros campos relevantes
-}
 
 type ContractorForm = {
-    name: string;
-    business_name: string;
-    ruc_number: string;
-    contractor_company_type_id: string;
+    ruc: string;
+    nombre: string;
+    descripcion: string;
+    email: string;
 };
 
 export default function CreateContractor() {
-    const { contractorCompanyTypes, flash } = usePage<{
-        contractorCompanyTypes: ContractorCompanyType[];
+    const { flash } = usePage<{
         flash: { success?: string };
     }>().props;
 
     const { data, setData, post, processing, errors, reset } = useForm<Required<ContractorForm>>({
-        name: '',
-        business_name: '',
-        ruc_number: '',
-        contractor_company_type_id: '',
+        ruc: '',
+        nombre: '',
+        descripcion: '',
+        email: '',
     });
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+    useEffect(() => {
+        setData('email', `${data.ruc}@cerv.com.pe`);
+    }, [data.ruc]);
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(route('contractor.store'), {
+        post(route('admin.contractor.store'), {
             onSuccess: (response) => {
                 reset();
                 setIsDialogOpen(false);
@@ -66,65 +62,56 @@ export default function CreateContractor() {
                         <DialogTitle>Agregar Contratista</DialogTitle>
                         <DialogDescription>Complete los campos para agregar un nuevo contratista.</DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={submit} className="space-y-3" method="post" action={route('contractor.store')}>
+                    <form onSubmit={submit} className="space-y-3" method="post" action={route('admin.contractor.store')}>
                         <div className="grid gap-2">
-                            <Label htmlFor="name">Nombre</Label>
+                            <Label htmlFor="ruc">RUC</Label>
                             <Input
-                                id="name"
+                                id="ruc"
                                 type="text"
                                 required
-                                autoFocus
-                                value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                value={data.ruc}
+                                onChange={(e) => setData('ruc', e.target.value)}
+                                disabled={processing}
+                                placeholder="RUC"
+                            />
+                            <InputError message={errors.ruc} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="nombre">Nombre</Label>
+                            <Input
+                                id="nombre"
+                                type="text"
+                                required
+                                value={data.nombre}
+                                onChange={(e) => setData('nombre', e.target.value)}
                                 disabled={processing}
                                 placeholder="Nombre"
                             />
-                            <InputError message={errors.name} />
+                            <InputError message={errors.nombre} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="business_name">Nombre Comercial</Label>
+                            <Label htmlFor="descripcion">Descripción</Label>
                             <Input
-                                id="business_name"
+                                id="descripcion"
                                 type="text"
                                 required
-                                value={data.business_name}
-                                onChange={(e) => setData('business_name', e.target.value)}
+                                value={data.descripcion}
+                                onChange={(e) => setData('descripcion', e.target.value)}
                                 disabled={processing}
-                                placeholder="Nombre Comercial"
+                                placeholder="Descripción"
                             />
-                            <InputError message={errors.business_name} />
+                            <InputError message={errors.descripcion} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="ruc_number">Número de RUC</Label>
+                            <Label htmlFor="email">Email</Label>
                             <Input
-                                id="ruc_number"
+                                id="email"
                                 type="text"
                                 required
-                                value={data.ruc_number}
-                                onChange={(e) => setData('ruc_number', e.target.value)}
-                                disabled={processing}
-                                placeholder="Número de RUC"
+                                value={`${data.ruc}@cerv.com.pe`}
+                                disabled
+                                placeholder="Email"
                             />
-                            <InputError message={errors.ruc_number} />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="contractor_company_type_id">Tipo de Cliente</Label>
-                            <Select onValueChange={(value) => setData('contractor_company_type_id', value)} value={data.contractor_company_type_id}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Seleccione un tipo de cliente" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectLabel>Tipos de Cliente</SelectLabel>
-                                        {contractorCompanyTypes.map((type) => (
-                                            <SelectItem key={type.id} value={String(type.id)}>
-                                                {type.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                            <InputError message={errors.contractor_company_type_id} />
                         </div>
                         <Button type="submit" className="mt-2 w-full" disabled={processing}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}

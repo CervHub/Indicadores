@@ -63,11 +63,13 @@ export default function ReportabilityPage() {
                             <CardTitle>Seleccionar Fechas</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                {renderDatePicker('Desde', startDate, setStartDate)}
-                                {renderDatePicker('Hasta', endDate, setEndDate)}
-                                <div className="flex items-end">
-                                    <Button onClick={handleDownload} className="w-full bg-green-500 text-white">
+                            <div className="flex flex-col md:flex-row justify-between">
+                                <div className="flex flex-col lg:flex-row gap-4">
+                                    {renderDatePicker('Desde', startDate, setStartDate)}
+                                    {renderDatePicker('Hasta', endDate, setEndDate)}
+                                </div>
+                                <div className="flex items-end mt-4 md:mt-0">
+                                    <Button onClick={handleDownload} className="w-full md:w-auto bg-green-500 text-white">
                                         <FileTextIcon className="mr-2 h-4 w-4" />
                                         Descargar Excel
                                     </Button>
