@@ -314,6 +314,9 @@ class Module extends Model
                 $sourceImage = imagerotate($sourceImage, -$rotationAngle, 0); // Negative for clockwise rotation
             }
 
+            $width = $width === '' ? 1920 : $width;
+            $height = $height === '' ? 1080 : $height;
+
             // Create a new true color image with the specified dimensions
             $stretchedImage = imagecreatetruecolor($width, $height);
 
