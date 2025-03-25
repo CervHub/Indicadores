@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
+import { Download, LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
@@ -37,6 +37,15 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     return (
         <AuthLayout title="Inicia sesión en tu cuenta" description="Ingresa tu correo electrónico y contraseña a continuación para iniciar sesión">
             <Head title="Iniciar sesión" />
+
+            <div className="absolute top-4 right-4">
+                <Button variant={'destructive'} asChild className="flex items-center space-x-2">
+                    <a href="https://play.google.com/store/apps/details?id=com.CERV.GESTIONSSTV1">
+                        <Download className="h-5 w-5" />
+                        <span>Descargar APP</span>
+                    </a>
+                </Button>
+            </div>
 
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
