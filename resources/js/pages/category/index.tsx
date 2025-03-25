@@ -1,6 +1,19 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
+import CreateCategory from './create';
+
+interface CategoryCompany {
+    id: number;
+    name: string;
+    category_id: number;
+}
+
+interface Category {
+    id: number;
+    name: string;
+    category_companies: CategoryCompany[];
+}
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -10,11 +23,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Security() {
+    const { categories } = usePage<{ categories: Category[] }>().props;
+    console.log('Categories:', categories);
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Gestion SSO" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                {/* Aquí puedes agregar componentes adicionales si es necesario */}
+                <CreateCategory />
             </div>
         </AppLayout>
     );

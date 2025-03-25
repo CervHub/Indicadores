@@ -1,0 +1,1 @@
+import{j as n}from"./app-BC0I_x-8.js";import{d as o}from"./utils-Dxu7ruf7.js";function m({message:r,className:t="",...e}){return r?n.jsx("p",{...e,className:o("text-sm text-red-600 dark:text-red-400",t),children:r}):null}export{m as I};

@@ -13,8 +13,8 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $company_id = Auth::user()->company->id ?? 0;
-        $categories = Category::where('company_id', $company_id)->get();
+        $company_id = 1;
+        $categories = Category::where('company_id', $company_id)->with('categoryCompanies')->get();
         return Inertia::render('category/index', [
             'categories' => $categories
         ]);
@@ -23,14 +23,26 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         try {
-            $company_id = Auth::user()->company->id ?? 0;
+            $company_id = Auth::user()->company->id ?? 1; // Empresa por defecto es 1
+            $nombre = trim($request->nombre); // Eliminar espacios
+
+            // Verificar si ya existe una categoría con el mismo nombre para la empresa
+            $existingCategory = Category::whereRaw('UPPER(TRIM(nombre)) = ?', [strtoupper($nombre)])
+                ->where('company_id', $company_id)
+                ->first();
+
+            if ($existingCategory) {
+                return redirect()->back()->with('error', 'Ya existe una categoría con el mismo nombre.');
+            }
+
             $category = Category::create([
-                'nombre' => $request->nombre,
+                'nombre' => $nombre,
                 'company_id' => $company_id
             ]);
-            return redirect()->back()->with('success', 'Category created successfully');
+
+            return redirect()->back()->with('success', 'Categoría creada exitosamente');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error creating category: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al crear la categoría: ' . $e->getMessage());
         }
     }
 
