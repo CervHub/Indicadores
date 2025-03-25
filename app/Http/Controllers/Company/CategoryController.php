@@ -64,20 +64,32 @@ class CategoryController extends Controller
     public function storeCompany(Request $request, $category_id)
     {
         try {
-            $company_id = Auth::user()->company->id ?? 0;
+            $company_id = 1;
+            $nombre = trim($request->input('nombre'));
+
+            // Verificar si ya existe una categoría de empresa con el mismo nombre para la misma empresa y categoría
+            $existingCategoryCompany = CategoryCompany::where('category_id', $category_id)
+                ->where('company_id', $company_id)
+                ->whereRaw('UPPER(TRIM(nombre)) = ?', [strtoupper($nombre)])
+                ->first();
+
+            if ($existingCategoryCompany) {
+                return redirect()->back()->with('error', 'Ya existe una categoría de empresa con el mismo nombre.');
+            }
+
             $category = Category::find($category_id);
             if ($category) {
                 $category_company = CategoryCompany::create([
                     'category_id' => $category_id,
                     'company_id' => $company_id,
-                    'nombre' => $request->input('nombre') // Asegúrate de que el formulario envía un campo 'nombre'
+                    'nombre' => $nombre
                 ]);
-                return redirect()->route('company.category')->with('success', 'Category assigned to company successfully');
+                return redirect()->back()->with('success', 'Categoría asignada a la empresa exitosamente');
             } else {
-                return redirect()->route('company.category')->with('error', 'Category not found');
+                return redirect()->back()->with('error', 'Categoría no encontrada');
             }
         } catch (\Exception $e) {
-            return redirect()->route('company.category')->with('error', 'Error assigning category to company: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al asignar la categoría a la empresa: ' . $e->getMessage());
         }
     }
 }
