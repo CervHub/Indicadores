@@ -17,7 +17,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const handleActionClick = (item: CategoryCompany, action: string) => {
-    console.log('Action:', action, 'Item:', item);
 };
 
 export default function Security() {

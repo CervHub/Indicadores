@@ -1,6 +1,6 @@
 import { useForm, usePage } from '@inertiajs/react';
 import { FilePieChart, LoaderCircle } from 'lucide-react';
-import { FormEventHandler, useState } from 'react';
+import { FormEventHandler, useRef, useState } from 'react';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -50,30 +50,11 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
     });
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-    const validateRules = () => {
-        // Filtrar las reglas por el año seleccionado
-        const yearRules = rules.filter((rule: { year: string; month: string }) => {
-            return parseInt(rule.year) === parseInt(data.year);
-        });
-
-        // Verificar si el mes seleccionado está dentro de las reglas filtradas por el año
-        const isValid = yearRules.some((rule: { year: string; month: string }) => {
-            return parseInt(rule.month) === parseInt(data.month);
-        });
-
-        return isValid;
-    };
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        // if (validateRules()) {
-        //     toast.error('No se puede subir un anexo para el mes seleccionado.', {
-        //         duration: 10000,
-        //         closeButton: true,
-        //     });
-        //     return;
-        // }
+
         post(route('annexes.store'), {
             onSuccess: (page) => {
                 const flash = page.props?.flash;
@@ -85,6 +66,10 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
                     reset();
                     setIsDialogOpen(false);
                 } else if (flash.error) {
+                    setData('file', null); // Solo restablece el campo 'file'
+                    if (fileInputRef.current) {
+                        fileInputRef.current.value = '';
+                    }
                     toast.error(flash.error, {
                         duration: 20000,
                         closeButton: true,
@@ -97,6 +82,10 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
                     duration: 20000,
                     closeButton: true,
                 });
+                setData('file', null); // Solo restablece el campo 'file'
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
             },
         });
     };
@@ -212,6 +201,7 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
                                 id="file"
                                 required
                                 accept=".xlsx,.xls"
+                                ref={fileInputRef}
                                 onChange={(e) => setData('file', e.target.files ? e.target.files[0] : null)}
                             />
                             <InputError message={errors.file} />

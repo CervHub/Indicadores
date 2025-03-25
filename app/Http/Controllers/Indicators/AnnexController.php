@@ -43,12 +43,21 @@ class AnnexController extends Controller
     {
         $rules = $this->getConsolidatedClose();
         $ueas = $this->uea->all();
-        $contractorCompanyTypes = $this->contractorCompanyType->all();
         $fileStatuses = $this->fileStatus->where('is_old', false)
             ->where('user_id', Auth::id())
-            ->where('contractor_company_id', Auth::user()->company_id)
+            ->where('contractor_company_id', Auth::user()->company_id ?? null)
             ->orderBy('created_at', 'desc')
             ->get();
+
+        $company_id = Auth::check() ? Auth::user()->company_id : null;
+
+        if ($company_id === '1') {
+            $contractorCompanyTypes = $this->contractorCompanyType->where('name', 'Titular')->get();
+        } elseif ($company_id !== null) {
+            $contractorCompanyTypes = $this->contractorCompanyType->where('name', '!=', 'Titular')->get();
+        } else {
+            $contractorCompanyTypes = collect(); // Empty collection if no company_id
+        }
 
         return Inertia::render('annexe/index', [
             'fileStatuses' => $fileStatuses,

@@ -14,10 +14,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Security() {
-    const { security_users, all_users } = usePage().props;
+    const { security_users, all_users, auth } = usePage().props;
     const [selectedPerson, setSelectedPerson] = React.useState(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
-
+    const companyId = auth.user.company_id;
     const userOptions = all_users.map((user) => ({
         value: String(user.id),
         label: `${user.nombres} ${user.apellidos}`,
@@ -29,18 +29,21 @@ export default function Security() {
 
         if (action === 'eliminar') {
             setIsDeleteDialogOpen(true);
-
         }
     };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Personal" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <GrantPermission data={userOptions} />
-                <DataTable columns={getColumns(handleAction)} data={security_users} />
-                {selectedPerson && <DeleteAccess isOpen={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen} selectedItem={selectedPerson} />}
-            </div>
+            {companyId === '1' && (
+                <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+                    <GrantPermission data={userOptions} />
+                    <DataTable columns={getColumns(handleAction)} data={security_users} />
+                    {selectedPerson && (
+                        <DeleteAccess isOpen={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen} selectedItem={selectedPerson} />
+                    )}
+                </div>
+            )}
         </AppLayout>
     );
 }

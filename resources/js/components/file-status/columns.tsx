@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { formatDateTime, months } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, Download, FileText } from 'lucide-react';
+import { ArrowUp, ArrowUpDown, Download, FileText } from 'lucide-react';
 
 // Este tipo define la forma de nuestros datos.
 export type FileStatus = {
@@ -49,7 +49,11 @@ const getBadgeVariant = (percentage: number) => {
     return 'secondary';
 };
 
-export const getColumns = (contractorCompanyTypes: ContractorCompanyType[], ueas: Uea[]): ColumnDef<FileStatus>[] => [
+export const getColumns = (
+    contractorCompanyTypes: ContractorCompanyType[],
+    ueas: Uea[],
+    handleSelectItem: (item: FileStatus) => void,
+): ColumnDef<FileStatus>[] => [
     {
         accessorKey: 'contractor_company_type_id',
         header: 'T. Cliente',
@@ -163,22 +167,25 @@ export const getColumns = (contractorCompanyTypes: ContractorCompanyType[], ueas
         cell: ({ row }) => {
             const fileStatus = row.original;
 
-            const handleDownloadClick = (file: string) => {
-            };
+            const handleDownloadClick = (file: string) => {};
 
             const fileUrl = `${window.location.origin}/${fileStatus.file}`;
 
             return (
-                <div>
+                <div className="flex flex-row gap-2 space-y-2">
+                    <Button variant="warning" size="sm" onClick={() => handleSelectItem(fileStatus)}>
+                        <ArrowUp className="h-4 w-4" /> {/* Add the icon */}
+                        Actualizar
+                    </Button>
                     <Link href={route('annexes.show', { annex: fileStatus.id })}>
                         <Button variant="default" size="sm">
-                            <FileText className="mr-2 h-4 w-4" />
+                            <FileText className="h-4 w-4" />
                             Detalle
                         </Button>
                     </Link>
                     <a href={fileUrl} download onClick={() => handleDownloadClick(fileStatus.file)}>
-                        <Button variant="destructive" size="sm" className="ml-2">
-                            <Download className="mr-2 h-4 w-4" />
+                        <Button variant="destructive" size="sm">
+                            <Download className="h-4 w-4" />
                             Descargar
                         </Button>
                     </a>

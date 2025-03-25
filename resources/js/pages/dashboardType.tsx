@@ -1,6 +1,9 @@
 import { ChartCat } from '@/components/charts/cat'; // Asegúrate de importar ChartCat
 import { Generic } from '@/components/charts/generic';
+import GenericInps from '@/components/charts/genericInps';
+import { GenericInpsCat } from '@/components/charts/genericInpsCat';
 import LineChartComponentCAT from '@/components/charts/line-chart-cat';
+import LineChartComponentInspYR from '@/components/charts/line-chart-insp-yr';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
@@ -17,11 +20,12 @@ export default function Dashboard({ type }: DashboardProps) {
     const [categoriesData, setCategoriesData] = useState(null);
     const [loading, setLoading] = useState(true);
     useEffect(() => {
-        if (pageType && companies && ['actos', 'condiciones', 'incidentes'].includes(pageType)) {
+        if (pageType && companies && ['actos', 'condiciones', 'incidentes', 'inspección'].includes(pageType)) {
             const companyId = 1; // Ajusta esto según tu lógica para obtener el ID de la empresa
             axios
                 .get(route('categories', { company_id: companyId, name: pageType }))
                 .then((response) => {
+                    console.log(response.data.data);
                     // Maneja la respuesta aquí
                     setCategoriesData(response.data.data);
                 })
@@ -58,7 +62,7 @@ export default function Dashboard({ type }: DashboardProps) {
 
     const inspectionButtons = [
         { text: 'Planeada, no planeada, comite y otros', type: 'insp' },
-        { text: 'Detalles de inspección', type: 'insp.det' },
+        { text: 'Detalles de inspección', type: 'inspección' },
     ];
 
     const options = [...trendButtons, ...inspectionButtons, ...distributionButtons];
@@ -80,11 +84,17 @@ export default function Dashboard({ type }: DashboardProps) {
                 ) : pageType === 'yr' ? (
                     <LineChartComponentCAT />
                 ) : pageType === 'insp.yr' ? (
-                    <div>En implementación</div>
+                    <LineChartComponentInspYR />
                 ) : pageType === 'insp' ? (
-                    <div>En implementación</div>
-                ) : pageType === 'insp.det' ? (
-                    <div>En implementación</div>
+                    <GenericInps />
+                ) : pageType === 'inspección' ? (
+                    <GenericInpsCat
+                        title={option?.text}
+                        pageType={pageType}
+                        companies={companies}
+                        entities={entities}
+                        categoriesData={categoriesData}
+                    />
                 ) : pageType === 'actos' || pageType === 'condiciones' || pageType === 'incidentes' ? (
                     <Generic title={option?.text} pageType={pageType} companies={companies} entities={entities} categoriesData={categoriesData} />
                 ) : (

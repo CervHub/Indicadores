@@ -244,7 +244,7 @@ class AnnexImport implements WithMultipleSheets
         ];
 
         if (!$this->areAllValuesEqualLinear($dataHorasTrabajadas)) {
-            throw new \Exception('Los valores en la columna de horas trabajadas no coinciden, entre los ANEXO 28 y MINEM 1');
+            throw new \Exception('Los valores en la columna de horas trabajadas no coinciden, entre los ANEXO 28 (U) y MINEM 1 (F:T) (U)');
         }
     }
 

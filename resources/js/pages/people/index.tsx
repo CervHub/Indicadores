@@ -1,6 +1,5 @@
 import { getColumns, Person } from '@/components/person/columns';
 import { DataTable } from '@/components/reportability/data-table';
-import useFlashMessages from '@/hooks/useFlashMessages';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
@@ -19,8 +18,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function ReportabilityPage() {
     const { people } = usePage<{ people: Person[] }>().props;
-
-    useFlashMessages();
 
     const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);

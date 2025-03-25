@@ -1,14 +1,13 @@
 import { Consolidated, getColumns } from '@/components/consolidated/columns';
 import { DataTable } from '@/components/consolidated/data-table';
-import useFlashMessages from '@/hooks/useFlashMessages';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import CloseConsolidated from './close';
+import CreateConsolidated from './create';
 import OpenConsolidated from './open';
 import ReConsolidated from './reconsolidated';
-import CreateConsolidated from './create';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -21,9 +20,6 @@ export default function ConsolidatedDashboard() {
     const { consolidateds = [] } = usePage<{
         consolidateds: Consolidated[];
     }>().props;
-
-    // Utiliza el hook personalizado para manejar los mensajes flash y de error
-    useFlashMessages();
 
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1; // getMonth() returns 0-11, so add 1
@@ -87,7 +83,7 @@ export default function ConsolidatedDashboard() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Consolidados" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <CreateConsolidated/>
+                <CreateConsolidated />
                 <ReConsolidated initialYear={initialYear} initialMonth={initialMonth} isOpen={modalOpen} onOpenChange={setModalOpen} />
                 <div className="w-full max-w-full overflow-x-auto">
                     <DataTable columns={getColumns(handleActionClick, handleDonwloadClick)} data={consolidateds} />

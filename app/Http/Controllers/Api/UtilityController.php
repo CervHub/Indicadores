@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\TestEmail;
 use App\Jobs\SendReportMail;
 use App\Models\Log as LogModel;
+use Carbon\Carbon;
 
 class UtilityController extends Controller
 {
@@ -590,11 +591,11 @@ class UtilityController extends Controller
         $company_id = $company;
 
         if ($company == 'all') {
-            $modules = Module::selectRaw('CONVERT(varchar, fecha_evento, 23) as fecha_evento, tipo_reporte')
+            $modules = Module::selectRaw('CONVERT(varchar, fecha_evento, 23) as fecha_evento, tipo_reporte, tipo_inspeccion')
                 ->whereRaw('YEAR(fecha_evento) = ?', [$year])
                 ->get();
         } else {
-            $modules = Module::selectRaw('CONVERT(varchar, fecha_evento, 23) as fecha_evento, tipo_reporte')
+            $modules = Module::selectRaw('CONVERT(varchar, fecha_evento, 23) as fecha_evento, tipo_reporte, tipo_inspeccion')
                 ->where('company_id', $company_id)
                 ->whereRaw('YEAR(fecha_evento) = ?', [$year])
                 ->get();
@@ -605,6 +606,82 @@ class UtilityController extends Controller
             'company' => $company,
             'year' => $year,
             'events' => $modules
+        ]);
+    }
+
+    public function yearMetricsInspeccion(Request $request, $company)
+    {
+        $year = $request->get('year') ? $request->get('year') : date('Y');
+        $company_id = $company;
+
+        $inspeccionTypes = ['Inspección', 'inspeccion', 'inspección'];
+
+        if ($company == 'all') {
+            $modules = Module::selectRaw('CONVERT(varchar, fecha_evento, 23) as fecha_evento, tipo_reporte, tipo_inspeccion')
+                ->whereRaw('YEAR(fecha_evento) = ?', [$year])
+                ->whereIn('tipo_reporte', $inspeccionTypes)
+                ->get();
+        } else {
+            $modules = Module::selectRaw('CONVERT(varchar, fecha_evento, 23) as fecha_evento, tipo_reporte, tipo_inspeccion')
+                ->where('company_id', $company_id)
+                ->whereRaw('YEAR(fecha_evento) = ?', [$year])
+                ->whereIn('tipo_reporte', $inspeccionTypes)
+                ->get();
+        }
+
+        return response()->json([
+            'status' => true,
+            'company' => $company,
+            'year' => $year,
+            'events' => $modules
+        ]);
+    }
+
+    public function yearMetricsInspeccionDetalle(Request $request, $company)
+    {
+        $year = $request->year;
+        $company_id = $request->company_id;
+        $company_report_id = $request->company_report_id;
+
+        $inspeccionTypes = ['Inspección', 'inspeccion', 'inspección'];
+
+        $query = Module::selectRaw('CONVERT(varchar, fecha_evento, 23) as fecha_evento, tipo_reporte, tipo_inspeccion, SUBSTRING(details, 1, 30) as details, category_company_id, company_id, company_report_id, estado, fecha_reporte, levels, id')
+            ->whereYear('fecha_evento', $year)
+            ->whereIn('tipo_reporte', $inspeccionTypes);
+
+        if ($company_id) {
+            $query->where('company_id', $company_id);
+        }
+
+        if ($company_report_id) {
+            $query->where('company_report_id', $company_report_id);
+        }
+
+
+
+        $modules = $query->get();
+
+        $modules->transform(function ($module) {
+            $details = $module->details;
+            preg_match('/"id_detalle":"(\d+)"/', $details, $matches);
+            $module->id_detalle = $matches[1] ?? null;
+            $module->category_company_id = $module->id_detalle;
+
+            $levels = json_decode($module->levels, true);
+            $module->gerencia = $levels['gerencia'] ?? null;
+
+            // Remove unwanted fields
+            unset($module->details);
+            unset($module->fecha_evento);
+            unset($module->levels);
+            unset($module->tipo_inspeccion);
+
+            return $module;
+        });
+
+        return response()->json([
+            'status' => true,
+            'data' => $modules
         ]);
     }
 

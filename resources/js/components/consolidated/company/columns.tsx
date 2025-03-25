@@ -53,23 +53,23 @@ export const getColumns = (handleActionClick: (id: string, action: string) => vo
             <Badge variant={row.original.estado == '1' ? 'success' : 'destructive'}>{row.original.estado == '1' ? 'Activa' : 'Inactiva'}</Badge>
         ),
     },
-    {
-        id: 'actions',
-        header: 'Acciones',
-        cell: ({ row }) => {
-            const company = row.original;
+    // {
+    //     id: 'actions',
+    //     header: 'Acciones',
+    //     cell: ({ row }) => {
+    //         const company = row.original;
 
-            return (
-                <div className="flex gap-2">
-                    <Button
-                        aria-label="Eliminar"
-                        className="h-7 bg-red-700 p-2 text-xs text-white hover:bg-red-900 dark:bg-red-600 dark:hover:bg-red-800"
-                        onClick={() => handleActionClick(company, 'e-c')}
-                    >
-                        <Trash2 className="h-3 w-3" />
-                    </Button>
-                </div>
-            );
-        },
-    },
+    //         return (
+    //             <div className="flex gap-2">
+    //                 <Button
+    //                     aria-label="Eliminar"
+    //                     className="h-7 bg-red-700 p-2 text-xs text-white hover:bg-red-900 dark:bg-red-600 dark:hover:bg-red-800"
+    //                     onClick={() => handleActionClick(company, 'e-c')}
+    //                 >
+    //                     <Trash2 className="h-3 w-3" />
+    //                 </Button>
+    //             </div>
+    //         );
+    //     },
+    // },
 ];

@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
+import { findFieldByValue, months } from '@/lib/utils';
 import ChartComponent from '@/pages/annexe/chart';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
@@ -72,7 +73,7 @@ function InfoCard({ data }: InfoCardProps) {
                 <div className="grid w-full grid-cols-1 items-center gap-4 md:grid-cols-2">
                     <div className="flex flex-col space-y-1.5">
                         <Label>MES:</Label>
-                        <Input value={data.month || 'N/A'} readOnly />
+                        <Input value={findFieldByValue(months, 'value', data.month, 'label')} readOnly />
                     </div>
                     <div className="flex flex-col space-y-1.5">
                         <Label>AÑO:</Label>

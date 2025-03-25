@@ -111,6 +111,8 @@ Route::get('/current-version-web', function () {
 })->name('current-version-web');
 
 Route::get('/year/metrics/{company_id}', [UtilityController::class, 'yearMetrics'])->name('year.metrics');
+Route::get('/year/metrics/inspeccion/{company_id}', [UtilityController::class, 'yearMetricsInspeccion'])->name('year.metrics.inspeccion');
+Route::post('/year/metrics/inspeccion/detalle/{type}', [UtilityController::class, 'yearMetricsInspeccionDetalle'])->name('year.metrics.inspeccion.detalle');
 
 Route::get('user/{dni}', [UtilityController::class, 'getUser'])->name('user.show');
 

@@ -42,6 +42,7 @@ class ConsolidatedController extends Controller
         $consolidated = Consolidated::find($id);
         $fileStatuses = FileStatus::where('year', $consolidated->year)
             ->where('month', $consolidated->month)
+            ->where('is_old', false)
             ->with([
                 'annex24',
                 'annex25',

@@ -67,12 +67,12 @@ export default function Dashboard() {
 
     const trendButtons = [
         { text: 'Actos y condiciones subestándares e incidentes', type: 'yr', disabled: false },
-        { text: 'Observaciones detectadas por Gerencia', type: 'insp.yr', disabled: true },
+        { text: 'Observaciones detectadas por Gerencia', type: 'insp.yr', disabled: false },
     ];
 
     const inspectionButtons = [
-        { text: 'Planeada, no planeada, comite y otros', type: 'insp', disabled: true },
-        { text: 'Detalles de inspección', type: 'insp.det', disabled: true },
+        { text: 'Planeada, no planeada, comite y otros', type: 'insp', disabled: false },
+        { text: 'Detalles de inspección', type: 'inspección', disabled: false },
     ];
 
     return (

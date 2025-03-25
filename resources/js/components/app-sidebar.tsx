@@ -70,20 +70,28 @@ const mainNavItems: NavItem[] = [
         icon: ShieldPlusIcon,
         isActive: window.location.pathname === '/admin/security-engineer',
         roles: ['company'],
+        companyId: 2, // Add companyId property
     },
 ];
 
 export function AppSidebar() {
-    const { props } = usePage<{ auth: { user: { role_id: string } } }>();
+    const { props } = usePage<{ auth: { user: { role_id: string; company_id: string } } }>();
     const userRoleId = getPermissionDescription(Number(props.auth.user.role_id));
+    const userCompanyId = props.auth.user.company_id;
+
     if (!userRoleId) {
         return null; // Do not render anything if role_id is not present
     }
 
     const userRoles = [userRoleId]; // Assuming role_id is a single role, wrap it in an array
 
-    // Filter nav items based on user roles
-    const filteredNavItems = mainNavItems.filter((item) => item.roles.some((role) => userRoles.includes(role)));
+    // Filter nav items based on user roles and company_id
+    const filteredNavItems = mainNavItems.filter((item) => {
+        if (item.title === 'Ingeniero de Seguridad' && userCompanyId !== '1') {
+            return false;
+        }
+        return item.roles.some((role) => userRoles.includes(role));
+    });
 
     return (
         <Sidebar collapsible="icon" variant="inset">

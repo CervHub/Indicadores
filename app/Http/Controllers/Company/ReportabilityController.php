@@ -92,12 +92,15 @@ class ReportabilityController extends Controller
 
     public function index(Request $request)
     {
-        $user = auth()->user();
-        $companyId = $user->company_id;
+        $user = auth()->user() ?? null;
+        $companyId = $user->company_id ?? null;
         // Obtiene el company_id de la solicitud
         $companyReportId = $companyId;
 
-        $isSecurityEngineer = $user->isSecurityEngineer();
+        $isSecurityEngineer = false;
+        if ($companyId === '1') {
+            $isSecurityEngineer = $user ? $user->isSecurityEngineer() : false;
+        }
 
         // Define la consulta base
         $query = "

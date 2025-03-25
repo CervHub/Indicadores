@@ -28,5 +28,8 @@ require __DIR__ . '/company.php';
 
 //Legacy
 require __DIR__ . '/legacy/user.php';
-require __DIR__ . '/legacy/contrata.php';
 require __DIR__ . '/legacy/admin.php';
+Route::middleware(['auth', 'verified'])->group(function () {
+    require __DIR__ . '/legacy/contrata.php';
+    require __DIR__ . '/legacy/admin.php';
+});

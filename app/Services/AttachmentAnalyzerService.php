@@ -106,16 +106,16 @@ class AttachmentAnalyzerService
                         case 'ANEXO 25':
                         case 'ANEXO 26':
                         case 'ANEXO 27':
-                            throw new Exception("El Anexo $value debe contener almenos llenado el Nombre de la empresa, Empl. Obr. y TOTAL.");
+                            throw new Exception("El Anexo $value debe contener al menos llenado el Nombre de la empresa, Empl. Obr. y TOTAL.");
                             break;
                         case 'ANEXO 28':
-                            throw new Exception("El Anexo $value debe contener almenos llenado Nombre del Titular de Actividades, SITUACION, Nro RUC, EMPL., OBR. y TOTAL.");
+                            throw new Exception("El Anexo $value debe contener al menos llenado Nombre del Titular de Actividades, SITUACION, Nro RUC, EMPL., OBR. y TOTAL.");
                             break;
                         case 'PLANTILLA MINEM 1':
-                            throw new Exception("La $value debe contener almenos llenado el RUC, Nombre Concesion, UEA, Tipo Cliente, Nombre Empresa, Total trabajadores, Total horas trabajadas y Actividades Mineras.");
+                            throw new Exception("La $value debe contener al menos llenado el RUC, Nombre Concesion, UEA, Tipo Cliente, Nombre Empresa, Total trabajadores, Total horas trabajadas y Actividades Mineras.");
                             break;
                         case 'PLANTILLA MINEM 2':
-                            throw new Exception("La $value debe contener almenos llenado el RUC, Nombre Concesion, UEA, Tipo Cliente, Nombre Empresa.");
+                            throw new Exception("La $value debe contener al menos llenado el RUC, Nombre Concesion, UEA, Tipo Cliente, Nombre Empresa.");
                             break;
                     }
                 }
