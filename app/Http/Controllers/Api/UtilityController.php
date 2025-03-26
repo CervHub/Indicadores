@@ -292,9 +292,9 @@ class UtilityController extends Controller
 
             $reportLink = route('company.reportability.download', ['reportability_id' => $new_module->id]);
             $date = $data['fecha_evento'];
-            // foreach ($seguridad_emails as $email) {
-            //     SendReportMail::dispatch($email, $report, $date, $management, $generatedBy, $reportLink);
-            // }
+            foreach ($seguridad_emails as $email) {
+                SendReportMail::dispatch($email, $report, $date, $management, $generatedBy, $reportLink);
+            }
             return response()->json(['status' => true, 'message' => 'Insertado satisfactoriamente'], 200);
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
