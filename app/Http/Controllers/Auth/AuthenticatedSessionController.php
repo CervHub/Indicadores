@@ -30,9 +30,24 @@ class AuthenticatedSessionController extends Controller
 
     public function store(LoginRequest $request): RedirectResponse
     {
-        if ($request->has('email') && !str_contains($request->email, '@')) {
-            $request->merge(['email' => $request->email . '@code.com.pe']);
+        if ($request->has('email')) {
+            $emailOrDoi = $request->email;
+
+            // Verificar si el usuario es admin (role_id 1)
+            $user = \App\Models\User::where('email', $emailOrDoi)->first();
+            if ($user && $user->role_id == 1) {
+                // Si es admin, autenticar con correo
+                $request->merge(['email' => $emailOrDoi]);
+            } else {
+                // Si no es admin, autenticar con DOI
+                $user = \App\Models\User::where('doi', $emailOrDoi)->first();
+                if (!$user) {
+                    return redirect()->route('login')->withErrors(['error' => 'Credenciales inválidas.']);
+                }
+                $request->merge(['email' => $user->email]);
+            }
         }
+
         $request->authenticate();
 
         $user = Auth::user();
