@@ -179,7 +179,7 @@ class AnnexImport implements WithMultipleSheets
             $this->sumColumn($this->data['ANEXO 27'], 3),
             $this->sumColumn($this->data['ANEXO 28'], 5),
             $this->sumColumn($this->data['PLANTILLA MINEM 1'], 21),
-            $this->sumRange($this->data['PLANTILLA MINEM 1'], 5, 20),
+            // $this->sumRange($this->data['PLANTILLA MINEM 1'], 5, 20),
             $this->sumRange($this->data['PLANTILLA MINEM 2'], 5, 12),
         ];
 
@@ -245,6 +245,52 @@ class AnnexImport implements WithMultipleSheets
 
         if (!$this->areAllValuesEqualLinear($dataHorasTrabajadas)) {
             throw new \Exception('Los valores en la columna de horas trabajadas no coinciden, entre los ANEXO 28 (U) y MINEM 1 (F:T) (U)');
+        }
+
+        $diasP = 0;
+
+        // Solo si tiene si tiene datos el anexo 30
+        if (count($this->data['ANEXO 30']) > 0) {
+            // Primera validacion, que los registros solo tengan row 10 y 11 o 12 y 13 no ambas juntas
+            $dataAnexo30 = $this->data['ANEXO 30'];
+            $error = false;
+
+            foreach ($dataAnexo30 as $row) {
+                $isTemporal = (isset($row[10]) && !empty($row[10])) && (isset($row[11]) && !empty($row[11]));
+                $isPermanent = (isset($row[12]) && !empty($row[12])) && (isset($row[13]) && !empty($row[13]));
+                $dp = $row[11];
+                $dC = $row[13];
+                if ($isTemporal && $isPermanent) {
+                    $error = true;
+                    break;
+                }
+                if ($isTemporal) {
+                    if (!is_numeric($dp) || $dp <= 1 || $dp >= 31) {
+                        throw new \Exception('Anexo 30: Los días perdidos deben ser un número entre 1 y 31 para accidentes temporales.');
+                    }
+                }
+                if ($isPermanent) {
+                    if (!is_numeric($dC) || $dC <= 31) {
+                        throw new \Exception('Anexo 30: Los días a cargarse deben ser un número mayor a 31 para accidentes permanentes.');
+                    }
+                }
+                $diasP += $dp;
+                $diasP += $dC;
+            }
+
+            if ($error) {
+                throw new \Exception('Anexo 30: Un registro de accidente debe ser temporal o parcial, no ambos. Vacía el incorrecto.');
+            }
+        }
+
+        // Validacion de dias perdidos y cargados con anexo 28
+        $dataDiasPerdidos = [
+            $diasP,
+            $this->sumColumn($this->data['ANEXO 28'], 18),
+        ];
+
+        if (!$this->areAllValuesEqualLinear($dataDiasPerdidos)) {
+            throw new \Exception('Los valores en la columna de días perdidos y cargados no coinciden, entre los ANEXO 28 y ANEXO 30');
         }
     }
 

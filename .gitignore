@@ -3,6 +3,8 @@
 /node_modules
 /public/hot
 /public/storage
+/public/consolidateds
+/public/indicadores
 !public/icons
 /storage/*.key
 /storage/pail
