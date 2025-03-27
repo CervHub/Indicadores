@@ -116,7 +116,7 @@ class UtilityController extends Controller
         // Validar que el campo 'version' sea igual a '2.2.2'
         $version = $request->input('version');
         if ($version !== '2.2.2') {
-            return response()->json(['message' => 'Versión desactualizada.'], 201);
+            return response()->json(['message' => 'Versión desactualizada.'], 401);
         }
 
         try {
