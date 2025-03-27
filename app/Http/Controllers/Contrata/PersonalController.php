@@ -25,29 +25,19 @@ class PersonalController extends Controller
 
     public function store(Request $request)
     {
-        // Eliminar la línea de depuración
-        // dd($request->all());
-
-        // Validar los campos
+        // Validar los campos con mensajes personalizados
         $request->validate([
             'doi' => 'required|unique:users,doi',
-            'email' => 'required|email|unique:users,email',
             'nombres' => 'required',
             'apellidos' => 'required',
-            'telefono' => 'required',
-            'cargo' => 'required',
+        ], [
+            'doi.required' => 'El campo DNI es obligatorio.',
+            'doi.unique' => 'El DNI ya está registrado.',
+            'nombres.required' => 'El campo nombres es obligatorio.',
+            'apellidos.required' => 'El campo apellidos es obligatorio.',
         ]);
 
         try {
-            // Verificar si ya existe un usuario con el mismo email o DOI
-            $existingUser = User::where('email', $request->email)
-                ->orWhere('doi', $request->doi)
-                ->first();
-
-            if ($existingUser) {
-                return redirect()->back()->with('error', 'El usuario ya existe con el mismo email o DOI.');
-            }
-
             // Crear un nuevo usuario
             $user = new User();
             $user->fill([
@@ -56,7 +46,7 @@ class PersonalController extends Controller
                 'apellidos' => $request->apellidos,
                 'password' => bcrypt($request->doi),
                 'telefono' => $request->telefono,
-                'email' => $request->email,
+                'email' => $request->email, // Opcional
                 'cargo' => $request->cargo,
                 'company_id' => Auth::user()->company_id,
                 'role_id' => Role::where('nombre', 'Regular User')->first()->id,
@@ -73,21 +63,21 @@ class PersonalController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            // Eliminar la línea de depuración
-            // dd($request->all(), $id);
-
+            // Validar los campos con mensajes personalizados
             $request->validate([
                 'doi' => 'required|unique:users,doi,' . $id,
-                'email' => 'required|email|unique:users,email,' . $id,
                 'nombres' => 'required',
                 'apellidos' => 'required',
-                'telefono' => 'required',
-                'cargo' => 'required',
+            ], [
+                'doi.required' => 'El campo DNI es obligatorio.',
+                'doi.unique' => 'El DNI ya está registrado.',
+                'nombres.required' => 'El campo nombres es obligatorio.',
+                'apellidos.required' => 'El campo apellidos es obligatorio.',
             ]);
 
             $person = User::findOrFail($id);
             $person->doi = $request->doi;
-            $person->email = $request->email;
+            $person->email = $request->email; // Opcional
             $person->nombres = $request->nombres;
             $person->apellidos = $request->apellidos;
             $person->telefono = $request->telefono;
@@ -104,7 +94,7 @@ class PersonalController extends Controller
     {
         try {
             $person = User::findOrFail($id);
-            $person->estado = !$person->estado; // Toggle the estado
+            $person->estado = !$person->estado; // Alternar el estado
             $person->save();
 
             $message = $person->estado ? 'Usuario activado correctamente' : 'Usuario desactivado correctamente';
@@ -118,7 +108,7 @@ class PersonalController extends Controller
     {
         try {
             $person = User::findOrFail($id);
-            $person->estado = !$person->estado; // Toggle the estado
+            $person->estado = !$person->estado; // Alternar el estado
             $person->save();
 
             $message = $person->estado ? 'Usuario activado correctamente' : 'Usuario desactivado correctamente';

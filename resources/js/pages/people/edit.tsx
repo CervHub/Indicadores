@@ -38,6 +38,7 @@ export default function EditPerson({ isOpen = false, onOpenChange, person }: Edi
     });
 
     const [isDialogOpen, setIsDialogOpen] = useState(isOpen);
+    const [isFormValid, setIsFormValid] = useState(false);
 
     useEffect(() => {
         setIsDialogOpen(isOpen);
@@ -56,6 +57,11 @@ export default function EditPerson({ isOpen = false, onOpenChange, person }: Edi
             });
         }
     }, [person, setData]);
+
+    useEffect(() => {
+        // Check if required fields are filled
+        setIsFormValid(data.doi.trim() !== '' && data.nombres.trim() !== '' && data.apellidos.trim() !== '');
+    }, [data.doi, data.nombres, data.apellidos]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -126,7 +132,7 @@ export default function EditPerson({ isOpen = false, onOpenChange, person }: Edi
                             <Input id="cargo" value={data.cargo} onChange={(e) => setData('cargo', e.target.value)} />
                             <InputError message={errors.cargo} />
                         </div>
-                        <Button type="submit" className="mt-2" disabled={processing}>
+                        <Button type="submit" className="mt-2" disabled={processing || !isFormValid}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             Actualizar
                         </Button>

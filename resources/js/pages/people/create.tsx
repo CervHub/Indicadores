@@ -34,10 +34,16 @@ export default function CreatePerson({ isOpen = false, onOpenChange }: CreatePer
     });
 
     const [isDialogOpen, setIsDialogOpen] = useState(isOpen);
+    const [isFormValid, setIsFormValid] = useState(false);
 
     useEffect(() => {
         setIsDialogOpen(isOpen);
     }, [isOpen]);
+
+    useEffect(() => {
+        // Check if required fields are filled
+        setIsFormValid(data.doi.trim() !== '' && data.nombres.trim() !== '' && data.apellidos.trim() !== '');
+    }, [data.doi, data.nombres, data.apellidos]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -114,7 +120,7 @@ export default function CreatePerson({ isOpen = false, onOpenChange }: CreatePer
                             <Input id="cargo" value={data.cargo} onChange={(e) => setData('cargo', e.target.value)} />
                             <InputError message={errors.cargo} />
                         </div>
-                        <Button type="submit" className="mt-2" disabled={processing}>
+                        <Button type="submit" className="mt-2" disabled={processing || !isFormValid}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             Crear
                         </Button>

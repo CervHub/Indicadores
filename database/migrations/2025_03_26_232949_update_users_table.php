@@ -12,6 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
+            // Permitir que la columna 'email' sea NULL
+            $table->string('email')->nullable()->change();
+
             // Eliminar el índice único de la columna 'email'
             $table->dropUnique(['email']);
 
@@ -26,11 +29,14 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
+            // Revertir la columna 'email' para que no permita NULL
+            $table->string('email')->nullable(false)->change();
+
             // Eliminar el índice único de la columna 'doi'
             $table->dropUnique(['doi']);
 
             // Restaurar el índice único en la columna 'email'
-            $table->unique('email');
+            // $table->unique('email');
         });
     }
 };
