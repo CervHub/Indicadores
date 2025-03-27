@@ -113,13 +113,19 @@ class UtilityController extends Controller
             return response()->json(['error' => 'Método no permitido.'], 405);
         }
 
+        // Validar que el campo 'version' sea igual a '2.2.2'
+        $version = $request->input('version');
+        if ($version !== '2.2.2') {
+            return response()->json(['message' => 'Versión desactualizada.'], 201);
+        }
+
         try {
             $credentials = $request->only('doi', 'password');
 
             $user = User::where('doi', $credentials['doi'])->first();
 
             if (!$user || !Hash::check($credentials['password'], $user->password)) {
-                $this->putLog($request, 'authenticate', 'User', $user->id, 'failed', 'Invalid credentials');
+                $this->putLog($request, 'authenticate', 'User', $user->id ?? null, 'failed', 'Invalid credentials');
                 return response()->json(['error' => 'Las credenciales proporcionadas son incorrectas.'], 401);
             }
 
@@ -128,6 +134,7 @@ class UtilityController extends Controller
                 $this->putLog($request, 'authenticate', 'User', $user->id, 'failed', 'User is disabled');
                 return response()->json(['error' => 'El acceso para este usuario ha sido deshabilitado.'], 401);
             }
+
             $this->putLog($request, 'authenticate', 'User', $user->id, 'success', null);
             // Devolver los datos del usuario en la respuesta
             return response()->json(['success' => 'Conexión exitosa', 'user' => $user->data(), 'gerente' => 'Jorge Medina'], 200);
