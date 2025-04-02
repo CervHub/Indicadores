@@ -173,7 +173,7 @@ export const getColumns = (
 
             return (
                 <div className="flex flex-row gap-2 space-y-2">
-                    <Button variant="warning" size="sm" onClick={() => handleSelectItem(fileStatus)}>
+                    <Button variant="secondary" size="sm" onClick={() => handleSelectItem(fileStatus)}>
                         <ArrowUp className="h-4 w-4" /> {/* Add the icon */}
                         Actualizar
                     </Button>

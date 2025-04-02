@@ -244,6 +244,7 @@ class AnnexImport implements WithMultipleSheets
         ];
 
         if (!$this->areAllValuesEqualLinear($dataHorasTrabajadas)) {
+            dd($dataHorasTrabajadas, $this->data['PLANTILLA MINEM 1'][0]);
             throw new \Exception('Los valores en la columna de horas trabajadas no coinciden, entre los ANEXO 28 (U) y MINEM 1 (F:T) (U)');
         }
 
@@ -284,13 +285,10 @@ class AnnexImport implements WithMultipleSheets
         }
 
         // Validacion de dias perdidos y cargados con anexo 28
-        $dataDiasPerdidos = [
-            $diasP,
-            $this->sumColumn($this->data['ANEXO 28'], 18),
-        ];
+        $diasPerdidosAnexo28 = $this->sumColumn($this->data['ANEXO 28'], 18);
 
-        if (!$this->areAllValuesEqualLinear($dataDiasPerdidos)) {
-            throw new \Exception('Los valores en la columna de días perdidos y cargados no coinciden, entre los ANEXO 28 y ANEXO 30');
+        if ($diasP > $diasPerdidosAnexo28) {
+            throw new \Exception('Los días perdidos y cargados del ANEXO 30 no pueden ser mayores que los días perdidos del ANEXO 28.');
         }
     }
 
@@ -590,19 +588,27 @@ class AnnexImport implements WithMultipleSheets
 
 
         foreach ($filteredData as $key => &$row) {
-            if (strtoupper($row[0]) === 'TOTAL') {
+            if (strtoupper(trim($row[0])) === 'TOTAL') { // Aplicar trim
                 unset($filteredData[$key]);
                 continue;
             }
-            $row = array_slice($row, 0, $columnCount); // Columns A to specified column count
+            $row = array_map('trim', array_slice($row, 0, $columnCount)); // Aplicar trim a todos los valores
             foreach ($filterColumns as $filter) {
                 list($columnIndex, $errorMessage, $expectedType, $typeErrorMessage) = $filter;
                 if (!isset($row[$columnIndex]) || $row[$columnIndex] === '') {
                     $errors[] = $errorMessage;
                 } else {
-                    // Check the type of the data
-                    if ($expectedType === 'number' && !is_numeric($row[$columnIndex])) {
-                        $errors[] = $typeErrorMessage;
+                    // Normalizar el valor para validación numérica
+                    $value = is_string($row[$columnIndex]) ? str_replace(',', '', $row[$columnIndex]) : $row[$columnIndex];
+
+                    // Validar el tipo de dato
+                    if ($expectedType === 'number') {
+                        if (!is_numeric($value)) {
+                            $errors[] = $typeErrorMessage;
+                        } else {
+                            // Reemplazar el valor en el arreglo para estandarizarlo
+                            $row[$columnIndex] = $value + 0; // Convertir a número (int o float)
+                        }
                     } elseif ($expectedType === 'string' && !is_string($row[$columnIndex])) {
                         $errors[] = $typeErrorMessage;
                     }

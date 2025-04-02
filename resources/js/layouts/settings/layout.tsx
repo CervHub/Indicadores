@@ -17,11 +17,11 @@ const sidebarNavItems: NavItem[] = [
         url: '/settings/password',
         icon: null,
     },
-    {
-        title: 'Apariencia',
-        url: '/settings/appearance',
-        icon: null,
-    },
+    // {
+    //     title: 'Apariencia',
+    //     url: '/settings/appearance',
+    //     icon: null,
+    // },
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {

@@ -41,13 +41,18 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
         ueas: Uea[];
     }>().props;
 
+    const currentYear = new Date().getFullYear();
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0'); // Mes actual (1-12) con formato de dos dígitos
+    console.log('currentMonth', currentMonth);
     const { data, setData, post, processing, errors, reset } = useForm<Required<ContractorForm>>({
         contractor_company_type_id: '',
         uea_id: '',
-        year: '',
-        month: '',
+        year: String(currentYear), // Año actual
+        month: String(Number(currentMonth)), // Mes actual
         file: null,
     });
+
+
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -103,7 +108,7 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
                     <DialogTrigger asChild>
                         <Button className="inline-block px-4 py-2">Agregar Indicador</Button>
                     </DialogTrigger>
-                    <Button variant="success" className="ml-2" onClick={() => (window.location.href = '/formats/Download.xlsx')}>
+                    <Button  className="ml-2" onClick={() => (window.location.href = '/formats/Download.xlsx')}>
                         <FilePieChart className="mr-2 h-4 w-4" />
                         Formato
                     </Button>

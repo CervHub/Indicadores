@@ -100,6 +100,7 @@ class ReportabilityController extends Controller
         $isSecurityEngineer = false;
         if ($companyId === '1') {
             $isSecurityEngineer = $user ? $user->isSecurityEngineer() : false;
+            $companyId = null;
         }
 
         // Define la consulta base
@@ -241,7 +242,7 @@ class ReportabilityController extends Controller
         $reportability = Module::findOrFail($reportability_id);
 
         // Verificar si el usuario tiene el role_id diferente de 1 y si el reporte le pertenece
-        if ($user->role_id != 1 && $user->company_id != $reportability->company_id) {
+        if ($user->role_id != 1 && $user->company_id != $reportability->company_id && $user->company_id != 1) {
             abort(403, 'Usted no está habilitado para ver este reporte.');
         }
 

@@ -107,8 +107,9 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
                 <div className="flex flex-wrap space-x-2">
                     <Link href={urlDetalle} className="flex items-center">
                         <Button
+                            variant="warning"
                             aria-label="Toggle detalle"
-                            className={`flex h-7 items-center bg-blue-700 p-2 text-xs text-white hover:bg-blue-900 dark:bg-blue-600 dark:hover:bg-blue-800 ${detalleClicked ? 'cursor-not-allowed opacity-50' : ''}`}
+                            className={`flex h-7 items-center p-2 text-xs text-white ${detalleClicked ? 'cursor-not-allowed opacity-50' : ''}`}
                             onClick={handleDetalleClick}
                             disabled={detalleClicked}
                         >
