@@ -259,8 +259,9 @@ class AnnexImport implements WithMultipleSheets
             foreach ($dataAnexo30 as $row) {
                 $isTemporal = (isset($row[10]) && !empty($row[10])) && (isset($row[11]) && !empty($row[11]));
                 $isPermanent = (isset($row[12]) && !empty($row[12])) && (isset($row[13]) && !empty($row[13]));
-                $dp = $row[11];
-                $dC = $row[13];
+                $dp = isset($row[11]) && is_numeric($row[11]) ? (float)$row[11] : 0;
+                $dC = isset($row[13]) && is_numeric($row[13]) ? (float)$row[13] : 0;
+
                 if ($isTemporal && $isPermanent) {
                     $error = true;
                     break;
