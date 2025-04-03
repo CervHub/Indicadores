@@ -187,22 +187,29 @@ class ConsolidatedController extends Controller
 
     public function updateFormatContract(Request $request)
     {
-        // Validar que el archivo esté presente
+        // Validar que el archivo y la UEA estén presentes
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls|max:2048', // Validar que sea un archivo Excel y limitar el tamaño
+            'uea' => 'required|string|in:ACUMULACION,CONCENTRADORA,LIXIVIACION', // Validar que la UEA sea válida
         ]);
 
-        // Obtener el archivo del request
+        // Obtener el archivo y la UEA del request
         $file = $request->file('file');
+        $uea = $request->input('uea');
 
-        // Definir la ruta completa donde se guardará el archivo
+        // Definir la ruta y el nombre del archivo según la UEA seleccionada
         $destinationPath = public_path('formats');
-        $fileName = 'Download.xlsx';
+        $fileName = match ($uea) {
+            'ACUMULACION' => 'Acumulacion.xlsx',
+            'CONCENTRADORA' => 'Concentradora.xlsx',
+            'LIXIVIACION' => 'Lixiviacion.xlsx',
+            default => 'Default.xlsx',
+        };
 
         // Mover el archivo a la carpeta 'public/formats'
         $file->move($destinationPath, $fileName);
 
         // Retornar una respuesta de éxito
-        return redirect()->back()->with('success', 'Formato de contrato actualizado correctamente y guardado en: ' . $destinationPath . '/' . $fileName);
+        return redirect()->back()->with('success', "Formato de contrato para {$uea} actualizado correctamente y guardado en: {$destinationPath}/{$fileName}");
     }
 }

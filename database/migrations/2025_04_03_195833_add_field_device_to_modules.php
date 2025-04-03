@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('modules', function (Blueprint $table) {
-            $table->string('device')->nullable(); // Agrega el campo 'device' como string opcional
+            $table->text('device')->nullable(); // Agrega el campo 'device' como string opcional
         });
     }
 

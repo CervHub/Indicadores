@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { months } from '@/lib/utils';
 import { toast } from 'sonner';
+import DownloadContractFormat from './download';
 
 interface ContractorCompanyType {
     id: number;
@@ -43,7 +44,7 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
 
     const currentYear = new Date().getFullYear();
     const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0'); // Mes actual (1-12) con formato de dos dígitos
-    console.log('currentMonth', currentMonth);
+    const [isOpenDownload, setIsOpenDownload] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm<Required<ContractorForm>>({
         contractor_company_type_id: '',
         uea_id: '',
@@ -51,8 +52,6 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
         month: String(Number(currentMonth)), // Mes actual
         file: null,
     });
-
-
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -108,7 +107,7 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
                     <DialogTrigger asChild>
                         <Button className="inline-block px-4 py-2">Agregar Indicador</Button>
                     </DialogTrigger>
-                    <Button  className="ml-2" onClick={() => (window.location.href = '/formats/Download.xlsx')}>
+                    <Button className="ml-2" variant="warning" onClick={() => setIsOpenDownload(true)} disabled={processing}>
                         <FilePieChart className="mr-2 h-4 w-4" />
                         Formato
                     </Button>
@@ -218,6 +217,7 @@ export default function CreateAnnex({ rules }: CreateAnnexProps) {
                     </form>
                 </DialogContent>
             </Dialog>
+            <DownloadContractFormat setIsDialogOpen={setIsOpenDownload} isDialogOpen={isOpenDownload} />
         </div>
     );
 }

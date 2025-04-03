@@ -5,13 +5,16 @@ import { FormEventHandler, useRef } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input'; // Asegúrate de importar el componente Input
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function UpdateContractFormat({ isDialogOpen, setIsDialogOpen }: { isDialogOpen: boolean; setIsDialogOpen: (open: boolean) => void }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         file: null as File | null,
+        uea: '', // Agregamos el campo UEA
     });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -19,13 +22,14 @@ export default function UpdateContractFormat({ isDialogOpen, setIsDialogOpen }: 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        if (!data.file) {
-            toast.error('Por favor, seleccione un archivo antes de enviar.');
+        if (!data.file || !data.uea) {
+            toast.error('Por favor, seleccione un archivo y una UEA antes de enviar.');
             return;
         }
 
         const formData = new FormData();
         formData.append('file', data.file);
+        formData.append('uea', data.uea); // Agregamos la UEA al formulario
 
         post(route('consolidated.updateFormatContract'), {
             data: formData,
@@ -48,9 +52,26 @@ export default function UpdateContractFormat({ isDialogOpen, setIsDialogOpen }: 
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Actualizar Formato de Contratistas</DialogTitle>
-                    <DialogDescription>Seleccione un archivo para actualizar el formato de contratistas.</DialogDescription>
+                    <DialogDescription>Seleccione un archivo y una UEA para actualizar el formato de contratistas.</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={submit} className="space-y-3">
+                    <div className="grid gap-2">
+                        <Label htmlFor="uea">UEA</Label>
+                        <Select onValueChange={(value) => setData('uea', value)} value={data.uea}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Seleccione una UEA" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectLabel>UEA</SelectLabel>
+                                    <SelectItem value="ACUMULACION">ACUMULACIÓN</SelectItem>
+                                    <SelectItem value="CONCENTRADORA">CONCENTRADORA</SelectItem>
+                                    <SelectItem value="LIXIVIACION">LIXIVIACIÓN</SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        <InputError message={errors.uea} />
+                    </div>
                     <div className="grid gap-2">
                         <Label htmlFor="file">Archivo</Label>
                         <Input
@@ -63,7 +84,7 @@ export default function UpdateContractFormat({ isDialogOpen, setIsDialogOpen }: 
                         />
                         <InputError message={errors.file} />
                     </div>
-                    <Button ref={fileInputRef} type="submit" className="mt-2" disabled={processing || !data.file}>
+                    <Button ref={fileInputRef} type="submit" className="mt-2" disabled={processing || !data.file || !data.uea}>
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                         Actualizar
                     </Button>

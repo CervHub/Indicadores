@@ -1,11 +1,12 @@
 import { Head, useForm } from '@inertiajs/react';
-import { Download, Facebook, Instagram, LoaderCircle, Twitter } from 'lucide-react';
+import { Download, HelpCircle, LoaderCircle } from 'lucide-react'; // Importa el ícono de ayuda
 import { FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
@@ -41,17 +42,12 @@ export default function Login({ status }: LoginProps) {
             <Head title="Iniciar sesión" />
 
             <div className={cn('flex flex-col gap-6')}>
-                <Card className="overflow-hidden p-0 shadow-sm md:shadow-md rounded-5xl">
+                <Card className="rounded-5xl relative overflow-hidden p-0 shadow-sm md:shadow-md">
                     <CardContent className="grid p-0 md:grid-cols-2">
                         {/* Imagen a la izquierda */}
                         <div className="relative m-4 hidden bg-white p-2 md:block">
                             <div className="h-full w-full overflow-hidden">
-                                <img
-                                    src="/auth/img-toq.png"
-                                    alt="Imagen"
-                                    className="absolute inset-0 h-full w-full object-initial"
-
-                                />
+                                <img src="/auth/img-toq.png" alt="Imagen" className="object-initial absolute inset-0 h-full w-full" />
 
                                 <div className="absolute bottom-4 left-4">
                                     <Button variant="destructive" asChild className="flex items-center space-x-2">
@@ -60,6 +56,28 @@ export default function Login({ status }: LoginProps) {
                                             <span>Descargar APP</span>
                                         </a>
                                     </Button>
+                                </div>
+                                {/* Botón de ayuda */}
+                                <div className="absolute right-10 bottom-4">
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <Button className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-white hover:bg-blue-600">
+                                                <HelpCircle className="size-7 h-7 w-7" />
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="sm:max-w-md">
+                                            <DialogHeader>
+                                                <DialogTitle>Contacto de Soporte</DialogTitle>
+                                                <DialogDescription>
+                                                    Si necesitas ayuda, puedes contactarnos a través de los siguientes medios:
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <div className="space-y-2">
+                                                <p>Correo: soporte@cerv.com.pe</p>
+                                                <p>WhatsApp y Teléfono: +51 948 202 038</p>
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
                                 </div>
                             </div>
                         </div>
@@ -131,20 +149,6 @@ export default function Login({ status }: LoginProps) {
                                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                                         Iniciar sesión
                                     </Button>
-                                </div>
-
-                                <div className="mt-4 flex justify-center">
-                                    <p className="text-sm text-muted-foreground">
-                                        Powered by{' '}
-                                        <a
-                                            href="https://cerv.com.pe/"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="font-semibold text-dark hover:underline"
-                                        >
-                                            CERV
-                                        </a>
-                                    </p>
                                 </div>
                             </div>
                         </form>
