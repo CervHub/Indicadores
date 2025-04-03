@@ -232,6 +232,7 @@ class UtilityController extends Controller
             'comentario' => $request->comentario,
             'details' => $request->details,
             'company_report_id' => $request->company_report_id,
+            'device' => $request->device,
         ];
 
 
