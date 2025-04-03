@@ -184,4 +184,25 @@ class ConsolidatedController extends Controller
 
         return redirect()->back()->with('success', 'Empresa eliminada del consolidado correctamente');
     }
+
+    public function updateFormatContract(Request $request)
+    {
+        // Validar que el archivo esté presente
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls|max:2048', // Validar que sea un archivo Excel y limitar el tamaño
+        ]);
+
+        // Obtener el archivo del request
+        $file = $request->file('file');
+
+        // Definir la ruta completa donde se guardará el archivo
+        $destinationPath = public_path('formats');
+        $fileName = 'Download.xlsx';
+
+        // Mover el archivo a la carpeta 'public/formats'
+        $file->move($destinationPath, $fileName);
+
+        // Retornar una respuesta de éxito
+        return redirect()->back()->with('success', 'Formato de contrato actualizado correctamente y guardado en: ' . $destinationPath . '/' . $fileName);
+    }
 }

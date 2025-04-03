@@ -99,14 +99,14 @@ Route::get('/{company_id}/users', [UserContrller::class, 'getUserCompany'])->nam
 Route::get('/current-version', function () {
     return response()->json([
         'success' => true,
-        'version' => '2.2.1'
+        'version' => '2.2.3'
     ], 200);
 });
 
 Route::get('/current-version-web', function () {
     return response()->json([
         'success' => true,
-        'version' => '2.2.1'
+        'version' => '2.2.3'
     ], 200);
 })->name('current-version-web');
 

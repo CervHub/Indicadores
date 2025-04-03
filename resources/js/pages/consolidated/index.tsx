@@ -1,5 +1,6 @@
 import { Consolidated, getColumns } from '@/components/consolidated/columns';
 import { DataTable } from '@/components/consolidated/data-table';
+import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
@@ -8,6 +9,7 @@ import CloseConsolidated from './close';
 import CreateConsolidated from './create';
 import OpenConsolidated from './open';
 import ReConsolidated from './reconsolidated';
+import UpdateContractFormat from './updateContract';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -30,6 +32,12 @@ export default function ConsolidatedDashboard() {
     const [openModal, setOpenModal] = useState(false);
     const [closeModal, setCloseModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState<Consolidated | null>(null);
+
+    // Estado para el diálogo de "Crear Consolidado"
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+    // Estado para el diálogo de "Actualizar Formato Anexo"
+    const [isUpdateFormatDialogOpen, setIsUpdateFormatDialogOpen] = useState(false);
 
     const handleActionClick = (id: string, action: string) => {
         const selectedConsolidated = consolidateds.find((consolidated) => consolidated.id === id);
@@ -83,7 +91,14 @@ export default function ConsolidatedDashboard() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Consolidados" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <CreateConsolidated />
+                {/* Botón para abrir el diálogo de "Crear Consolidado" */}
+                <div className="flex justify-between">
+                    <Button onClick={() => setIsCreateDialogOpen(true)}>Crear Consolidado</Button>
+                    <Button variant={'warning'} onClick={() => setIsUpdateFormatDialogOpen(true)}>
+                        Actualizar Formato Anexo
+                    </Button>
+                </div>
+
                 <ReConsolidated initialYear={initialYear} initialMonth={initialMonth} isOpen={modalOpen} onOpenChange={setModalOpen} />
                 <div className="w-full max-w-full overflow-x-auto">
                     <DataTable columns={getColumns(handleActionClick, handleDonwloadClick)} data={consolidateds} />
@@ -103,6 +118,10 @@ export default function ConsolidatedDashboard() {
                     />
                 </>
             )}
+            {/* Diálogo de Crear Consolidado */}
+            <CreateConsolidated isDialogOpen={isCreateDialogOpen} setIsDialogOpen={setIsCreateDialogOpen} />
+            {/* Diálogo de Actualizar Formato Anexo */}
+            <UpdateContractFormat isDialogOpen={isUpdateFormatDialogOpen} setIsDialogOpen={setIsUpdateFormatDialogOpen} />
         </AppLayout>
     );
 }

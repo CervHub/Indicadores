@@ -124,6 +124,11 @@ class UtilityController extends Controller
 
             $user = User::where('doi', $credentials['doi'])->first();
 
+            // SI el usuario no existe
+            if (!$user) {
+                return response()->json(['error' => 'El usuario no existe.'], 401);
+            }
+
             if (!$user || !Hash::check($credentials['password'], $user->password)) {
                 $this->putLog($request, 'authenticate', 'User', $user->id ?? null, 'failed', 'Invalid credentials');
                 return response()->json(['error' => 'Las credenciales proporcionadas son incorrectas.'], 401);

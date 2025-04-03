@@ -114,6 +114,7 @@ export default function Login({ status }: LoginProps) {
                                         placeholder="Contraseña"
                                     />
                                     <InputError message={errors.password} />
+                                    <InputError message={errors.error} />
                                 </div>
                                 <div className="flex items-center space-x-3">
                                     <Checkbox
