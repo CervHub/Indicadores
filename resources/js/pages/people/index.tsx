@@ -8,6 +8,7 @@ import ActivatePerson from './activate';
 import CreatePerson from './create';
 import DeletePerson from './delete';
 import EditPerson from './edit';
+import ResetPassword from './reset';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -23,6 +24,7 @@ export default function ReportabilityPage() {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isActivateDialogOpen, setIsActivateDialogOpen] = useState(false);
+    const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
 
     const handleAction = (action: string, id: number) => {
         const person = people.find((p) => p.id === id);
@@ -34,6 +36,8 @@ export default function ReportabilityPage() {
             setIsDeleteDialogOpen(true);
         } else if (action === 'activar') {
             setIsActivateDialogOpen(true);
+        } else if (action === 'reset') {
+            setIsResetDialogOpen(true);
         }
     };
 
@@ -51,6 +55,7 @@ export default function ReportabilityPage() {
                     <EditPerson isOpen={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} person={selectedPerson} />
                     <DeletePerson isOpen={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen} selectedItem={selectedPerson} />
                     <ActivatePerson isOpen={isActivateDialogOpen} onOpenChange={setIsActivateDialogOpen} selectedItem={selectedPerson} />
+                    <ResetPassword isOpen={isResetDialogOpen} onOpenChange={setIsResetDialogOpen} selectedItem={selectedPerson} />
                 </>
             )}
         </AppLayout>

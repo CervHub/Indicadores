@@ -117,4 +117,17 @@ class PersonalController extends Controller
             return redirect()->back()->with('error', 'Hubo un error al cambiar el estado del usuario: ' . $e->getMessage());
         }
     }
+
+    public function resetPassword($id)
+    {
+        try {
+            $person = User::findOrFail($id);
+            $person->password = bcrypt($person->doi);
+            $person->save();
+
+            return redirect()->back()->with('success', 'Contraseña restablecida correctamente');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Hubo un error al restablecer la contraseña: ' . $e->getMessage());
+        }
+    }
 }
