@@ -179,7 +179,7 @@ class AnnexImport implements WithMultipleSheets
             $this->sumColumn($this->data['ANEXO 27'], 3),
             $this->sumColumn($this->data['ANEXO 28'], 5),
             $this->sumColumn($this->data['PLANTILLA MINEM 1'], 21),
-            // $this->sumRange($this->data['PLANTILLA MINEM 1'], 5, 20),
+            $this->sumRange($this->data['PLANTILLA MINEM 1'], 7, 8) + $this->sumRange($this->data['PLANTILLA MINEM 1'], 11, 12) + $this->sumRange($this->data['PLANTILLA MINEM 1'], 15, 16) + $this->sumRange($this->data['PLANTILLA MINEM 1'], 19, 20),
             $this->sumRange($this->data['PLANTILLA MINEM 2'], 5, 12),
         ];
 
@@ -530,13 +530,14 @@ class AnnexImport implements WithMultipleSheets
 
     private function processPlantillaMinem1(array $sheetData): array
     {
+        dd($this->typeClient);
         try {
             $limits = $this->keywordPositions['PLANTILLA MINEM 1'];
             $startRow = $limits['RUC'] + 2;
             $endRow = $endRow ?? count($sheetData) - 1;
             $rules = [
                 [0, 'En la columna (A), debes colocar el RUC de la empresa', 'string', 'En la columna (A) debe ser texto.'],
-                [1, 'En la columna (B), debes colocar el código de concesión', 'string', 'En la columna (B) debe ser texto.'],
+                // [1, 'En la columna (B), debes colocar el código de concesión', 'string', 'En la columna (B) debe ser texto.'],
                 [2, 'En la columna (C), debes colocar el nombre de concesión o UEA', 'string', 'En la columna (C) debe ser texto.'],
                 [3, 'En la columna (D), debes colocar el tipo de cliente', 'string', 'En la columna (D) debe ser texto.'],
                 [4, 'En la columna (E), debes colocar el nombre de la empresa', 'string', 'En la columna (E) debe ser texto.'],
