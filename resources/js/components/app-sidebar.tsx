@@ -70,7 +70,13 @@ const mainNavItems: NavItem[] = [
         icon: ShieldPlusIcon,
         isActive: window.location.pathname === '/admin/security-engineer',
         roles: ['company'],
-        companyId: 2, // Add companyId property
+    },
+    {
+        title: 'Configuración',
+        url: '/settings/general',
+        icon: ShieldPlusIcon,
+        isActive: window.location.pathname === '/settings',
+        roles: ['admin'],
     },
 ];
 

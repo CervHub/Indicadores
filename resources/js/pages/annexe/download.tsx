@@ -3,8 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
-import { ChevronLeft, ChevronRight } from 'lucide-react'; // Importar íconos de Lucide
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function DownloadContractFormat({ isDialogOpen, setIsDialogOpen }: { isDialogOpen: boolean; setIsDialogOpen: (open: boolean) => void }) {
     const [uea, setUea] = useState<string>(''); // Estado para la UEA seleccionada
@@ -13,9 +12,9 @@ export default function DownloadContractFormat({ isDialogOpen, setIsDialogOpen }
 
     // Diapositivas con imágenes y notas
     const slides = [
-        { image: '/examples/01.png', note: 'Paso 1: Seleccione la opción adecuada.' },
-        { image: '/examples/02.png', note: 'Paso 2: Complete los datos requeridos.' },
-        { image: '/examples/03.png', note: 'Paso 3: Confirme y descargue el formato.' },
+        { image: '/examples/02.png', note: 'Paso 1: Complete únicamente los campos resaltados en azul oscuro según el tipo de empresa.' },
+        { image: '/examples/03.png', note: 'Paso 2: Al modificar los campos, los datos se actualizarán automáticamente en las demás hojas.' },
+        { image: '/examples/01.png', note: 'Paso 3: Repita este proceso hasta completar todas las hojas del formato.' },
     ];
 
     const handleDownload = () => {
@@ -52,7 +51,7 @@ export default function DownloadContractFormat({ isDialogOpen, setIsDialogOpen }
 
     return (
         <Dialog open={isDialogOpen} onOpenChange={(open) => setIsDialogOpen(open)}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[625px]">
                 <DialogHeader>
                     <DialogTitle>Descargar Formato de Contratistas</DialogTitle>
                     <DialogDescription>Seleccione una UEA para descargar el formato correspondiente.</DialogDescription>
@@ -74,12 +73,9 @@ export default function DownloadContractFormat({ isDialogOpen, setIsDialogOpen }
                             </SelectContent>
                         </Select>
                     </div>
-                    <Button onClick={handleDownload} disabled={!uea || isLoading} className="mt-2">
-                        {isLoading ? 'Descargando...' : 'Descargar Formato'}
-                    </Button>
                     {uea && (
-                        <div className="mt-4 relative w-full max-w-xs mx-auto">
-                            <div className="overflow-hidden border rounded-lg">
+                        <div className="mt-0 relative w-full max-w-full mx-auto">
+                            <div className="overflow-hidden border rounded-lg relative">
                                 <div
                                     className="flex transition-transform duration-300"
                                     style={{ transform: `translateX(-${current * 100}%)` }}
@@ -87,19 +83,21 @@ export default function DownloadContractFormat({ isDialogOpen, setIsDialogOpen }
                                     {slides.map((slide, index) => (
                                         <div
                                             key={index}
-                                            className="w-full flex-shrink-0 flex flex-col items-center justify-center h-64 bg-gray-100"
+                                            className="w-full flex-shrink-0 flex flex-col items-center justify-center bg-gray-100 relative"
                                         >
                                             <img
                                                 src={slide.image}
                                                 alt={`Slide ${index + 1}`}
-                                                className="w-full h-40 object-contain"
+                                                className="w-full h-auto object-cover"
                                             />
-                                            <p className="mt-2 text-center text-sm text-gray-700">{slide.note}</p>
+                                            <p className="absolute top-0 left-0 right-0 text-center text-sm text-white bg-black bg-opacity-50 py-2">
+                                                {slide.note}
+                                            </p>
                                         </div>
                                     ))}
                                 </div>
                             </div>
-                            <div className="absolute bottom-2 right-2 flex space-x-2">
+                            <div className="flex justify-center mt-2 gap-4">
                                 <button
                                     onClick={handlePrevious}
                                     className="p-2 bg-gray-200 rounded-full hover:bg-gray-300 flex items-center justify-center"
@@ -114,10 +112,13 @@ export default function DownloadContractFormat({ isDialogOpen, setIsDialogOpen }
                                 </button>
                             </div>
                             <div className="py-2 text-center text-sm text-muted-foreground">
-                                Slide {current + 1} of {slides.length}
+                                Paso {current + 1} de {slides.length}
                             </div>
                         </div>
                     )}
+                    <Button onClick={handleDownload} disabled={!uea || isLoading} className=" w-auto">
+                        {isLoading ? 'Descargando...' : 'Descargar Formato'}
+                    </Button>
                 </div>
             </DialogContent>
         </Dialog>

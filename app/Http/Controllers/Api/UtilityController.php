@@ -20,6 +20,9 @@ use App\Mail\TestEmail;
 use App\Jobs\SendReportMail;
 use App\Models\Log as LogModel;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use App\Models\SettingGlobal;
+
 
 class UtilityController extends Controller
 {
@@ -106,8 +109,37 @@ class UtilityController extends Controller
         return $grouped_entities;
     }
 
+    /**
+     * Get the current API version.
+     *
+     * @return JsonResponse
+     */
+    public function getCurrentVersion(): JsonResponse
+    {
+        $settingGlobal = SettingGlobal::first();
+        return response()->json([
+            'success' => true,
+            'version' => $settingGlobal->mobile_version ?? '0.0.0',
+        ], 200);
+    }
+
+    /**
+     * Get the current web version.
+     *
+     * @return JsonResponse
+     */
+    public function getCurrentVersionWeb(): JsonResponse
+    {
+        $settingGlobal = SettingGlobal::first();
+        return response()->json([
+            'success' => true,
+            'version' => $settingGlobal->web_version ?? '0.0.0',
+        ], 200);
+    }
+
     public function authenticate(Request $request)
     {
+        $settingGlobal = SettingGlobal::first();
         // Verificar que la solicitud sea POST
         if (!$request->isMethod('post')) {
             return response()->json(['error' => 'Método no permitido.'], 405);
@@ -115,7 +147,7 @@ class UtilityController extends Controller
 
         // Validar que el campo 'version' sea igual a '2.2.2'
         $version = $request->input('version');
-        if ($version !== '2.2.3') {
+        if ($version !== $settingGlobal->mobile_version) {
             return response()->json(['message' => 'Versión desactualizada.'], 401);
         }
 

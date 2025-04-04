@@ -96,20 +96,6 @@ Route::get('/show/credentials', [UtilityController::class, 'showCredentials'])->
 //get user for company
 Route::get('/{company_id}/users', [UserContrller::class, 'getUserCompany'])->name('company.users');
 
-Route::get('/current-version', function () {
-    return response()->json([
-        'success' => true,
-        'version' => '2.2.3'
-    ], 200);
-});
-
-Route::get('/current-version-web', function () {
-    return response()->json([
-        'success' => true,
-        'version' => '2.2.3'
-    ], 200);
-})->name('current-version-web');
-
 Route::get('/year/metrics/{company_id}', [UtilityController::class, 'yearMetrics'])->name('year.metrics');
 Route::get('/year/metrics/inspeccion/{company_id}', [UtilityController::class, 'yearMetricsInspeccion'])->name('year.metrics.inspeccion');
 Route::post('/year/metrics/inspeccion/detalle/{type}', [UtilityController::class, 'yearMetricsInspeccionDetalle'])->name('year.metrics.inspeccion.detalle');
@@ -121,3 +107,7 @@ Route::get('companies', [UtilityController::class, 'getCompanies'])->name('contr
 Route::get('report/{report_id}', [UtilityController::class, 'getReportJson']);
 
 Route::post('reports/metrics/{type}', [UtilityController::class, 'getReportsMetrics'])->name('getReportsMetrics');
+
+Route::get('/current-version', [UtilityController::class, 'getCurrentVersion']);
+
+Route::get('/current-version-web', [UtilityController::class, 'getCurrentVersionWeb'])->name('current-version-web');
