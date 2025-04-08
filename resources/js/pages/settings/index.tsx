@@ -26,6 +26,8 @@ interface GeneralSettingsForm {
     mobile_version: string;
 }
 
+import { useEffect } from 'react'; // Asegúrate de importar useEffect
+
 export default function GeneralSettings() {
     const { settingGlobal } = usePage<SharedData>().props;
 
@@ -36,6 +38,14 @@ export default function GeneralSettings() {
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [pin, setPin] = useState('');
+
+    // Sincronizar settingGlobal con el estado del formulario
+    useEffect(() => {
+        setData({
+            web_version: settingGlobal?.web_version || '',
+            mobile_version: settingGlobal?.mobile_version || '',
+        });
+    }, [settingGlobal]); // Ejecutar cada vez que settingGlobal cambie
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();

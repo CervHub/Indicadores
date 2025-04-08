@@ -5,6 +5,7 @@
 /public/storage
 /public/consolidateds
 /public/indicadores
+/public/exportExcel
 !public/icons
 /storage/*.key
 /storage/pail
