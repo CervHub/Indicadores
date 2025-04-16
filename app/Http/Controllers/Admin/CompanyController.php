@@ -37,6 +37,7 @@ class CompanyController extends Controller
 
     public function update(Request $request, Company $company)
     {
+        dd($company);
         $data = $request->validate([
             'nombre' => 'required',
             'ruc' => 'required',

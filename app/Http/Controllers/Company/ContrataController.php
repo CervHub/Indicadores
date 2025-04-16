@@ -107,6 +107,12 @@ class ContrataController extends Controller
                     throw new \Exception('Ya existe un usuario con el mismo email.');
                 }
 
+
+                // Actualizar el usuario de la empresa
+                $user_company = User::where('doi', $company->ruc)
+                    ->where('role_id', Role::where('nombre', 'Company Admin')->first()->id)
+                    ->first();
+
                 // Actualizar la empresa
                 $company->update([
                     'nombre' => $request->nombre,
@@ -115,10 +121,6 @@ class ContrataController extends Controller
                     'ruc' => $request->ruc,
                 ]);
 
-                // Actualizar el usuario de la empresa
-                $user_company = User::where('doi', $company->ruc)
-                    ->where('role_id', Role::where('nombre', 'Company Admin')->first()->id)
-                    ->first();
 
                 if ($user_company) {
                     $user_company->update([

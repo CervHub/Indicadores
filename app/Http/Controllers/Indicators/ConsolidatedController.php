@@ -197,19 +197,60 @@ class ConsolidatedController extends Controller
         $file = $request->file('file');
         $uea = $request->input('uea');
 
-        // Definir la ruta y el nombre del archivo según la UEA seleccionada
-        $destinationPath = public_path('formats');
-        $fileName = match ($uea) {
-            'ACUMULACION' => 'Acumulacion.xlsx',
-            'CONCENTRADORA' => 'Concentradora.xlsx',
-            'LIXIVIACION' => 'Lixiviacion.xlsx',
-            default => 'Default.xlsx',
+        // Mapear los valores de UEA a los nuevos códigos
+        $ueaCode = match ($uea) {
+            'ACUMULACION' => 'SPCAT',
+            'CONCENTRADORA' => 'SPCCT',
+            'LIXIVIACION' => 'SPCLX',
+            default => null,
         };
 
-        // Mover el archivo a la carpeta 'public/formats'
-        $file->move($destinationPath, $fileName);
+        if (!$ueaCode) {
+            return redirect()->back()->with('error', 'Código de UEA no válido.');
+        }
+
+        // Buscar el registro de la UEA en la base de datos
+        $ueaModel = Uea::where('code', $ueaCode)->first();
+        if (!$ueaModel) {
+            return redirect()->back()->with('error', 'UEA no encontrada en la base de datos.');
+        }
+
+        // Definir la ruta y generar un nombre único para el archivo
+        $destinationPath = public_path('formats');
+        $uniqueFileName = "{$ueaCode}_" . uniqid() . ".xlsx";
+        $relativeFilePath = "formats/{$uniqueFileName}"; // Ruta relativa
+        $absoluteFilePath = "{$destinationPath}/{$uniqueFileName}";
+
+        // Eliminar el archivo anterior si existe
+        if ($ueaModel->description && file_exists(public_path($ueaModel->description))) {
+            unlink(public_path($ueaModel->description));
+        }
+
+        // Mover el archivo a la carpeta 'public/formats' con el nuevo nombre
+        $file->move($destinationPath, $uniqueFileName);
+
+        // Actualizar la descripción en la base de datos con la ruta relativa
+        $ueaModel->description = $relativeFilePath;
+        $ueaModel->save();
 
         // Retornar una respuesta de éxito
-        return redirect()->back()->with('success', "Formato de contrato para {$uea} actualizado correctamente y guardado en: {$destinationPath}/{$fileName}");
+        return redirect()->back()->with('success', "Formato de contrato para {$uea} actualizado correctamente y guardado en: {$relativeFilePath}");
+    }
+
+    public function downloadFormat($code)
+    {
+        $uea = Uea::where('code', $code)->first();
+
+        if ($uea && $uea->description) {
+            $filePath = public_path($uea->description);
+
+            if (file_exists($filePath)) {
+                return response()->download($filePath);
+            }
+
+            return response()->json(['error' => 'El archivo no existe en el servidor.'], 404);
+        }
+
+        return response()->json(['error' => 'Formato no encontrado.'], 404);
     }
 }

@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'sonner';
 
-export default function DownloadContractFormat({ isDialogOpen, setIsDialogOpen }: { isDialogOpen: boolean; setIsDialogOpen: (open: boolean) => void }) {
+export default function DownloadContractFormat({
+    isDialogOpen,
+    setIsDialogOpen,
+}: {
+    isDialogOpen: boolean;
+    setIsDialogOpen: (open: boolean) => void;
+}) {
     const [uea, setUea] = useState<string>(''); // Estado para la UEA seleccionada
     const [isLoading, setIsLoading] = useState<boolean>(false); // Estado para el indicador de carga
     const [current, setCurrent] = useState(0); // Índice actual del carrusel
@@ -17,28 +25,52 @@ export default function DownloadContractFormat({ isDialogOpen, setIsDialogOpen }
         { image: '/examples/01.png', note: 'Paso 3: Repita este proceso hasta completar todas las hojas del formato.' },
     ];
 
-    const handleDownload = () => {
+    const handleDownload = async () => {
         if (!uea) {
-            alert('Por favor, seleccione una UEA antes de descargar.');
+            toast.error('Por favor, seleccione una UEA antes de descargar.');
             return;
         }
 
         setIsLoading(true); // Activar indicador de carga
 
-        // Simular descarga con un timeout
-        setTimeout(() => {
-            const fileName = {
-                ACUMULACION: 'Acumulacion.xlsx',
-                CONCENTRADORA: 'Concentradora.xlsx',
-                LIXIVIACION: 'Lixiviacion.xlsx',
-            }[uea];
+        const ueaCode = {
+            ACUMULACION: 'SPCAT',
+            CONCENTRADORA: 'SPCCT',
+            LIXIVIACION: 'SPCLX',
+        }[uea];
 
-            if (fileName) {
-                window.location.href = `/formats/${fileName}`;
+        if (ueaCode) {
+            try {
+                // Realizar la solicitud al backend
+                const response = await fetch(`/format/download/${ueaCode}`, {
+                    method: 'GET',
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al descargar el archivo.');
+                }
+
+                // Generar un UID único
+                const uid = Date.now(); // Puedes usar cualquier método para generar un UID único
+                const uniqueFileName = `${uea}_${uid}`;
+
+                // Crear un blob para descargar el archivo
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = uniqueFileName; // Usar el nombre del archivo con UID
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+                toast.success('Archivo descargado exitosamente.');
+            } catch (error) {
+                toast.error('Hubo un error al intentar descargar el archivo.');
+            } finally {
+                setIsLoading(false); // Desactivar indicador de carga
             }
-
-            setIsLoading(false); // Desactivar indicador de carga
-        }, 2000); // Simulación de 2 segundos
+        }
     };
 
     const handlePrevious = () => {
@@ -74,49 +106,42 @@ export default function DownloadContractFormat({ isDialogOpen, setIsDialogOpen }
                         </Select>
                     </div>
                     {uea && (
-                        <div className="mt-0 relative w-full max-w-full mx-auto">
-                            <div className="overflow-hidden border rounded-lg relative">
-                                <div
-                                    className="flex transition-transform duration-300"
-                                    style={{ transform: `translateX(-${current * 100}%)` }}
-                                >
+                        <div className="relative mx-auto mt-0 w-full max-w-full">
+                            <div className="relative overflow-hidden rounded-lg border">
+                                <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${current * 100}%)` }}>
                                     {slides.map((slide, index) => (
                                         <div
                                             key={index}
-                                            className="w-full flex-shrink-0 flex flex-col items-center justify-center bg-gray-100 relative"
+                                            className="relative flex w-full flex-shrink-0 flex-col items-center justify-center bg-gray-100"
                                         >
-                                            <img
-                                                src={slide.image}
-                                                alt={`Slide ${index + 1}`}
-                                                className="w-full h-auto object-cover"
-                                            />
-                                            <p className="absolute top-0 left-0 right-0 text-center text-sm text-white bg-black bg-opacity-50 py-2">
+                                            <img src={slide.image} alt={`Slide ${index + 1}`} className="h-auto w-full object-cover" />
+                                            <p className="bg-opacity-50 absolute top-0 right-0 left-0 bg-black py-2 text-center text-sm text-white">
                                                 {slide.note}
                                             </p>
                                         </div>
                                     ))}
                                 </div>
                             </div>
-                            <div className="flex justify-center mt-2 gap-4">
+                            <div className="mt-2 flex justify-center gap-4">
                                 <button
                                     onClick={handlePrevious}
-                                    className="p-2 bg-gray-200 rounded-full hover:bg-gray-300 flex items-center justify-center"
+                                    className="flex items-center justify-center rounded-full bg-gray-200 p-2 hover:bg-gray-300"
                                 >
-                                    <ChevronLeft className="w-5 h-5" />
+                                    <ChevronLeft className="h-5 w-5" />
                                 </button>
                                 <button
                                     onClick={handleNext}
-                                    className="p-2 bg-gray-200 rounded-full hover:bg-gray-300 flex items-center justify-center"
+                                    className="flex items-center justify-center rounded-full bg-gray-200 p-2 hover:bg-gray-300"
                                 >
-                                    <ChevronRight className="w-5 h-5" />
+                                    <ChevronRight className="h-5 w-5" />
                                 </button>
                             </div>
-                            <div className="py-2 text-center text-sm text-muted-foreground">
+                            <div className="text-muted-foreground py-2 text-center text-sm">
                                 Paso {current + 1} de {slides.length}
                             </div>
                         </div>
                     )}
-                    <Button onClick={handleDownload} disabled={!uea || isLoading} className=" w-auto">
+                    <Button onClick={handleDownload} disabled={!uea || isLoading} className="w-auto">
                         {isLoading ? 'Descargando...' : 'Descargar Formato'}
                     </Button>
                 </div>
