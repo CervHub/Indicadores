@@ -79,8 +79,7 @@ export default function Login({ status }: LoginProps) {
                                             <DialogHeader>
                                                 <DialogTitle>Descarga para iOS</DialogTitle>
                                                 <DialogDescription>
-                                                    Para descargar la aplicación en iOS, comunícate con nosotros al siguiente número para obtener el
-                                                    enlace y la licencia:
+                                                    Para descargar la aplicación en iOS, comunícate con nosotros para obtener el aplicativo:
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <div className="space-y-2">
@@ -209,8 +208,7 @@ export default function Login({ status }: LoginProps) {
                                         <DialogHeader>
                                             <DialogTitle>Descarga para iOS</DialogTitle>
                                             <DialogDescription>
-                                                Para descargar la aplicación en iOS, comunícate con nosotros al siguiente número para obtener el
-                                                enlace y la licencia:
+                                                Para descargar la aplicación en iOS, comunícate con nosotros para obtener el aplicativo:
                                             </DialogDescription>
                                         </DialogHeader>
                                         <div className="space-y-2">
