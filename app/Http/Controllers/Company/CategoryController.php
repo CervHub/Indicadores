@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Company;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Category;
+use App\Models\Group;
 use App\Models\CategoryCompany;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -14,7 +15,7 @@ class CategoryController extends Controller
     public function index()
     {
         $company_id = 1;
-        $categories = Category::where('company_id', $company_id)->with('categoryCompanies')->get();
+        $categories = Category::where('company_id', $company_id)->with('categoryCompanies', 'groups')->get();
         return Inertia::render('category/index', [
             'categories' => $categories
         ]);
@@ -37,7 +38,9 @@ class CategoryController extends Controller
 
             $category = Category::create([
                 'nombre' => $nombre,
-                'company_id' => $company_id
+                'company_id' => $company_id,
+                'is_categorized' => $request->is_categorized,
+                'is_risk' => $request->is_risk,
             ]);
 
             return redirect()->back()->with('success', 'Categoría creada exitosamente');
@@ -82,7 +85,8 @@ class CategoryController extends Controller
                 $category_company = CategoryCompany::create([
                     'category_id' => $category_id,
                     'company_id' => $company_id,
-                    'nombre' => $nombre
+                    'nombre' => $nombre,
+                    'group_id' => $request->input('group_id') // Asignar el grupo si se proporciona
                 ]);
                 return redirect()->back()->with('success', 'Categoría asignada a la empresa exitosamente');
             } else {
@@ -90,6 +94,31 @@ class CategoryController extends Controller
             }
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al asignar la categoría a la empresa: ' . $e->getMessage());
+        }
+    }
+
+    public function groupStore(Request $request, $category_id)
+    {
+        try {
+            $name = trim($request->input('name'));
+
+            // Verificar si ya existe un grupo con el mismo nombre para la misma categoría
+            $existingGroup = Group::where('category_id', $category_id)
+                ->whereRaw('UPPER(TRIM(name)) = ?', [strtoupper($name)])
+                ->first();
+
+            if ($existingGroup) {
+                return redirect()->back()->with('error', 'Ya existe un grupo con el mismo nombre.');
+            }
+
+            $group = Group::create([
+                'category_id' => $category_id,
+                'name' => $name
+            ]);
+
+            return redirect()->back()->with('success', 'Grupo creado exitosamente');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error al crear el grupo: ' . $e->getMessage());
         }
     }
 }

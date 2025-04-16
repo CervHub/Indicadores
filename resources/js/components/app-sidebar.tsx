@@ -2,81 +2,114 @@ import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { getPermissionDescription } from '@/lib/utils';
-import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { FileArchive, FileChartPie, FileText, HousePlus, LayoutGrid, Shield, ShieldPlusIcon, UserCheck, Users } from 'lucide-react'; // Import new icons
+import { BarChart, Building, FileText, LayoutDashboard, Settings, ShieldAlert, ShieldCheck, Truck, Users } from 'lucide-react'; // Updated icons
 import AppLogo from './app-logo';
 
-const mainNavItems: NavItem[] = [
+const groupedNavItems = [
     {
-        title: 'Dashboard',
-        url: '/dashboard',
-        icon: LayoutGrid,
-        isActive: window.location.pathname === '/dashboard',
-        roles: ['admin', 'security', 'company'], // Add roles property
+        group: 'Gestión',
+        items: [
+            {
+                title: 'Dashboard',
+                url: '/dashboard',
+                icon: LayoutDashboard,
+                isActive: window.location.pathname === '/dashboard',
+                roles: ['admin', 'security', 'company'],
+            },
+            {
+                title: 'Empresas',
+                url: '/contractor',
+                icon: Building,
+                isActive: window.location.pathname === '/contractor',
+                roles: ['admin'],
+            },
+            {
+                title: 'Gerencias',
+                url: '/admin/management',
+                icon: Users,
+                isActive: window.location.pathname === '/admin/management',
+                roles: ['admin'],
+            },
+            {
+                title: 'Gestión de SSO',
+                url: '/admin/category',
+                icon: ShieldAlert,
+                isActive: window.location.pathname === '/admin/category',
+                roles: ['admin'],
+            },
+            {
+                title: 'Vehículos',
+                url: '/vehicle',
+                icon: Truck,
+                isActive: window.location.pathname === '/vehicle',
+                roles: ['admin', 'company'],
+            },
+        ],
     },
     {
-        title: 'Empresas',
-        url: '/contractor',
-        icon: HousePlus,
-        isActive: window.location.pathname === '/contractor',
-        roles: ['admin'],
+        group: 'Herramientas',
+        items: [
+            {
+                title: 'Indicadores',
+                url: '/annexes',
+                icon: BarChart,
+                isActive: window.location.pathname === '/annexes',
+                roles: ['company'],
+            },
+            {
+                title: 'Consolidados',
+                url: '/consolidated',
+                icon: FileText,
+                isActive: window.location.pathname === '/consolidated',
+                roles: ['admin'],
+            },
+            {
+                title: 'Reporte',
+                url: '/admin/reportability',
+                icon: FileText,
+                isActive: window.location.pathname === '/admin/reportability',
+                roles: ['admin', 'security', 'company'],
+            },
+            {
+                title: 'Formatos',
+                url: '/format',
+                icon: FileText,
+                isActive: window.location.pathname === '/format',
+                roles: ['admin', 'security', 'company'],
+            },
+        ],
     },
     {
-        title: 'Indicadores',
-        url: '/annexes',
-        icon: FileArchive,
-        isActive: window.location.pathname === '/annexes',
-        roles: ['company'],
+        group: 'Configuración',
+        items: [
+            {
+                title: 'Configuración',
+                url: '/settings/general',
+                icon: Settings,
+                isActive: window.location.pathname === '/settings',
+                roles: ['admin'],
+            },
+        ],
     },
     {
-        title: 'Consolidados',
-        url: '/consolidated',
-        icon: FileChartPie,
-        isActive: window.location.pathname === '/consolidated',
-        roles: ['admin'],
-    },
-    {
-        title: 'Gerencias',
-        url: '/admin/management',
-        icon: Users,
-        isActive: window.location.pathname === '/admin/management',
-        roles: ['admin'],
-    },
-    {
-        title: 'Gestión de SSO',
-        url: '/admin/category',
-        icon: Shield,
-        isActive: window.location.pathname === '/admin/category',
-        roles: ['admin'],
-    },
-    {
-        title: 'Reporte',
-        url: '/admin/reportability',
-        icon: FileText,
-        isActive: window.location.pathname === '/admin/reportability',
-        roles: ['admin', 'security', 'company'],
-    },
-    {
-        title: 'Personal',
-        url: '/contrata/personal',
-        icon: UserCheck,
-        isActive: window.location.pathname === '/contrata/personal',
-        roles: ['company', 'security'],
-    },
-    {
-        title: 'Ingeniero de Seguridad',
-        url: '/admin/security-engineer',
-        icon: ShieldPlusIcon,
-        isActive: window.location.pathname === '/admin/security-engineer',
-        roles: ['company'],
-    },
-    {
-        title: 'Configuración',
-        url: '/settings/general',
-        icon: ShieldPlusIcon,
-        isActive: window.location.pathname === '/settings',
-        roles: ['admin'],
+        group: 'Personal',
+        items: [
+            {
+                title: 'Personal',
+                url: '/contrata/personal',
+                icon: ShieldCheck,
+                isActive: window.location.pathname === '/contrata/personal',
+                roles: ['company', 'security'],
+            },
+            {
+                title: 'Ingeniero de Seguridad',
+                url: '/admin/security-engineer',
+                icon: ShieldCheck,
+                isActive: window.location.pathname === '/admin/security-engineer',
+                roles: ['company'],
+            },
+        ],
     },
 ];
 
@@ -92,12 +125,17 @@ export function AppSidebar() {
     const userRoles = [userRoleId]; // Assuming role_id is a single role, wrap it in an array
 
     // Filter nav items based on user roles and company_id
-    const filteredNavItems = mainNavItems.filter((item) => {
-        if (item.title === 'Ingeniero de Seguridad' && userCompanyId !== '1') {
-            return false;
-        }
-        return item.roles.some((role) => userRoles.includes(role));
-    });
+    const filteredNavGroups = groupedNavItems
+        .map((group) => ({
+            ...group,
+            items: group.items.filter((item) => {
+                if (item.title === 'Ingeniero de Seguridad' && userCompanyId !== '1') {
+                    return false;
+                }
+                return item.roles.some((role) => userRoles.includes(role));
+            }),
+        }))
+        .filter((group) => group.items.length > 0); // Remove empty groups
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -114,11 +152,14 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={filteredNavItems} />
+                {filteredNavGroups.map((group) => (
+                    <div key={group.group}>
+                        <NavMain items={group.items} title={group.group} />
+                    </div>
+                ))}
             </SidebarContent>
 
             <SidebarFooter>
-                {/* <NavFooter items={footerNavItems} className="mt-auto" /> */}
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

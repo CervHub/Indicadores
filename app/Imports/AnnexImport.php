@@ -244,7 +244,7 @@ class AnnexImport implements WithMultipleSheets
         ];
 
         if (!$this->areAllValuesEqualLinear($dataHorasTrabajadas)) {
-            dd($dataHorasTrabajadas, $this->data['PLANTILLA MINEM 1'][0]);
+            // dd($dataHorasTrabajadas, $this->data['PLANTILLA MINEM 1'][0]);
             throw new \Exception('Los valores en la columna de horas trabajadas no coinciden, entre los ANEXO 28 (U) y MINEM 1 (F:T) (U)');
         }
 
@@ -530,7 +530,7 @@ class AnnexImport implements WithMultipleSheets
 
     private function processPlantillaMinem1(array $sheetData): array
     {
-        dd($this->typeClient);
+        // dd($this->typeClient);
         try {
             $limits = $this->keywordPositions['PLANTILLA MINEM 1'];
             $startRow = $limits['RUC'] + 2;

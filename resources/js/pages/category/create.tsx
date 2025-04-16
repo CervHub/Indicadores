@@ -7,12 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 
-type CategoryForm = { nombre: string };
+type CategoryForm = { nombre: string; is_categorized: boolean; is_risk: boolean };
 
 export default function CreateCategory() {
-    const { data, setData, post, processing, errors, reset } = useForm<Required<CategoryForm>>({ nombre: '' });
+    const { data, setData, post, processing, errors, reset } = useForm<Required<CategoryForm>>({
+        nombre: '',
+        is_categorized: false,
+        is_risk: false,
+    });
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const handleSuccess = (page: any) => {
@@ -67,6 +72,26 @@ export default function CreateCategory() {
                                 placeholder="Nombre"
                             />
                             <InputError message={errors.nombre} />
+                        </div>
+                        <div className="grid gap-2">
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="is_categorized"
+                                    checked={data.is_categorized}
+                                    onCheckedChange={(checked) => setData('is_categorized', !!checked)}
+                                    disabled={processing}
+                                />
+                                <Label htmlFor="is_categorized">¿Está categorizado?</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="is_risk"
+                                    checked={data.is_risk}
+                                    onCheckedChange={(checked) => setData('is_risk', !!checked)}
+                                    disabled={processing}
+                                />
+                                <Label htmlFor="is_risk">¿Es de evaluación?</Label>
+                            </div>
                         </div>
                         <Button type="submit" className="mt-2 w-auto" disabled={processing}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}

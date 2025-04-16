@@ -1,7 +1,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, Edit, Trash } from 'lucide-react';
+import { ArrowUpDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
@@ -9,15 +9,25 @@ export interface CategoryCompany {
     id: number;
     nombre: string;
     category_id: number;
+    group_id?: number;
+}
+
+export interface Group {
+    id: number;
+    name: string;
+    category_id: number;
 }
 
 export interface Category {
     id: number;
     nombre: string;
     category_companies: CategoryCompany[];
+    is_categorized: string;
+    is_risk: string;
+    groups: Group[];
 }
 
-export const getColumns = (handleActionClick: (item: CategoryCompany, action: string) => void): ColumnDef<CategoryCompany>[] => [
+export const getColumns = (handleActionClick: (item: CategoryCompany, action: string) => void, groups: Group[]): ColumnDef<CategoryCompany>[] => [
     {
         accessorKey: 'nombre',
         header: ({ column }) => {
@@ -27,6 +37,18 @@ export const getColumns = (handleActionClick: (item: CategoryCompany, action: st
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             );
+        },
+    },
+    {
+        accessorKey: 'group',
+        header: 'Group',
+        cell: ({ row }) => {
+            const categoryCompany = row.original;
+            const group = groups.find((g) => g.id === Number(categoryCompany.group_id));
+            console.log('Group:', group);
+            console.log('Category Company:', categoryCompany);
+            console.log('Groups:', groups);
+            return <span>{group?.name || '-'}</span>;
         },
     },
     // {

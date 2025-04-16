@@ -26,6 +26,9 @@ require __DIR__ . '/annex.php';
 require __DIR__ . '/consolidated.php';
 require __DIR__ . '/company.php';
 
+// Modulo para la gestion de vehiculos
+require __DIR__ . '/format.php';
+
 //Legacy
 require __DIR__ . '/legacy/user.php';
 require __DIR__ . '/legacy/admin.php';
@@ -33,3 +36,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     require __DIR__ . '/legacy/contrata.php';
     require __DIR__ . '/legacy/admin.php';
 });
+
+
+// Modulo de formatos para usuarios

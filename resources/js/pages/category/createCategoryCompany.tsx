@@ -7,19 +7,29 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
-type CategoryCompanyForm = { nombre: string };
+type CategoryCompanyForm = { nombre: string; group_id?: string }; // Agregado group_id opcional
 
 interface CreateCategoryCompanyProps {
     categoryId: number;
     title: string;
     isDialogOpen: boolean;
     setIsDialogOpen: (isOpen: boolean) => void;
+    isCategorized: string | null;
+    groups: any[];
 }
 
-export default function CreateCategoryCompany({ categoryId, title, isDialogOpen, setIsDialogOpen }: CreateCategoryCompanyProps) {
-    const { data, setData, post, processing, errors, reset } = useForm<Required<CategoryCompanyForm>>({ nombre: '' });
+export default function CreateCategoryCompany({
+    categoryId,
+    title,
+    isDialogOpen,
+    setIsDialogOpen,
+    isCategorized,
+    groups,
+}: CreateCategoryCompanyProps) {
+    const { data, setData, post, processing, errors, reset } = useForm<Required<CategoryCompanyForm>>({ nombre: '', group_id: undefined });
     const [currentCategoryId, setCurrentCategoryId] = useState(categoryId);
 
     useEffect(() => {
@@ -75,6 +85,28 @@ export default function CreateCategoryCompany({ categoryId, title, isDialogOpen,
                             />
                             <InputError message={errors.nombre} />
                         </div>
+                        {isCategorized === '1' && (
+                            <div className="grid gap-2">
+                                <Label>Grupos disponibles:</Label>
+                                <Select
+                                    onValueChange={(value) => setData('group_id', value)} // Actualiza el estado con el group_id seleccionado
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Seleccione un grupo" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectLabel>Grupos</SelectLabel>
+                                            {groups.map((group) => (
+                                                <SelectItem key={group.id} value={group.id.toString()}>
+                                                    {group.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
                         <Button type="submit" className="mt-2 w-auto" disabled={processing}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             Guardar

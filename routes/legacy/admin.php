@@ -49,6 +49,8 @@ Route::delete('admin/category/{category}', [CategoryController::class, 'destroy'
 //Rutas para categories admin
 Route::post('admin/category/admin/{category_id}', [CategoryController::class, 'storeCompany'])->name('admin.category.admin.store');
 
+//Rutas para group
+Route::post('group/store/{category_id}', [CategoryController::class, 'groupStore'])->name('group.store');
 
 //Reportabilidad
 Route::get('admin/reportability', [ReportabilityController::class, 'index'])->name('admin.reportability');

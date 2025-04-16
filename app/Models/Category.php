@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    protected $fillable = ['nombre', 'company_id'];
+    protected $fillable = ['nombre', 'company_id', 'is_categorized', 'is_risk'];
     use HasFactory;
 
     public function company()
@@ -17,5 +17,9 @@ class Category extends Model
     public function categoryCompanies()
     {
         return $this->hasMany(CategoryCompany::class);
+    }
+    public function groups()
+    {
+        return $this->hasMany(Group::class);
     }
 }
