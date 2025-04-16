@@ -1,5 +1,8 @@
 import { Head, useForm } from '@inertiajs/react';
-import { Download, HelpCircle, LoaderCircle } from 'lucide-react'; // Importa el ícono de ayuda
+import { FaAppStore } from 'react-icons/fa';
+import { MdAndroid } from 'react-icons/md'; // Importa los íconos de Android y Apple
+
+import { HelpCircle, LoaderCircle } from 'lucide-react'; // Mantén los íconos que ya usas
 import { FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
@@ -49,14 +52,45 @@ export default function Login({ status }: LoginProps) {
                             <div className="h-full w-full overflow-hidden">
                                 <img src="/auth/img-toq.png" alt="Imagen" className="object-initial absolute inset-0 h-full w-full" />
 
-                                <div className="absolute bottom-4 left-4">
+                                {/* Botón de descarga para Android */}
+                                <div className="absolute bottom-16 left-4">
                                     <Button variant="destructive" asChild className="flex items-center space-x-2">
-                                        <a href="https://play.google.com/store/apps/details?id=com.CERV.GESTIONSSTV1">
-                                            <Download className="h-5 w-5" />
-                                            <span>Descargar APP</span>
+                                        <a
+                                            href="https://play.google.com/store/apps/details?id=com.CERV.GESTIONSSTV1"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            <MdAndroid className="h-5 w-5" /> {/* Ícono de Android */}
+                                            <span>Descargar APP Android</span>
                                         </a>
                                     </Button>
                                 </div>
+
+                                {/* Botón de descarga para iOS */}
+                                <div className="absolute bottom-4 left-4">
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <Button className="flex items-center space-x-2 bg-gray-800 text-white hover:bg-gray-900">
+                                                <FaAppStore className="h-5 w-5" /> {/* Ícono de Apple */}
+                                                <span>Descargar APP iOS</span>
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="sm:max-w-md">
+                                            <DialogHeader>
+                                                <DialogTitle>Descarga para iOS</DialogTitle>
+                                                <DialogDescription>
+                                                    Para descargar la aplicación en iOS, comunícate con nosotros al siguiente número para obtener el
+                                                    enlace y la licencia:
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <div className="space-y-2">
+                                                <p>Teléfono: +51 948 202 038</p>
+                                                <p>Correo: soporte@cerv.com.pe</p>
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
+                                </div>
+
                                 {/* Botón de ayuda */}
                                 <div className="absolute right-10 bottom-4">
                                     <Dialog>
@@ -150,6 +184,62 @@ export default function Login({ status }: LoginProps) {
                                         Iniciar sesión
                                     </Button>
                                 </div>
+                            </div>
+                            {/* Botones de ayuda y descargas para mobile */}
+                            <div className="mt-4 flex flex-row justify-center gap-4 md:hidden">
+                                {/* Botón de descarga para Android */}
+                                <Button variant="destructive" asChild className="flex h-10 w-10 items-center justify-center p-0">
+                                    <a
+                                        href="https://play.google.com/store/apps/details?id=com.CERV.GESTIONSSTV1"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <MdAndroid className="h-5 w-5" />
+                                    </a>
+                                </Button>
+
+                                {/* Botón de descarga para iOS */}
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button className="flex h-10 w-10 items-center justify-center bg-gray-800 p-0 text-white hover:bg-gray-900">
+                                            <FaAppStore className="h-5 w-5" />
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-md">
+                                        <DialogHeader>
+                                            <DialogTitle>Descarga para iOS</DialogTitle>
+                                            <DialogDescription>
+                                                Para descargar la aplicación en iOS, comunícate con nosotros al siguiente número para obtener el
+                                                enlace y la licencia:
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="space-y-2">
+                                            <p>Teléfono: +51 948 202 038</p>
+                                            <p>Correo: soporte@cerv.com.pe</p>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
+
+                                {/* Botón de ayuda */}
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button className="flex h-10 w-10 items-center justify-center bg-blue-500 p-0 text-white hover:bg-blue-600">
+                                            <HelpCircle className="h-5 w-5" />
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-md">
+                                        <DialogHeader>
+                                            <DialogTitle>Contacto de Soporte</DialogTitle>
+                                            <DialogDescription>
+                                                Si necesitas ayuda, puedes contactarnos a través de los siguientes medios:
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="space-y-2">
+                                            <p>Correo: soporte@cerv.com.pe</p>
+                                            <p>WhatsApp y Teléfono: +51 948 202 038</p>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
                             </div>
                         </form>
                     </CardContent>
