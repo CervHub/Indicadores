@@ -4,6 +4,7 @@ import { XCircleIcon } from 'lucide-react';
 const ImagePreview = ({ url, onRemove }: { url: string; onRemove: () => void }) => (
     <div className="relative aspect-[6/4]"> {/* Aspecto 6:4 */}
         <button
+            type='button'
             className="absolute top-2 right-2 bg-gray-200 rounded-full p-1 shadow-md hover:bg-gray-300"
             onClick={onRemove}
         >
@@ -33,7 +34,7 @@ export default function ImageDropZone({
     return (
         <div>
             <label className="block text-sm font-medium text-gray-600">{label}</label> {/* Texto más suave */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2"> {/* Hacerlo responsive */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-2"> {/* Hacerlo responsive */}
                 {images.map((image, index) => (
                     <ImagePreview key={index} url={image} onRemove={() => onRemove(index)} />
                 ))}

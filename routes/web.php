@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\Company\ReportabilityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinishController;
+require __DIR__.'/apiweb.php';
 
 Route::get('/', function () {
     return redirect()->route('login');

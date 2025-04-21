@@ -63,16 +63,18 @@ export default function Security() {
                 <div className="grid grid-cols-1 gap-2 md:grid-cols-1 lg:grid-cols-2">
                     {[...categories].reverse().map(({ id, nombre, is_categorized, category_companies, groups }, index) => (
                         <Card key={index}>
-                            <CardHeader className="flex flex-row items-center justify-between">
+                            <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                                 <CardTitle className="flex-1">{nombre}</CardTitle>
-                                {is_categorized === '1' && (
-                                    <Button size="sm" variant="secondary" onClick={() => handleGroupClick(id, nombre, is_categorized, groups)}>
-                                        Crear Grupo
+                                <div className="flex flex-col gap-2 md:flex-row">
+                                    {is_categorized === '1' && (
+                                        <Button size="sm" variant="secondary" onClick={() => handleGroupClick(id, nombre, is_categorized, groups)}>
+                                            Crear Grupo
+                                        </Button>
+                                    )}
+                                    <Button size="sm" className="md:ml-4" onClick={() => handleCategoryClick(id, nombre, is_categorized, groups)}>
+                                        Crear {nombre}
                                     </Button>
-                                )}
-                                <Button size="sm" className="ml-4" onClick={() => handleCategoryClick(id, nombre, is_categorized, groups)}>
-                                    Crear {nombre}
-                                </Button>
+                                </div>
                             </CardHeader>
                             <CardContent>
                                 <DataTable columns={getColumns(() => {}, groups)} data={category_companies} />

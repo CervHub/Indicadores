@@ -78,7 +78,7 @@ export default function TemplateForm({
     };
 
     return (
-        <form className="grid grid-cols-1 gap-6 md:grid-cols-2 2xl:px-[25rem]" onSubmit={handleSubmit}>
+        <form className="grid grid-cols-1 gap-6 md:grid-cols-2 " onSubmit={handleSubmit}>
             {/* Fecha y hora del evento */}
             <div className="col-span-2 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Format;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Models\CategoryCompany;
 use Inertia\Inertia;
 
 class FormatController extends Controller
@@ -42,19 +44,59 @@ class FormatController extends Controller
     }
     public function dailyVehicleInspection(Request $request)
     {
-        return Inertia::render('format/formats/daily-vehicle-inspection');
+        $category = Category::where('nombre', 'Inspección Vehicular PreUso')->first();
+        $causas = $category->categoryCompanies()->get();
+        return Inertia::render(
+            'format/formats/daily-vehicle-inspection',
+            [
+                'causas' => $causas,
+            ]
+        );
     }
     public function quarterlyVehicleInspection(Request $request)
     {
-        return Inertia::render('format/formats/quarterly-vehicle-inspection');
+        $category = Category::where('nombre', 'Inspección Vehicular')->first();
+        $causas = CategoryCompany::select('category_companies.id', 'category_companies.nombre', 'groups.name as group')
+            ->join('groups', 'category_companies.group_id', '=', 'groups.id')
+            ->where('category_companies.category_id', $category->id)
+            ->get();
+
+        return Inertia::render(
+            'format/formats/quarterly-vehicle-inspection',
+            [
+                'causas' => $causas,
+            ]
+        );
     }
     public function semiannualVehicleInspection(Request $request)
     {
-        return Inertia::render('format/formats/semiannual-vehicle-inspection');
+        $category = Category::where('nombre', 'Inspección Vehicular')->first();
+        $causas = CategoryCompany::select('category_companies.id', 'category_companies.nombre', 'groups.name as group')
+            ->join('groups', 'category_companies.group_id', '=', 'groups.id')
+            ->where('category_companies.category_id', $category->id)
+            ->get();
+
+        return Inertia::render(
+            'format/formats/semiannual-vehicle-inspection',
+            [
+                'causas' => $causas,
+            ]
+        );
     }
     public function annualVehicleShutdownInspection(Request $request)
     {
-        return Inertia::render('format/formats/annual-vehicle-shutdown-inspection');
+        $category = Category::where('nombre', 'Inspección Vehicular')->first();
+        $causas = CategoryCompany::select('category_companies.id', 'category_companies.nombre', 'groups.name as group')
+            ->join('groups', 'category_companies.group_id', '=', 'groups.id')
+            ->where('category_companies.category_id', $category->id)
+            ->get();
+
+        return Inertia::render(
+            'format/formats/annual-vehicle-shutdown-inspection',
+            [
+                'causas' => $causas,
+            ]
+        );
     }
 
     public function store(Request $request)

@@ -33,7 +33,8 @@ class Module extends Model
         'tipo_inspeccion',
         'send_email',
         'company_report_id',
-        'device'
+        'device',
+        'version',
     ];
 
     public function getGerenciaIdAttribute()

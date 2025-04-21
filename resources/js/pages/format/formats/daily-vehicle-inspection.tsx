@@ -1,6 +1,8 @@
+import InspectionVehiclePreUse from '@/components/form/inpectionPreUse';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react'; // Importamos Link de Inertia.js
+import { Head, usePage } from '@inertiajs/react';
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Gestión de Formatos',
@@ -12,11 +14,32 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+// Definición de la interfaz Causa
+interface Causa {
+    id: string;
+    nombre: string;
+}
+
 export default function DailyVehicleInspection() {
+    const { causas, auth } = usePage<{ causas: Causa[]; auth: { user: { id: string; company_id: string; name: string } } }>().props;
+
+    // Extraer id, company_id y name del usuario
+    const userId = auth.user.id;
+    const companyId = auth.user.company_id;
+    const userName = auth.user.name;
+
+    // Formatear las causas para que tengan solo id y name
+    const formattedCausas = causas.slice(0, 2).map((causa: Causa) => ({
+        id: causa.id,
+        name: causa.nombre,
+    }));
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Inspección Vehicular Diaria" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4"></div>
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+                <InspectionVehiclePreUse causas={formattedCausas} userId={userId} userName={userName} companyId={companyId} />
+            </div>
         </AppLayout>
     );
 }

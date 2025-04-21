@@ -29,6 +29,7 @@ class ReportabilityController extends Controller
                 WHEN m.tipo_reporte = 'inspeccion' THEN 'Reporte de inspección'
                 WHEN m.tipo_reporte = 'incidentes' THEN 'Reporte de incidentes'
                 WHEN m.tipo_reporte = 'condiciones' THEN 'Reporte de condiciones subestándar'
+                WHEN m.tipo_reporte = 'vehicular' THEN CONCAT('Inspección Vehicular - ', m.tipo_inspeccion)
                 ELSE m.tipo_reporte
             END AS TIPO_REPORTE,
             m.fecha_evento AS FECHA_EVENTO,
@@ -116,6 +117,7 @@ class ReportabilityController extends Controller
                 WHEN m.tipo_reporte = 'inspeccion' THEN 'Reporte de inspección'
                 WHEN m.tipo_reporte = 'incidentes' THEN 'Reporte de incidentes'
                 WHEN m.tipo_reporte = 'condiciones' THEN 'Reporte de condiciones subestándar'
+                WHEN m.tipo_reporte = 'vehicular' THEN CONCAT('Inspección Vehicular - ', m.tipo_inspeccion)
                 ELSE m.tipo_reporte
             END AS tipo_reporte,
             COALESCE(e.nombre, 'No existe') AS gerencia_name,
@@ -149,7 +151,7 @@ class ReportabilityController extends Controller
                         NULL
                 END
         LEFT JOIN
-            companies AS c ON c.id = u.company_id
+            companies AS c ON c.id = m.company_id
         LEFT JOIN
             companies AS cr ON cr.id = m.company_report_id
     ";
@@ -166,7 +168,6 @@ class ReportabilityController extends Controller
 
         // Ejecuta la consulta con los parámetros
         $reportabilities = DB::select($query, $bindings);
-
         // Retorna la vista con los datos
         return Inertia::render('reportability/index', [
             'reportabilities' => $reportabilities,
@@ -177,7 +178,6 @@ class ReportabilityController extends Controller
 
     public function detalle($reportability_id)
     {
-
         $user = auth()->user();
         if ($user->isSecurityEngineer()) {
             $reportability = Module::findOrFail($reportability_id);
@@ -195,12 +195,13 @@ class ReportabilityController extends Controller
                 WHEN m.tipo_reporte = 'inspeccion' THEN 'Reporte de inspección'
                 WHEN m.tipo_reporte = 'incidentes' THEN 'Reporte de incidentes'
                 WHEN m.tipo_reporte = 'condiciones' THEN 'Reporte de condiciones subestándar'
+                WHEN m.tipo_reporte = 'vehicular' THEN CONCAT('Inspección Vehicular - ', m.tipo_inspeccion)
                 ELSE m.tipo_reporte
             END AS tipo_reporte,
             m.company_id,
             c.nombre AS company_name,
             m.company_report_id,
-            cr.nombre AS company_report_name,
+            COALESCE(cr.nombre, 'No especificado') AS company_report_name, -- Manejar null en company_report_id
             m.fecha_reporte,
             m.fecha_evento
         FROM
@@ -248,13 +249,23 @@ class ReportabilityController extends Controller
 
         $name = "Reporte de reportabilidad {$reportability->fecha_reporte}.pdf";
 
-        $view = $reportability->tipo_reporte == 'inspeccion'
-            ? 'reports.detallado_inspeccionPDF'
-            : 'reports.detalladoPDF';
+        $view = match ($reportability->tipo_reporte) {
+            'inspeccion' => 'reports.detallado_inspeccionPDF',
+            'vehicular' => match ($reportability->tipo_inspeccion) {
+                'pre-use' => 'reports.detallado_vehicular_preusePDF',
+                default => 'reports.detallado_vehicularPDF',
+            },
+            default => 'reports.detalladoPDF',
+        };
+
+        // Convertir el logo a base64
+        $logoPath = public_path('logos/grupomexico.png'); // Cambiado a 'madna'
+        $logoBase64 = base64_encode(file_get_contents($logoPath));
+        $logo = "data:image/png;base64,{$logoBase64}";
 
         return $this->generatePDF($view, [
             'reportability' => $reportability,
-            'logo' => public_path('logos/grupomexico.png'),
+            'logo' => $logo,
             'url' => public_path('/'),
         ], $name);
     }
