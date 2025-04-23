@@ -142,13 +142,13 @@ class UtilityController extends Controller
         $settingGlobal = SettingGlobal::first();
         // Verificar que la solicitud sea POST
         if (!$request->isMethod('post')) {
-            return response()->json(['error' => 'Método no permitido.'], 405);
+            return response()->json(['error' => 'Método no permitido.'], 205);
         }
 
         // Validar que el campo 'version' sea igual a '2.2.2'
         $version = $request->input('version');
         if ($version !== $settingGlobal->mobile_version) {
-            return response()->json(['message' => 'Versión desactualizada.'], 401);
+            return response()->json(['message' => 'Versión desactualizada.'], 201);
         }
 
         try {
@@ -158,18 +158,18 @@ class UtilityController extends Controller
 
             // SI el usuario no existe
             if (!$user) {
-                return response()->json(['error' => 'El usuario no existe.'], 401);
+                return response()->json(['error' => 'El usuario no existe.'], 201);
             }
 
             if (!$user || !Hash::check($credentials['password'], $user->password)) {
                 $this->putLog($request, 'authenticate', 'User', $user->id ?? null, 'failed', 'Invalid credentials');
-                return response()->json(['error' => 'Las credenciales proporcionadas son incorrectas.'], 401);
+                return response()->json(['error' => 'Las credenciales proporcionadas son incorrectas.'], 201);
             }
 
             // Verificar si el estado del usuario es 0
             if ($user->estado == 0) {
                 $this->putLog($request, 'authenticate', 'User', $user->id, 'failed', 'User is disabled');
-                return response()->json(['error' => 'El acceso para este usuario ha sido deshabilitado.'], 401);
+                return response()->json(['error' => 'El acceso para este usuario ha sido deshabilitado.'], 201);
             }
 
             $this->putLog($request, 'authenticate', 'User', $user->id, 'success', null);
@@ -178,7 +178,7 @@ class UtilityController extends Controller
         } catch (\Exception $e) {
             $this->putLog($request, 'authenticate', 'User', null, 'failed', $e->getMessage());
             // Manejar la excepción y devolver un mensaje de error
-            return response()->json(['error' => 'Ocurrió un error durante la autenticación: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Ocurrió un error durante la autenticación: ' . $e->getMessage()], 200);
         }
     }
 
