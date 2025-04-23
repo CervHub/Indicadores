@@ -29,3 +29,4 @@ Route::get('/connection', function () {
 Route::post('/authenticate', [UtilityController::class, 'authenticate']);
 
 require __DIR__.'/apimobile.php';
+require __DIR__.'/apiweb.php';

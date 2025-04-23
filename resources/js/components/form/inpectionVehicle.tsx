@@ -159,8 +159,9 @@ export default function InspectionVehicle({
             });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
         if (!isFormValid()) {
             toast.error('Por favor, complete todos los campos requeridos antes de enviar el formulario.');
             return;
@@ -168,24 +169,38 @@ export default function InspectionVehicle({
 
         setIsSubmitting(true); // Activar el preload del botón
 
-        post(route('web.v1.saveReport'), {
-            onSuccess: (page) => {
-                const flash = page.props.flash as { success?: string; error?: string };
-                if (flash.success) {
-                    toast.success(flash.success);
-                    reset(); // Resetear el formulario
-                    setCausaStates(causas.map((causa) => ({ id: causa.id, state: '', observation: '' }))); // Resetear las causas
-                } else if (flash.error) {
-                    toast.error(flash.error);
+        try {
+            const response = await fetch(route('web.v1.saveReport'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...data,
+                    causas: causaStates, // Incluir los estados de las causas en el envío
+                }),
+            });
+
+            if (!response.ok) {
+                if (response.status === 422) {
+                    const errorData = await response.json();
+                    toast.error('Errores de validación en el formulario.');
+                    console.error(errorData.errors);
+                } else {
+                    throw new Error('Error al guardar el reporte.');
                 }
-            },
-            onError: () => {
-                toast.error('Ocurrió un error al enviar el formulario. Intente de nuevo.');
-            },
-            onFinish: () => {
-                setIsSubmitting(false); // Desactivar el preload del botón
-            },
-        });
+            } else {
+                const responseData = await response.json();
+                toast.success(responseData.message || 'Reporte guardado con éxito.');
+                reset(); // Resetear el formulario
+                setCausaStates(causas.map((causa) => ({ id: causa.id, state: '', observation: '' }))); // Resetear las causas
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Ocurrió un error al guardar el reporte. Intente de nuevo.');
+        } finally {
+            setIsSubmitting(false); // Desactivar el preload del botón
+        }
     };
 
     const groupedCausas = causas.reduce(
@@ -200,9 +215,9 @@ export default function InspectionVehicle({
     );
 
     return (
-        <form className="grid grid-cols-2 gap-6 lg:grid-cols-4" onSubmit={handleSubmit}>
+        <form className="grid gap-3 grid-cols-4" onSubmit={handleSubmit}>
             {/* Empresa */}
-            <div>
+            <div className="col-span-4">
                 <Label htmlFor="company" className="mb-3">
                     Empresa
                 </Label>
@@ -210,7 +225,7 @@ export default function InspectionVehicle({
             </div>
 
             {/* Tipo */}
-            <div>
+            <div className="">
                 <Label htmlFor="type" className="mb-3">
                     Tipo
                 </Label>
@@ -229,7 +244,7 @@ export default function InspectionVehicle({
             </div>
 
             {/* Marca */}
-            <div>
+            <div className="">
                 <Label htmlFor="brand" className="mb-3">
                     Marca
                 </Label>
@@ -237,7 +252,7 @@ export default function InspectionVehicle({
             </div>
 
             {/* Modelo */}
-            <div>
+            <div className="">
                 <Label htmlFor="model" className="mb-3">
                     Modelo
                 </Label>
@@ -245,7 +260,7 @@ export default function InspectionVehicle({
             </div>
 
             {/* Nº Motor */}
-            <div>
+            <div className="">
                 <Label htmlFor="engineNumber" className="mb-3">
                     Nº Motor
                 </Label>
@@ -253,7 +268,7 @@ export default function InspectionVehicle({
             </div>
 
             {/* Año */}
-            <div>
+            <div className="">
                 <Label htmlFor="year" className="mb-3">
                     Año
                 </Label>
@@ -261,7 +276,7 @@ export default function InspectionVehicle({
             </div>
 
             {/* Placa */}
-            <div>
+            <div className="">
                 <Label htmlFor="plate" className="mb-3">
                     Placa
                 </Label>
@@ -284,7 +299,7 @@ export default function InspectionVehicle({
             </div>
 
             {/* Conductor */}
-            <div>
+            <div className="">
                 <Label htmlFor="driver" className="mb-3">
                     Conductor
                 </Label>
@@ -292,7 +307,7 @@ export default function InspectionVehicle({
             </div>
 
             {/* Nº Licencia */}
-            <div className="flex items-end gap-2">
+            <div className="">
                 <div className="flex-1">
                     <Label htmlFor="licenseNumber" className="mb-3">
                         Nº Licencia
@@ -323,7 +338,7 @@ export default function InspectionVehicle({
             </div>
 
             {/* Estado General del Vehículo */}
-            <div>
+            <div className="">
                 <Label htmlFor="generalState" className="mb-3">
                     Estado General del Vehículo
                 </Label>
@@ -331,7 +346,7 @@ export default function InspectionVehicle({
             </div>
 
             {/* Código Autogenerado */}
-            <div>
+            <div className="">
                 <Label htmlFor="autoGeneratedCode" className="mb-3">
                     Código Autogenerado
                 </Label>
@@ -339,7 +354,7 @@ export default function InspectionVehicle({
             </div>
 
             {/* Tabla de causas */}
-            <div className="col-span-4">
+            <div className="col-span-full  ">
                 <h3 className="mb-4 text-lg font-bold">Causas</h3>
                 <div className="bg-background overflow-hidden rounded-md border">
                     <Table>
@@ -377,7 +392,7 @@ export default function InspectionVehicle({
                                     </TableRow>
                                     {groupCausas.map((causa) => (
                                         <TableRow key={causa.id}>
-                                            <TableCell className="border-r py-1 font-medium">{causa.name}</TableCell>
+                                            <TableCell className="border-r py-1 font-medium whitespace-normal">{causa.name}</TableCell>
                                             <TableCell className="text-center">
                                                 <input
                                                     type="radio"
@@ -422,7 +437,7 @@ export default function InspectionVehicle({
             </div>
 
             {/* Imágenes adicionales */}
-            <div className="col-span-4">
+            <div className="">
                 <ImageDropZone
                     images={data.images}
                     onUpload={(files) => {
@@ -430,21 +445,36 @@ export default function InspectionVehicle({
                             const reader = new FileReader();
                             reader.onload = () => {
                                 const base64Image = reader.result as string;
-                                setData('images', [...data.images, base64Image].slice(0, 4));
+                                const img = new Image();
+                                img.src = base64Image;
+                                img.onload = () => {
+                                    const canvas = document.createElement('canvas');
+                                    const ctx = canvas.getContext('2d');
+                                    const maxWidth = 800; // Set the maximum width for the image
+                                    const scale = maxWidth / img.width;
+                                    canvas.width = maxWidth;
+                                    canvas.height = img.height * scale;
+                                    ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                    const resizedBase64Image = canvas.toDataURL('image/jpeg', 0.8); // Adjust quality if needed
+                                    setData((prevData) => ({
+                                        ...prevData,
+                                        images: [...prevData.images, resizedBase64Image].slice(0, 4),
+                                    }));
+                                };
                             };
                             reader.readAsDataURL(file);
                         });
                     }}
                     onRemove={(index) => {
                         const updatedImages = data.images.filter((_, i) => i !== index);
-                        setData('images', updatedImages);
+                        setData((prevData) => ({ ...prevData, images: updatedImages }));
                     }}
                     label="Imágenes adicionales"
                 />
             </div>
 
             {/* Firma */}
-            <div className="col-span-4">
+            <div className="">
                 <ImageDropZone
                     images={data.signature ? [data.signature] : []}
                     maxImages={1}
@@ -452,17 +482,29 @@ export default function InspectionVehicle({
                         const reader = new FileReader();
                         reader.onload = () => {
                             const base64Signature = reader.result as string;
-                            setData('signature', base64Signature);
+                            const img = new Image();
+                            img.src = base64Signature;
+                            img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                const ctx = canvas.getContext('2d');
+                                const maxWidth = 800; // Set the maximum width for the image
+                                const scale = maxWidth / img.width;
+                                canvas.width = maxWidth;
+                                canvas.height = img.height * scale;
+                                ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                const resizedBase64Signature = canvas.toDataURL('image/jpeg', 0.8); // Adjust quality if needed
+                                setData((prevData) => ({ ...prevData, signature: resizedBase64Signature }));
+                            };
                         };
                         reader.readAsDataURL(files[0]);
                     }}
-                    onRemove={() => setData('signature', '')}
+                    onRemove={() => setData((prevData) => ({ ...prevData, signature: '' }))}
                     label="Firma"
                 />
             </div>
 
             {/* Aprobado/Desaprobado */}
-            <div>
+            <div className="">
                 <Label htmlFor="result" className="mb-3">
                     Resultado
                 </Label>
@@ -478,7 +520,7 @@ export default function InspectionVehicle({
             </div>
 
             {/* Inspeccionado por */}
-            <div>
+            <div className="">
                 <Label htmlFor="inspectedBy" className="mb-3">
                     Inspeccionado por
                 </Label>
@@ -486,7 +528,7 @@ export default function InspectionVehicle({
             </div>
 
             {/* Fecha Inspección */}
-            <div>
+            <div className="">
                 <Label htmlFor="inspectionDate" className="mb-3">
                     Fecha y Hora de Inspección
                 </Label>
@@ -499,7 +541,7 @@ export default function InspectionVehicle({
             </div>
 
             {/* Botón de envío */}
-            <div className="col-span-4 flex items-center justify-start gap-4">
+            <div className="">
                 <Button type="submit" className="flex items-center" disabled={!isFormValid() || isSubmitting}>
                     {isSubmitting ? (
                         <>

@@ -8,6 +8,7 @@ use App\Models\Module;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class WebController extends Controller
 {
@@ -15,25 +16,28 @@ class WebController extends Controller
      * Guarda el reporte según el tipo especificado
      *
      * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\JsonResponse
      */
     public function saveReport(Request $request)
     {
+        Log::info('Guardando reporte', [
+            'request' => $request->all(),
+        ]);
         try {
             if ($request->input('type_report') === 'vehicular') {
                 $inspectionType = $request->input('type_inspection');
                 if (in_array($inspectionType, ['Trimestral', 'Semestral', 'Anual'])) {
                     $this->createVehicleInspection($request);
-                    return redirect()->back()->with('success', "Reporte $inspectionType guardado correctamente");
+                    return response()->json(['status' => 'success', 'message' => "Reporte $inspectionType guardado correctamente"], 200);
                 }
 
                 $this->createVehiclePreUse($request);
-                return redirect()->back()->with('success', 'Reporte de preuso guardado correctamente');
+                return response()->json(['status' => 'success', 'message' => 'Reporte de preuso guardado correctamente'], 200);
             }
 
-            return redirect()->back()->with('error', 'Tipo de reporte inválido');
+            return response()->json(['status' => 'error', 'message' => 'Tipo de reporte inválido'], 400);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocurrió un error: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => 'Ocurrió un error: ' . $e->getMessage()], 500);
         }
     }
 
