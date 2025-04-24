@@ -30,7 +30,7 @@ export default function SemiannualVehicleInspection() {
 
     // Filtrar las primeras 5 causas con solo id, name y group
     // Generar el campo 'name' dinámicamente basado en 'nombre'
-    const filteredCausas = causas.slice(0, 1).map(({ id, nombre, group }) => ({
+    const filteredCausas = causas.map(({ id, nombre, group }) => ({
         id,
         name: nombre,
         group,

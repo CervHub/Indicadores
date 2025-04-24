@@ -34,7 +34,8 @@ export default function ContractorDashboard() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Contratistas" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <CreateAnnex rules={rules} />
+                {/* Render CreateAnnex only when contractorCompanyTypes and ueas are available */}
+                {contractorCompanyTypes.length > 0 && ueas.length > 0 && <CreateAnnex contractorCompanyTypes={contractorCompanyTypes} ueas={ueas} />}
                 <div className="w-full max-w-full overflow-x-auto">
                     <DataTable columns={getColumns(contractorCompanyTypes, ueas, handleSelectItem)} data={fileStatuses} />
                 </div>
