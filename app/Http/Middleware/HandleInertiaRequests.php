@@ -45,8 +45,8 @@ class HandleInertiaRequests extends Middleware
             'doi' => $user->doi,
             'email' => $user->email,
             'name' => $user->name ? $user->name : $user->nombres . ' ' . $user->apellidos,
-            'role_id' => $user->role_id,
-            'company' => $user->company()->nombre ?? null,
+            'role_id' => $user->role_code ?? null,
+            'company' => $user->company_name ?? null,
             'company_id' => $user->company_id
         ] : null;
 

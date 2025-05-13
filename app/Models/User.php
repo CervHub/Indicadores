@@ -55,6 +55,8 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    protected $appends = ['role_code', 'company_name'];
+
     // New Methods
 
     public function data()
@@ -106,5 +108,15 @@ class User extends Authenticatable
     public function isSecurityEngineer(): bool
     {
         return $this->securityEngineer()->exists();
+    }
+
+    public function getRoleCodeAttribute(): ?string
+    {
+        return $this->role()->first()?->code;
+    }
+
+    public function getCompanyNameAttribute(): ?string
+    {
+        return $this->company()->first()?->nombre;
     }
 }

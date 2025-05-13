@@ -43,7 +43,7 @@ const groupedNavItems = [
                 url: '/vehicle',
                 icon: Truck,
                 isActive: window.location.pathname === '/vehicle',
-                roles: ['admin', 'company'],
+                roles: [],
             },
         ],
     },
@@ -76,7 +76,7 @@ const groupedNavItems = [
                 url: '/format',
                 icon: FileText,
                 isActive: window.location.pathname === '/format',
-                roles: ['admin', 'security', 'company'],
+                roles: [],
             },
         ],
     },
@@ -109,20 +109,26 @@ const groupedNavItems = [
                 isActive: window.location.pathname === '/admin/security-engineer',
                 roles: ['company'],
             },
+            {
+                title: 'Roles',
+                url: '/contrata/roles',
+                icon: ShieldCheck,
+                isActive: window.location.pathname === '/contrata/roles',
+                roles: ['company'],
+            }
         ],
     },
 ];
 
 export function AppSidebar() {
     const { props } = usePage<{ auth: { user: { role_id: string; company_id: string } } }>();
-    const userRoleId = getPermissionDescription(Number(props.auth.user.role_id));
+    const userRoleId = getPermissionDescription(props.auth.user.role_id);
+    console.log('user', props.auth.user);
+    console.log('userRoleId', userRoleId);
+    console.log('role_id', props.auth.user.role_id);
     const userCompanyId = props.auth.user.company_id;
 
-    if (!userRoleId) {
-        return null; // Do not render anything if role_id is not present
-    }
-
-    const userRoles = [userRoleId]; // Assuming role_id is a single role, wrap it in an array
+    const userRoles = userRoleId ? [userRoleId] : []; // Wrap role_id in an array if present
 
     // Filter nav items based on user roles and company_id
     const filteredNavGroups = groupedNavItems
@@ -130,6 +136,9 @@ export function AppSidebar() {
             ...group,
             items: group.items.filter((item) => {
                 if (item.title === 'Ingeniero de Seguridad' && userCompanyId !== '1') {
+                    return false;
+                }
+                if (item.title === 'Roles' && userCompanyId !== '1') {
                     return false;
                 }
                 return item.roles.some((role) => userRoles.includes(role));
@@ -152,11 +161,15 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                {filteredNavGroups.map((group) => (
-                    <div key={group.group}>
-                        <NavMain items={group.items} title={group.group} />
-                    </div>
-                ))}
+                {filteredNavGroups.length > 0 ? (
+                    filteredNavGroups.map((group) => (
+                        <div key={group.group}>
+                            <NavMain items={group.items} title={group.group} />
+                        </div>
+                    ))
+                ) : (
+                    <div></div> // Render a placeholder when no items are available
+                )}
             </SidebarContent>
 
             <SidebarFooter>

@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\Company\ReportabilityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinishController;
+use App\Http\Controllers\Contrata\RoleController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -38,4 +39,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 
-// Modulo de formatos para usuarios
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('contrata/roles', [RoleController::class, 'index'])->name('contrata.roles.index');
+    Route::post('contrata/roles/store', [RoleController::class, 'store'])->name('contrata.roles.store');
+    Route::put('contrata/roles/update/{id}', [RoleController::class, 'update'])->name('contrata.roles.update');
+    Route::delete('contrata/roles/destroy/{id}', [RoleController::class, 'destroy'])->name('contrata.roles.destroy');
+});

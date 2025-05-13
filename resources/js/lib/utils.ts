@@ -20,14 +20,19 @@ export const months = [
     { value: '12', label: 'Diciembre' },
 ];
 
-const permissions: { [key: number]: string } = {
-    1: 'admin',
-    2: 'security',
-    3: 'company',
-    4: 'user'
+const permissions: { [key: string]: string } = {
+    SA: 'Super Admin',
+    RU: 'Regular User',
+    CA: 'Company Admin',
+    SCC: 'Sub Comité de Contratistas',
+    ALM: 'Almacenes',
+    PI: 'Proyectos de Inversión',
+    CO: 'Contratos de Obras',
+    CS: 'Contratos y Servicios',
+    IS: 'Ingeniero de Seguridad',
 };
 
-export function getPermissionDescription(value: number): string | undefined {
+export function getPermissionDescription(value: string): string | undefined {
     return permissions[value];
 }
 
@@ -67,7 +72,7 @@ export function findInArrayObject<T>(
     return foundItem ? foundItem[returnField] : undefined;
 }
 
-export function formatNumber  (value: number | string)  {
+export function formatNumber(value: number | string) {
     if (typeof value === 'string') {
         value = value.replace(',', ''); // Eliminar comas si existen
     }
