@@ -83,7 +83,7 @@ export default function Login({ status }: LoginProps) {
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <div className="space-y-2">
-                                                <p>Teléfono: +51 948 202 038</p>
+                                                <p>Teléfono: +51 913 719 735</p>
                                                 <p>Correo: soporte@cerv.com.pe</p>
                                             </div>
                                         </DialogContent>
@@ -107,7 +107,7 @@ export default function Login({ status }: LoginProps) {
                                             </DialogHeader>
                                             <div className="space-y-2">
                                                 <p>Correo: soporte@cerv.com.pe</p>
-                                                <p>WhatsApp y Teléfono: +51 948 202 038</p>
+                                                <p>WhatsApp y Teléfono: +51 913 719 735</p>
                                             </div>
                                         </DialogContent>
                                     </Dialog>
@@ -212,7 +212,7 @@ export default function Login({ status }: LoginProps) {
                                             </DialogDescription>
                                         </DialogHeader>
                                         <div className="space-y-2">
-                                            <p>Teléfono: +51 948 202 038</p>
+                                            <p>Teléfono: +51 913 719 735</p>
                                             <p>Correo: soporte@cerv.com.pe</p>
                                         </div>
                                     </DialogContent>
@@ -234,7 +234,7 @@ export default function Login({ status }: LoginProps) {
                                         </DialogHeader>
                                         <div className="space-y-2">
                                             <p>Correo: soporte@cerv.com.pe</p>
-                                            <p>WhatsApp y Teléfono: +51 948 202 038</p>
+                                            <p>WhatsApp y Teléfono: +51 913 719 735</p>
                                         </div>
                                     </DialogContent>
                                 </Dialog>
