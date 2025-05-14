@@ -338,6 +338,7 @@ class UtilityController extends Controller
 
         // El flujo continúa normalmente y el reporte se guarda
         Log::info('El flujo continúa y el reporte será guardado.');
+        Log::info('Enviando correo a los ingenieros de seguridad: ' . $json);
 
         $date = $request->fecha_reporte; // replace with actual date
         $levels = json_decode($request->levels, true);
