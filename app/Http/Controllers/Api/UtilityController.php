@@ -302,21 +302,42 @@ class UtilityController extends Controller
         //Envio de correo electronico
         //Solode la empresa de southern
 
-        $roleSecurityEngineer = Role::where('code', 'ISE')->first();
+        $roleSecurityEngineer = Role::where('code', 'IS')->first();
+        $json = null;
+        // Verifica si el rol existe
+        if (!$roleSecurityEngineer) {
+            Log::warning('El rol con código "IS" no existe. No se enviarán correos electrónicos.');
+        } else {
+            // Filtra los usuarios de seguridad por estos IDs y obtiene los correos electrónicos
+            $seguridad_emails = User::where('estado', 1)
+                ->where('role_id', $roleSecurityEngineer->id)
+                ->whereNotNull('email') // Excluir usuarios sin correo electrónico
+                ->where('email', '!=', '') // Excluir usuarios con correos vacíos
+                ->get();
 
-        // Filtra los usuarios de seguridad por estos IDs y obtiene los correos electrónicos
-        $seguridad_emails = User::where('estado', 1)
-            ->where('role_id', $roleSecurityEngineer->id)
-            ->get();
+            // Verifica si hay ingenieros de seguridad disponibles
+            if ($seguridad_emails->isEmpty()) {
+                Log::info('No hay ingenieros de seguridad disponibles para enviar correos.');
+            } else {
+                // Mapea los correos electrónicos
+                $json = $seguridad_emails->map(function ($user) {
+                    return [
+                        'email' => $user->email,
+                        'nombre' => $user->nombres, // Asumiendo que el campo se llama 'nombres'
+                        'apellidos' => $user->apellidos, // Asumiendo que el campo se llama 'apellidos'
+                    ];
+                })->toJson();
 
-        $json = $seguridad_emails->map(function ($user) {
-            return [
-                'email' => $user->email,
-                'nombre' => $user->nombres, // Asumiendo que el campo se llama 'nombres'
-                'apellidos' => $user->apellidos, // Asumiendo que el campo se llama 'apellidos'
-            ];
-        })->toJson();
+
+                // Aquí puedes agregar la lógica para enviar correos si es necesario
+                Log::info('Correos electrónicos preparados para envío.');
+            }
+        }
+
         $data['send_email'] = $json;
+
+        // El flujo continúa normalmente y el reporte se guarda
+        Log::info('El flujo continúa y el reporte será guardado.');
 
         $date = $request->fecha_reporte; // replace with actual date
         $levels = json_decode($request->levels, true);

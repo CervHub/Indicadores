@@ -11,13 +11,17 @@ use Inertia\Inertia;
 
 class PersonalController extends Controller
 {
+
+
     public function index()
     {
-        $rol_id = Role::where('nombre', 'Regular User')->first()->id;
+        $excludedRoles = Role::whereIn('code', ['SA', 'CA'])->pluck('id');
         $company_id = Auth::user()->company_id;
-        $people = User::where('role_id', $rol_id)
+
+        $people = User::whereNotIn('role_id', $excludedRoles)
             ->where('company_id', $company_id)
             ->get();
+
         return Inertia::render('people/index', [
             'people' => $people
         ]);
@@ -49,7 +53,7 @@ class PersonalController extends Controller
                 'email' => $request->email, // Opcional
                 'cargo' => $request->cargo,
                 'company_id' => Auth::user()->company_id,
-                'role_id' => Role::where('nombre', 'Regular User')->first()->id,
+                'role_id' => Role::where('code', 'RU')->first()->id, // Asignar el rol RU
             ]);
 
             $user->save();
@@ -59,6 +63,7 @@ class PersonalController extends Controller
             return redirect()->back()->with('error', 'Hubo un error al crear el usuario: ' . $e->getMessage());
         }
     }
+
 
     public function update(Request $request, $id)
     {
