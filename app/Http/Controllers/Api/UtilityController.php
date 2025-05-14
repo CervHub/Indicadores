@@ -358,7 +358,8 @@ class UtilityController extends Controller
             $date = $data['fecha_evento'];
             foreach ($seguridad_emails as $user) {
                 Log::info('Enviando correo a: ' . $user->email);
-                SendReportMail::dispatch($user->email, $report, $date, $management, $generatedBy, $reportLink);
+                // SendReportMail::dispatch($user->email, $report, $date, $management, $generatedBy, $reportLink);
+                $this->sendReportMail($user->email, $report, $date, $management, $generatedBy, $reportLink);
             }
             return response()->json(['status' => true, 'message' => 'Insertado satisfactoriamente'], 200);
         } catch (\Exception $e) {
