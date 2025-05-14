@@ -27,7 +27,7 @@ const groupedNavItems = [
                 url: '/dashboard',
                 icon: LayoutDashboard,
                 isActive: window.location.pathname === '/dashboard',
-                roles: ['SA', 'IS', 'CA','SCC','ALM','PI','CO','CS'], // Updated to use role codes
+                roles: ['SA', 'IS', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS'], // Updated to use role codes
             },
             {
                 title: 'Empresas',
@@ -74,14 +74,14 @@ const groupedNavItems = [
                 url: '/consolidated',
                 icon: FileText,
                 isActive: window.location.pathname === '/consolidated',
-                roles: ['SA','SCC','ALM','PI','CO','CS'], // Updated to use role codes
+                roles: ['SA', 'SCC', 'ALM', 'PI', 'CO', 'CS'], // Updated to use role codes
             },
             {
                 title: 'Reporte',
                 url: '/admin/reportability',
                 icon: FileText,
                 isActive: window.location.pathname === '/admin/reportability',
-                roles: ['SA', 'IS', 'CA','SCC'], // Updated to use role codes
+                roles: ['SA', 'IS', 'CA', 'SCC'], // Updated to use role codes
             },
             {
                 title: 'Formatos',
@@ -110,7 +110,7 @@ const groupedNavItems = [
             {
                 title: 'Personal',
                 url: '/contrata/personal',
-                icon: ShieldCheck,
+                icon: Users,
                 isActive: window.location.pathname === '/contrata/personal',
                 roles: ['CA', 'IS'], // Updated to use role codes
             },
@@ -119,7 +119,7 @@ const groupedNavItems = [
                 url: '/admin/security-engineer',
                 icon: ShieldCheck,
                 isActive: window.location.pathname === '/admin/security-engineer',
-                roles: ['CA'], // Updated to use role codes
+                roles: [], // Updated to use role codes
             },
             {
                 title: 'Roles',

@@ -37,6 +37,7 @@ const renderTooltip = (field: string, value: string) => (
 export const getColumns = (
     handleActionClick: (id: string, action: string) => void,
     handleDonwloadClick: (id: string, uea: string) => void,
+    roleCode: string, // Add roleCode as a parameter
 ): ColumnDef<Consolidated>[] => [
     {
         accessorKey: 'year',
@@ -122,7 +123,7 @@ export const getColumns = (
                         variant="secondary"
                         className="w-auto"
                         onClick={() => handleActionClick(consolidated.id, 'reconsolidate')}
-                        disabled={consolidated.is_closed == 1}
+                        disabled={consolidated.is_closed == 1 || roleCode !== 'SA'} // Disable if not 'SA'
                     >
                         <RefreshCw className="h-4" />
                     </Button>
@@ -130,11 +131,12 @@ export const getColumns = (
                         variant={consolidated.is_closed == 1 ? 'default' : 'destructive'}
                         className="w-auto"
                         onClick={() => handleActionClick(consolidated.id, consolidated.is_closed == 1 ? 'open' : 'close')}
+                        disabled={roleCode !== 'SA'} // Disable if not 'SA'
                     >
                         {consolidated.is_closed == 1 ? <Unlock className="h-4" /> : <Lock className="h-4" />}
                     </Button>
                     <Link href={route('consolidated.show', { id: consolidated.id })}>
-                        <Button variant="secondary" className="w-auto">
+                        <Button variant="secondary" className="w-auto" disabled={roleCode !== 'SA'}> {/* Disable if not 'SA' */}
                             <Eye className="h-4" />
                         </Button>
                     </Link>

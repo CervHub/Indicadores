@@ -2,7 +2,7 @@ import { Consolidated, getColumns } from '@/components/consolidated/columns';
 import { DataTable } from '@/components/consolidated/data-table';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, Auth } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import CloseConsolidated from './close';
@@ -19,9 +19,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function ConsolidatedDashboard() {
-    const { consolidateds = [] } = usePage<{
+    const { consolidateds = [], auth } = usePage<{
         consolidateds: Consolidated[];
+        auth: Auth;
     }>().props;
+
+    console.log('Authenticated User:', auth.user);
 
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1; // getMonth() returns 0-11, so add 1
@@ -93,15 +96,24 @@ export default function ConsolidatedDashboard() {
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {/* Botón para abrir el diálogo de "Crear Consolidado" */}
                 <div className="flex justify-between">
-                    <Button onClick={() => setIsCreateDialogOpen(true)}>Crear Consolidado</Button>
-                    <Button variant={'warning'} onClick={() => setIsUpdateFormatDialogOpen(true)}>
+                    <Button 
+                        onClick={() => setIsCreateDialogOpen(true)} 
+                        disabled={auth.user.role_code !== 'SA'}
+                    >
+                        Crear Consolidado
+                    </Button>
+                    <Button 
+                        variant={'warning'} 
+                        onClick={() => setIsUpdateFormatDialogOpen(true)} 
+                        disabled={auth.user.role_code !== 'SA'}
+                    >
                         Actualizar Formato Anexo
                     </Button>
                 </div>
 
                 <ReConsolidated initialYear={initialYear} initialMonth={initialMonth} isOpen={modalOpen} onOpenChange={setModalOpen} />
                 <div className="w-full max-w-full overflow-x-auto">
-                    <DataTable columns={getColumns(handleActionClick, handleDonwloadClick)} data={consolidateds} />
+                    <DataTable columns={getColumns(handleActionClick, handleDonwloadClick, auth.user.role_code)} data={consolidateds} />
                 </div>
             </div>
             {selectedItem && (
