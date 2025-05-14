@@ -181,7 +181,6 @@ class AnnexController extends Controller
             $fileStatus->delete();
             return redirect()->back()->with('success', 'Anexo eliminado exitosamente.');
         } catch (\Exception $e) {
-            dd($e);
             return redirect()->back()->with('error', 'Hubo un error al eliminar el anexo: ' . $e->getMessage());
         }
     }

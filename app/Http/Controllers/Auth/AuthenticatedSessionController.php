@@ -39,56 +39,42 @@ class AuthenticatedSessionController extends Controller
         $credentials = [];
 
         if (str_contains($emailOrDoi, '@')) {
-            // Caso 1: Login con correo electrónico
+            // Caso: Login con correo electrónico (solo admin)
             $user = \App\Models\User::where('email', $emailOrDoi)->first();
 
             if (!$user) {
                 return redirect()->route('login')->withErrors(['error' => 'Credenciales inválidas.']);
             }
 
-            if ($user->role_id != 1) {
-                return redirect()->route('login')->withErrors(['error' => 'No tienes permiso para iniciar sesión.']);
+            if ($user->role->code !== 'SA') { // Validar que sea admin
+                return redirect()->route('login')->withErrors(['error' => 'Solo los administradores pueden iniciar sesión con correo electrónico.']);
             }
 
             $credentials['email'] = $emailOrDoi;
         } else {
-            // Caso 2: Login con DOI
+            // Caso: Login con DOI
             $user = \App\Models\User::where('doi', $emailOrDoi)->first();
 
             if (!$user) {
                 return redirect()->route('login')->withErrors(['error' => 'Credenciales inválidas.']);
             }
 
-            // Autenticación con DOI y contraseña
-            $credentials['doi'] = $emailOrDoi;
-
             // Validaciones adicionales para usuarios con DOI
             if ($user->estado !== '1') {
-                Auth::logout();
                 return redirect()->route('login')->withErrors(['error' => 'Tu cuenta está inactiva.']);
             }
 
-            if ($user->role_id == 2) {
-                // Caso 2: El usuario es normal (role_id 2)
-                if (!$user->isSecurityEngineer()) {
-                    Auth::logout();
-                    return redirect()->route('login')->withErrors(['error' => 'No tienes permiso para iniciar sesión.']);
-                }
-                if (!$user->company || $user->company->estado !== '1') {
-                    Auth::logout();
-                    return redirect()->route('login')->withErrors(['error' => 'Tu empresa está inactiva o no tienes una empresa asociada.']);
-                }
-            } elseif ($user->role_id == 3) {
-                // Caso 3: El usuario es empresa (role_id 3)
-                if (!$user->company || $user->company->estado !== '1') {
-                    Auth::logout();
-                    return redirect()->route('login')->withErrors(['error' => 'Tu empresa está inactiva o no tienes una empresa asociada.']);
-                }
-            } else {
-                // Caso 4: El usuario tiene un rol no permitido
-                Auth::logout();
+            if ($user->role_code === 'RU') { // Denegar acceso a usuarios con role_code 'RU'
                 return redirect()->route('login')->withErrors(['error' => 'No tienes permiso para iniciar sesión.']);
             }
+
+            // Verificar si la empresa del usuario está inactiva
+            if (!$user->company || $user->company->estado !== '1') {
+                Auth::logout();
+                return redirect()->route('login')->withErrors(['error' => 'Tu empresa está inactiva o no tienes una empresa asociada.']);
+            }
+
+            $credentials['doi'] = $emailOrDoi;
         }
 
         // Agregar la contraseña a las credenciales

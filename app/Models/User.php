@@ -107,7 +107,8 @@ class User extends Authenticatable
 
     public function isSecurityEngineer(): bool
     {
-        return $this->securityEngineer()->exists();
+        $role = $this->role()->first();
+        return $role && $role->code === 'IS';
     }
 
     public function getRoleCodeAttribute(): ?string

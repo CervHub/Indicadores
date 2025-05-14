@@ -84,7 +84,6 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        dd($request->all());
         // Preparar los datos
         $systemRoles = SystemRole::find($request->input('rolesystem_id'));
         $level = Level::find($systemRoles->level_id);

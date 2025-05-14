@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\TestEmail;
 use App\Jobs\SendReportMail;
 use App\Models\Log as LogModel;
+use App\Models\Role;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use App\Models\SettingGlobal;
@@ -301,15 +302,11 @@ class UtilityController extends Controller
         //Envio de correo electronico
         //Solode la empresa de southern
 
-        $user_southern_ids = SecurityEngineer::where('company_id', 1)->pluck('user_id');
-        $user_report_ids = SecurityEngineer::where('company_id', $request->company_report_id)->pluck('user_id');
-
-        // Combina las listas de IDs y elimina duplicados
-        $combined_user_ids = $user_southern_ids->merge($user_report_ids)->unique();
+        $roleSecurityEngineer = Role::where('code', 'ISE')->first();
 
         // Filtra los usuarios de seguridad por estos IDs y obtiene los correos electrónicos
         $seguridad_emails = User::where('estado', 1)
-            ->whereIn('id', $combined_user_ids)
+            ->where('role_id', $roleSecurityEngineer->id)
             ->get();
 
         $json = $seguridad_emails->map(function ($user) {

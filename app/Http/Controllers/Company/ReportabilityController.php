@@ -150,15 +150,15 @@ class ReportabilityController extends Controller
                     ELSE
                         NULL
                 END
-        LEFT JOIN
+        INNER JOIN
             companies AS c ON c.id = m.company_id
-        LEFT JOIN
+        INNER JOIN
             companies AS cr ON cr.id = m.company_report_id
     ";
 
         // Agrega condiciones según el valor de company_id
         if (!empty($companyId)) {
-            $query .= " WHERE c.id = ? AND m.company_report_id = ? ";
+            $query .= " WHERE c.id = ? OR m.company_report_id = ? ";
             $bindings = [$companyId, $companyReportId];
         } else {
             $bindings = [];

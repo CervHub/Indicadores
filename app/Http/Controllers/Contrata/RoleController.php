@@ -63,6 +63,10 @@ class RoleController extends Controller
                 ['role_id' => $validated['roleId']] // Update or create with role_id
             );
 
+            // Update the user's general role_id
+            $user = User::findOrFail($validated['userId']);
+            $user->update(['role_id' => $validated['roleId']]);
+
             return redirect()->back()->with('success', 'Rol asignado correctamente.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Ocurrió un error al asignar el rol: ' . $e->getMessage());
@@ -79,6 +83,10 @@ class RoleController extends Controller
             $roleUser = RoleUser::where('user_id', $id)->firstOrFail();
             $roleUser->update(['role_id' => $validated['roleId']]);
 
+            // Update the user's general role_id
+            $user = User::findOrFail($id);
+            $user->update(['role_id' => $validated['roleId']]);
+
             return redirect()->back()->with('success', 'Rol actualizado correctamente.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Ocurrió un error al actualizar el rol: ' . $e->getMessage());
@@ -90,6 +98,11 @@ class RoleController extends Controller
         try {
             $roleUser = RoleUser::where('user_id', $id)->firstOrFail();
             $roleUser->delete();
+
+            // Find the role with code 'RU' and assign it to the user
+            $ruRole = Role::where('code', 'RU')->firstOrFail();
+            $user = User::findOrFail($id);
+            $user->update(['role_id' => $ruRole->id]);
 
             return redirect()->back()->with('success', 'Rol eliminado correctamente.');
         } catch (\Exception $e) {
