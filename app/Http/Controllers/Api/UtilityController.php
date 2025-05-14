@@ -233,7 +233,6 @@ class UtilityController extends Controller
     public function storeReport(Request $request, $company_id)
     {
         $log = $request->all();
-        Log::info(json_encode($log));
         // return response()->json(['status' => true, 'message' => 'Insertado satisfactoriamente', 'data' => $request->all()] ,200);
 
         $user = User::where($request->only('doi'))->first();
@@ -339,6 +338,7 @@ class UtilityController extends Controller
         // El flujo continúa normalmente y el reporte se guarda
         Log::info('El flujo continúa y el reporte será guardado.');
         Log::info('Enviando correo a los ingenieros de seguridad: ' . $json);
+        Log::info('Datos del reporte: ' . json_encode($data, JSON_UNESCAPED_UNICODE));
 
         $date = $request->fecha_reporte; // replace with actual date
         $levels = json_decode($request->levels, true);
