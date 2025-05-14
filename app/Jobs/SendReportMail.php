@@ -9,6 +9,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class SendReportMail implements ShouldQueue
 {
@@ -39,6 +40,11 @@ class SendReportMail implements ShouldQueue
      */
     public function handle(): void
     {
-        Mail::to($this->email)->send(new TestEmail($this->report, $this->date, $this->management, $this->generatedBy, $this->reportLink));
+        try {
+            Mail::to($this->email)->send(new TestEmail($this->report, $this->date, $this->management, $this->generatedBy, $this->reportLink));
+            Log::info('Email sent successfully to ' . $this->email);
+        } catch (\Exception $e) {
+            Log::error('Failed to send email to ' . $this->email . '. Error: ' . $e->getMessage());
+        }
     }
 }
