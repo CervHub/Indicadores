@@ -14,7 +14,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const TYPE = 'Trimestral';
+const TYPE = 'trimestral';
 
 export default function QuarterlyVehicleInspection() {
     const { causas, auth } = usePage<{
@@ -28,9 +28,8 @@ export default function QuarterlyVehicleInspection() {
     const userName = auth.user.name;
     const company = auth.user.company;
 
-    // Filtrar las primeras 5 causas con solo id, name y group
-    // Generar el campo 'name' dinámicamente basado en 'nombre'
-    const filteredCausas = causas.map(({ id, nombre, group }) => ({
+    // Solo las 3 primeras causas
+    const filteredCausas = causas.slice(0, 3).map(({ id, nombre, group }) => ({
         id,
         name: nombre,
         group,

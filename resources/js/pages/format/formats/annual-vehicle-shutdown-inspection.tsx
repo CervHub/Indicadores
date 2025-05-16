@@ -14,7 +14,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const TYPE = 'Anual';
+const TYPE = 'anual';
 
 export default function AnnualVehicleShutdownInspection() {
     const { causas, auth } = usePage<{

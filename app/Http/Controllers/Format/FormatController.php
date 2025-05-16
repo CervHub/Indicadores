@@ -45,7 +45,10 @@ class FormatController extends Controller
     public function dailyVehicleInspection(Request $request)
     {
         $category = Category::where('nombre', 'Inspección Vehicular PreUso')->first();
-        $causas = $category->categoryCompanies()->get();
+        $causas = [];
+        if ($category) {
+            $causas = $category->categoryCompanies()->get();
+        }
         return Inertia::render(
             'format/formats/daily-vehicle-inspection',
             [
@@ -56,11 +59,13 @@ class FormatController extends Controller
     public function quarterlyVehicleInspection(Request $request)
     {
         $category = Category::where('nombre', 'Inspección Vehicular')->first();
-        $causas = CategoryCompany::select('category_companies.id', 'category_companies.nombre', 'groups.name as group')
-            ->join('groups', 'category_companies.group_id', '=', 'groups.id')
-            ->where('category_companies.category_id', $category->id)
-            ->get();
-
+        $causas = [];
+        if ($category) {
+            $causas = CategoryCompany::select('category_companies.id', 'category_companies.nombre', 'groups.name as group')
+                ->join('groups', 'category_companies.group_id', '=', 'groups.id')
+                ->where('category_companies.category_id', $category->id)
+                ->get();
+        }
         return Inertia::render(
             'format/formats/quarterly-vehicle-inspection',
             [
@@ -71,11 +76,13 @@ class FormatController extends Controller
     public function semiannualVehicleInspection(Request $request)
     {
         $category = Category::where('nombre', 'Inspección Vehicular')->first();
-        $causas = CategoryCompany::select('category_companies.id', 'category_companies.nombre', 'groups.name as group')
-            ->join('groups', 'category_companies.group_id', '=', 'groups.id')
-            ->where('category_companies.category_id', $category->id)
-            ->get();
-
+        $causas = [];
+        if ($category) {
+            $causas = CategoryCompany::select('category_companies.id', 'category_companies.nombre', 'groups.name as group')
+                ->join('groups', 'category_companies.group_id', '=', 'groups.id')
+                ->where('category_companies.category_id', $category->id)
+                ->get();
+        }
         return Inertia::render(
             'format/formats/semiannual-vehicle-inspection',
             [
@@ -86,11 +93,13 @@ class FormatController extends Controller
     public function annualVehicleShutdownInspection(Request $request)
     {
         $category = Category::where('nombre', 'Inspección Vehicular')->first();
-        $causas = CategoryCompany::select('category_companies.id', 'category_companies.nombre', 'groups.name as group')
-            ->join('groups', 'category_companies.group_id', '=', 'groups.id')
-            ->where('category_companies.category_id', $category->id)
-            ->get();
-
+        $causas = [];
+        if ($category) {
+            $causas = CategoryCompany::select('category_companies.id', 'category_companies.nombre', 'groups.name as group')
+                ->join('groups', 'category_companies.group_id', '=', 'groups.id')
+                ->where('category_companies.category_id', $category->id)
+                ->get();
+        }
         return Inertia::render(
             'format/formats/annual-vehicle-shutdown-inspection',
             [

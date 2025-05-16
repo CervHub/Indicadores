@@ -55,7 +55,7 @@ const groupedNavItems = [
                 url: '/vehicle',
                 icon: Truck,
                 isActive: window.location.pathname === '/vehicle',
-                roles: [], // No roles required
+                roles: ['CA'], // No roles required
             },
         ],
     },
@@ -88,8 +88,15 @@ const groupedNavItems = [
                 url: '/format',
                 icon: FileText,
                 isActive: window.location.pathname === '/format',
-                roles: [], // No roles required
+                roles: ['CA'], // No roles required
             },
+            {
+                title: 'Inspecciones',
+                url: '/inspection',
+                icon: FileText,
+                isActive: window.location.pathname === '/inspection',
+                roles: ['CA'], // No roles required
+            }
         ],
     },
     {

@@ -14,7 +14,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const TYPE = 'Semestral';
+const TYPE = 'semestral';
 
 export default function SemiannualVehicleInspection() {
     const { causas, auth } = usePage<{

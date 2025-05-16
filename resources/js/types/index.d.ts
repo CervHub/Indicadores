@@ -42,3 +42,13 @@ export interface User {
     role_code: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+
+export interface ReportabilityVehicle {
+    id: string;
+    fecha_evento: string;
+    fecha_reporte: string;
+    estado: string;
+    nombre_usuario: string;
+    nombre_empresa: string;
+    tipo_inspeccion_descripcion: string;
+};

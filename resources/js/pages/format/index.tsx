@@ -18,7 +18,7 @@ const staticReports = [
         description: 'Este reporte detalla los actos subestándar observados en las operaciones.',
         image: '/reports/IMG-05.png',
         background: '/reports/FONDO%20AMARILLO.svg',
-        route: route('format.acts'), // Usamos el nombre de la ruta
+        route: route('format.acts'),
     },
     {
         title: 'Reporte',
@@ -26,7 +26,7 @@ const staticReports = [
         description: 'Este reporte identifica las condiciones subestándar presentes en el entorno.',
         image: '/reports/IMG-02.png',
         background: '/reports/FONDO%20ROJO.svg',
-        route: route('format.conditions'), // Usamos el nombre de la ruta
+        route: route('format.conditions'),
     },
     {
         title: 'Reporte',
@@ -34,7 +34,7 @@ const staticReports = [
         description: 'Este reporte documenta los incidentes ocurridos en el lugar de trabajo.',
         image: '/reports/IMG-03.png',
         background: '/reports/FONDO%20TURQUESA.svg',
-        route: route('format.incidents'), // Usamos el nombre de la ruta
+        route: route('format.incidents'),
     },
     {
         title: 'Inspección',
@@ -42,20 +42,44 @@ const staticReports = [
         description: 'Inspección general para evaluar el cumplimiento de estándares.',
         image: '/reports/IMG-04.png',
         background: '/reports/FONDO%20VERDE.svg',
-        route: route('format.inspection'), // Usamos el nombre de la ruta
+        route: route('format.inspection'),
     },
+    // Opciones adicionales de inspección vehicular
     {
         title: 'Inspección',
         subtitle: 'Vehicular diaria',
         description: 'Inspección diaria de vehículos para garantizar su operatividad.',
         image: '/reports/IMG-01.png',
         background: '/reports/FONDO%20AMARILLO.svg',
-        route: '', // Ruta sin cambios
+        route: route('format.dailyVehicleInspection'),
+    },
+    {
+        title: 'Inspección',
+        subtitle: 'Vehicular trimestral',
+        description: 'Inspección trimestral de vehículos para mantenimiento preventivo.',
+        image: '/reports/IMG-01.png',
+        background: '/reports/FONDO%20ROJO.svg',
+        route: route('format.quarterlyVehicleInspection'),
+    },
+    {
+        title: 'Inspección',
+        subtitle: 'Vehicular semestral',
+        description: 'Inspección semestral de vehículos para evaluar su estado general.',
+        image: '/reports/IMG-01.png',
+        background: '/reports/FONDO%20TURQUESA.svg',
+        route: route('format.semiannualVehicleInspection'),
+    },
+    {
+        title: 'Inspección',
+        subtitle: 'Vehicular parada anual',
+        description: 'Inspección anual de vehículos durante la parada programada.',
+        image: '/reports/IMG-01.png',
+        background: '/reports/FONDO%20VERDE.svg',
+        route: route('format.annualVehicleShutdownInspection'),
     },
 ];
 
 export default function Format() {
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -65,13 +89,7 @@ export default function Format() {
                     {staticReports.map((report, index) => (
                         <Link
                             key={index}
-                            href={report.subtitle === 'Vehicular diaria' ? '#' : report.route} // Evitamos la navegación para "Vehicular diaria"
-                            onClick={(e) => {
-                                if (report.subtitle === 'Vehicular diaria') {
-                                    e.preventDefault(); // Prevenimos la navegación
-                                    setIsDialogOpen(true); // Abrimos el modal
-                                }
-                            }}
+                            href={report.route}
                             className="group"
                         >
                             <Card
@@ -106,7 +124,6 @@ export default function Format() {
                     ))}
                 </div>
             </div>
-            <IndicationsModal isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />
         </AppLayout>
     );
 }

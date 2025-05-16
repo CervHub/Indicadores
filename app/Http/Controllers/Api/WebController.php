@@ -63,7 +63,7 @@ class WebController extends Controller
                 'recordNumber',
                 'images',
                 'signature',
-                'observations',
+                'observation',
                 'causas',
                 'type_report',
                 'type_inspection'
@@ -80,7 +80,7 @@ class WebController extends Controller
                 'driver',
                 'mileage',
                 'recordNumber',
-                'observations',
+                'observation',
                 'causas'
             ])->toArray();
 

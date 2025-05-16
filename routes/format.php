@@ -2,12 +2,14 @@
 
 use App\Http\Controllers\Vehicle\VehicleController;
 use App\Http\Controllers\Format\FormatController;
+use App\Http\Controllers\Inspection\InspectionVehicleController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
     Route::prefix('vehicle')->group(function () {
         Route::get('/', [VehicleController::class, 'index'])->name('vehicle.index');
         Route::post('/', [VehicleController::class, 'store'])->name('vehicle.store');
+        Route::post('/link', [VehicleController::class, 'link'])->name('vehicle.link');
         Route::get('/{vehicle}', [VehicleController::class, 'show'])->name('vehicle.show');
         Route::put('/{vehicle}', [VehicleController::class, 'update'])->name('vehicle.update');
         Route::delete('/{vehicle}', [VehicleController::class, 'delete'])->name('vehicle.destroy');
@@ -32,5 +34,13 @@ Route::middleware('auth')->group(function () {
 
         // Store route for all types
         Route::post('/store', [FormatController::class, 'store'])->name('format.store');
+    });
+});
+
+Route::middleware('auth')->group(function () {
+    Route::prefix('inspection')->group(function () {
+        Route::get('/', [InspectionVehicleController::class, 'index'])->name('admin.reportability');
+        Route::get('reportability/detalle/{reportability_id}', [InspectionVehicleController::class, 'detalle'])->name('inspection.detalle');
+        Route::get('reportability/download/{reportability_id}', [InspectionVehicleController::class, 'download'])->name('inspection.download');
     });
 });

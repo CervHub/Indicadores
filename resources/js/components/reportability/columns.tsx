@@ -23,6 +23,8 @@ export type Reportability = {
     company_report_name: string;
 };
 
+
+
 export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability>[] => [
     {
         accessorKey: 'id',

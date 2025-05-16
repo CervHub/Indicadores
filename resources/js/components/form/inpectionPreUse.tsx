@@ -40,14 +40,12 @@ export default function InspectionVehiclePreUse({
         plate: '',
         vehicleCode: '',
         department: '',
-        date: getLimaDateTimeString(),
         shift: '',
         driver: userName,
         mileage: '',
-        recordNumber: '',
         images: [] as string[],
         signature: '',
-        observations: '',
+        observation: '',
         causas: causas.map((causa) => ({ id: causa.id, state: '' })),
         companyId,
         userId,
@@ -66,13 +64,9 @@ export default function InspectionVehiclePreUse({
             data.plate &&
             data.vehicleCode &&
             data.department &&
-            data.date &&
             data.shift &&
-            data.driver &&
             data.mileage &&
-            data.recordNumber &&
-            allCausasValid &&
-            data.signature
+            allCausasValid
         );
     };
 
@@ -93,26 +87,45 @@ export default function InspectionVehiclePreUse({
         toast.info('Buscando información para la placa...', { duration: 3000 });
 
         try {
-            const response = await fetch(route('web.v1.searchVehicles', { plate: data.plate }));
-            if (!response.ok) {
-                throw new Error('Error al buscar la placa.');
-            }
-
+            const response = await fetch(route('web.v1.searchVehiclesForInspection', { license_plate: data.plate, company_id: companyId }));
             const responseData = await response.json();
-            const vehicleData = responseData.data;
 
-            if (vehicleData) {
+            if (response.ok && responseData.status === 'success' && responseData.data) {
                 setData((prevData) => ({
                     ...prevData,
-                    vehicleCode: vehicleData.code || '',
+                    vehicleCode: responseData.data.code || '',
+                    department: responseData.company.nombre || '',
                 }));
                 toast.success('Información del vehículo cargada con éxito.');
+            } else if (responseData.status === 'warning') {
+                toast.warning(
+                    responseData.message || 'El vehículo no está vinculado a la empresa seleccionada.',
+                    { duration: 10000 }
+                );
+                setData((prevData) => ({
+                    ...prevData,
+                    vehicleCode: '',
+                }));
+            } else if (responseData.status === 'error') {
+                toast.error(responseData.message || 'No se encontró información para la placa ingresada.');
+                setData((prevData) => ({
+                    ...prevData,
+                    vehicleCode: '',
+                }));
             } else {
                 toast.error('No se encontró información para la placa ingresada.');
+                setData((prevData) => ({
+                    ...prevData,
+                    vehicleCode: '',
+                }));
             }
         } catch (error) {
             console.error(error);
             toast.error('Ocurrió un error al buscar la placa.');
+            setData((prevData) => ({
+                ...prevData,
+                vehicleCode: '',
+            }));
         } finally {
             setIsSearchingPlate(false);
         }
@@ -153,14 +166,12 @@ export default function InspectionVehiclePreUse({
                 plate: '',
                 vehicleCode: '',
                 department: '',
-                date: getLimaDateTimeString(),
                 shift: '',
                 driver: userName,
                 mileage: '',
-                recordNumber: '',
                 images: [],
                 signature: '',
-                observations: '',
+                observation: '',
                 causas: causas.map((causa) => ({ id: causa.id, state: '' })),
             }));
         } catch (error) {
@@ -172,7 +183,7 @@ export default function InspectionVehiclePreUse({
     };
 
     return (
-        <form className="grid grid-cols-1 gap-6 md:grid-cols-4" onSubmit={handleSubmit}>
+        <form className="grid grid-cols-1 gap-6 md:grid-cols-5" onSubmit={handleSubmit}>
             {/* Placa con botón de búsqueda */}
             <div className="col-span-4 flex items-end gap-2 md:col-span-1">
                 <div className="flex-1">
@@ -205,7 +216,7 @@ export default function InspectionVehiclePreUse({
             {/* Código de vehículo */}
             <div className="col-span-2 md:col-span-1">
                 <Label htmlFor="vehicle-code" className="mb-3">
-                    Código de vehículo
+                    Código de Llamada
                 </Label>
                 <Input
                     readOnly
@@ -220,7 +231,7 @@ export default function InspectionVehiclePreUse({
             {/* Departamento/Sección */}
             <div className="col-span-2 md:col-span-1">
                 <Label htmlFor="department" className="mb-3">
-                    Dpto/Sección
+                    Empresa
                 </Label>
                 <Input
                     type="text"
@@ -229,20 +240,6 @@ export default function InspectionVehiclePreUse({
                     onChange={(e) => setData((prevData) => ({ ...prevData, department: e.target.value }))}
                 />
                 {errors.department && <p className="text-sm text-red-500">{errors.department}</p>}
-            </div>
-
-            {/* Fecha */}
-            <div className="col-span-4 md:col-span-1">
-                <Label htmlFor="date" className="mb-3">
-                    Fecha
-                </Label>
-                <Input
-                    type="datetime-local"
-                    id="date"
-                    value={data.date}
-                    onChange={(e) => setData((prevData) => ({ ...prevData, date: e.target.value }))}
-                />
-                {errors.date && <p className="text-sm text-red-500">{errors.date}</p>}
             </div>
 
             {/* Turno */}
@@ -263,20 +260,6 @@ export default function InspectionVehiclePreUse({
                 {errors.shift && <p className="text-sm text-red-500">{errors.shift}</p>}
             </div>
 
-            {/* Conductor */}
-            <div className="col-span-4 md:col-span-1">
-                <Label htmlFor="driver" className="mb-3">
-                    Conductor
-                </Label>
-                <Input
-                    type="text"
-                    id="driver"
-                    value={data.driver}
-                    onChange={(e) => setData((prevData) => ({ ...prevData, driver: e.target.value }))}
-                />
-                {errors.driver && <p className="text-sm text-red-500">{errors.driver}</p>}
-            </div>
-
             {/* Kilometraje */}
             <div className="col-span-2 md:col-span-1">
                 <Label htmlFor="mileage" className="mb-3">
@@ -291,22 +274,8 @@ export default function InspectionVehiclePreUse({
                 {errors.mileage && <p className="text-sm text-red-500">{errors.mileage}</p>}
             </div>
 
-            {/* Registro N~ */}
-            <div className="col-span-2 md:col-span-1">
-                <Label htmlFor="record-number" className="mb-3">
-                    Registro N°
-                </Label>
-                <Input
-                    type="text"
-                    id="record-number"
-                    value={data.recordNumber}
-                    onChange={(e) => setData((prevData) => ({ ...prevData, recordNumber: e.target.value }))}
-                />
-                {errors.recordNumber && <p className="text-sm text-red-500">{errors.recordNumber}</p>}
-            </div>
-
             {/* Tabla de causas */}
-            <div className="col-span-4">
+            <div className="col-span-full">
                 <h3 className="mb-4 text-lg font-bold">Causas</h3>
                 <div className="bg-background rounded-md border">
                     <Table>
@@ -336,6 +305,8 @@ export default function InspectionVehiclePreUse({
                                             value="Bien"
                                             checked={data.causas.find((c) => c.id === causa.id)?.state === 'Bien'}
                                             onChange={() => handleCausaStateChange(causa.id, 'Bien')}
+                                            className="w-6 h-6 accent-green-600 cursor-pointer"
+
                                         />
                                     </TableCell>
                                     <TableCell className="border-r border-l text-center">
@@ -345,6 +316,7 @@ export default function InspectionVehiclePreUse({
                                             value="Mal"
                                             checked={data.causas.find((c) => c.id === causa.id)?.state === 'Mal'}
                                             onChange={() => handleCausaStateChange(causa.id, 'Mal')}
+                                            className="w-6 h-6 accent-red-500 cursor-pointer"
                                         />
                                     </TableCell>
                                     <TableCell className="text-center">
@@ -354,6 +326,7 @@ export default function InspectionVehiclePreUse({
                                             value="No Aplica"
                                             checked={data.causas.find((c) => c.id === causa.id)?.state === 'No Aplica'}
                                             onChange={() => handleCausaStateChange(causa.id, 'No Aplica')}
+                                            className="w-6 h-6 accent-gray-600 cursor-pointer"
                                         />
                                     </TableCell>
                                 </TableRow>
@@ -364,21 +337,21 @@ export default function InspectionVehiclePreUse({
             </div>
 
             {/* Observaciones */}
-            <div className="col-span-4">
-                <Label htmlFor="observations" className="mb-3">
+            <div className="col-span-full">
+                <Label htmlFor="observation" className="mb-3">
                     Observaciones
                 </Label>
                 <Textarea
-                    id="observations"
-                    value={data.observations}
-                    onChange={(e) => setData((prevData) => ({ ...prevData, observations: e.target.value }))}
+                    id="observation"
+                    value={data.observation}
+                    onChange={(e) => setData((prevData) => ({ ...prevData, observation: e.target.value }))}
                     placeholder="Escriba sus observaciones aquí..."
                 />
-                {errors.observations && <p className="text-sm text-red-500">{errors.observations}</p>}
+                {errors.observation && <p className="text-sm text-red-500">{errors.observation}</p>}
             </div>
 
             {/* Imágenes adicionales */}
-            <div className="col-span-4">
+            {/* <div className="col-span-4">
                 <ImageDropZone
                     images={data.images}
                     onUpload={(files) => {
@@ -412,10 +385,10 @@ export default function InspectionVehiclePreUse({
                     }}
                     label="Imágenes adicionales"
                 />
-            </div>
+            </div> */}
 
             {/* Firma */}
-            <div className="col-span-4">
+            {/* <div className="col-span-4">
                 <ImageDropZone
                     images={data.signature ? [data.signature] : []}
                     maxImages={1}
@@ -442,7 +415,7 @@ export default function InspectionVehiclePreUse({
                     onRemove={() => setData((prevData) => ({ ...prevData, signature: '' }))}
                     label="Firma"
                 />
-            </div>
+            </div> */}
 
             {/* Botón de envío */}
             <div className="col-span-4">

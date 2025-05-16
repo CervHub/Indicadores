@@ -4,6 +4,9 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import CreateVehicle from './create';
+import DestroyVehicle from './destroy';
+import EditVehicle from './edit';
+import LinkVehicle from './link';
 import TableCard from './table';
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -16,18 +19,21 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Vehicle() {
     const { vehicles, auth } = usePage().props;
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
+    const [destroyDialogOpen, setDestroyDialogOpen] = useState(false);
+    const [linkDialogOpen, setLinkDialogOpen] = useState(false);
 
-    // Función para manejar el clic en un elemento y la acción seleccionada
     const handleAction = (item: any, action: string) => {
-        console.log('Elemento clickeado:', item);
-        console.log('Acción seleccionada:', action);
-
         if (action === 'desvincular') {
-            // Lógica para desvincular el vehículo
-            console.log(`Desvinculando vehículo con ID: ${item.id}`);
+            setSelectedVehicle(item);
+            setDestroyDialogOpen(true);
         } else if (action === 'actualizar') {
-            // Lógica para actualizar el vehículo
-            console.log(`Actualizando vehículo con ID: ${item.id}`);
+            setSelectedVehicle(item);
+            setEditDialogOpen(true);
+        } else if (action === 'vincular') {
+            setSelectedVehicle(item);
+            setLinkDialogOpen(true);
         }
     };
 
@@ -37,15 +43,34 @@ export default function Vehicle() {
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex justify-start">
                     <Button className="w-auto" onClick={() => setIsDialogOpen(true)}>
-                        Crear Vehículo
+                        Registrar Vehículo
                     </Button>
                 </div>
                 <div className="flex-1">
-                    {/* Pasar la función handleAction como prop a TableCard */}
                     <TableCard data={vehicles} onAction={handleAction} />
                 </div>
             </div>
-            <CreateVehicle isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />
+            <CreateVehicle isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} companyId={auth.user.company_id} />
+            {selectedVehicle && (
+                <>
+                    <EditVehicle
+                        isDialogOpen={editDialogOpen}
+                        setIsDialogOpen={setEditDialogOpen}
+                        vehicle={selectedVehicle}
+                    />
+                    <DestroyVehicle
+                        isDialogOpen={destroyDialogOpen}
+                        setIsDialogOpen={setDestroyDialogOpen}
+                        vehicle={selectedVehicle}
+                    />
+                    <LinkVehicle
+                        isDialogOpen={linkDialogOpen}
+                        setIsDialogOpen={setLinkDialogOpen}
+                        vehicle={selectedVehicle}
+                        companyId={auth.user.company_id}
+                    />
+                </>
+            )}
         </AppLayout>
     );
 }

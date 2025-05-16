@@ -89,7 +89,7 @@
             text-align: center;
         }
 
-        .observations {
+        .observation {
             margin-top: 20px;
             width: 100%;
             border: 1px solid black;
@@ -184,7 +184,7 @@
         @endforeach
     </table>
 
-    <div class="observations">
+    <div class="observation">
         <strong>Observaciones:</strong>
         <p></p>
     </div>

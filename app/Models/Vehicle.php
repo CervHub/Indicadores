@@ -17,7 +17,7 @@ class Vehicle extends Model
         'color', // Color del vehículo
         'year', // Año de fabricación
         'engine_number', // Número de motor
-        'chasis_number', // Número de chasis
+        'chassis_number', // Número de chasis
         'type', // Tipo de vehículo (e.g., sedán, SUV)
         'fuel_type', // Tipo de combustible (e.g., gasolina, diésel)
         'seating_capacity', // Capacidad de asientos
