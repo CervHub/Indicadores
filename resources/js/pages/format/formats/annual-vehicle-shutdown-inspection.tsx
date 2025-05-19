@@ -2,6 +2,8 @@ import InspectionVehicle from '@/components/form/inpectionVehicle';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react'; // Importamos usePage de Inertia.js
+import StatementDialog from './statement';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -28,6 +30,8 @@ export default function AnnualVehicleShutdownInspection() {
     const userName = auth.user.name;
     const company = auth.user.company;
 
+    const [open, setOpen] = useState(true);
+
     // Filtrar las primeras 5 causas con solo id, name y group
     // Generar el campo 'name' dinámicamente basado en 'nombre'
     const filteredCausas = causas.map(({ id, nombre, group }) => ({
@@ -42,6 +46,8 @@ export default function AnnualVehicleShutdownInspection() {
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <InspectionVehicle causas={filteredCausas} type={TYPE} userId={userId} companyId={companyId} userName={userName} company={company} />
             </div>
+            <StatementDialog open={open} onOpenChange={setOpen} />
+
         </AppLayout>
     );
 }

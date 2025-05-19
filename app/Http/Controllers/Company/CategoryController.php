@@ -86,7 +86,8 @@ class CategoryController extends Controller
                     'category_id' => $category_id,
                     'company_id' => $company_id,
                     'nombre' => $nombre,
-                    'group_id' => $request->input('group_id') // Asignar el grupo si se proporciona
+                    'group_id' => $request->input('group_id'), // Asignar el grupo si se proporciona
+                    'is_required' => $request->input('is_required', false), // Asignar requerido si se proporciona
                 ]);
                 return redirect()->back()->with('success', 'Categoría asignada a la empresa exitosamente');
             } else {
@@ -94,6 +95,42 @@ class CategoryController extends Controller
             }
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al asignar la categoría a la empresa: ' . $e->getMessage());
+        }
+    }
+
+    public function updateCompany(Request $request, $category_id)
+    {
+        try {
+            $company_id = 1; // O usa Auth::user()->company_id si aplica
+            $nombre = trim($request->input('nombre'));
+
+            // Buscar la categoría de empresa por ID
+            $categoryCompany = CategoryCompany::find($category_id);
+
+            if (!$categoryCompany) {
+                return redirect()->back()->with('error', 'Categoría de empresa no encontrada.');
+            }
+
+            // Verificar si ya existe otra categoría de empresa con el mismo nombre (ignorando el actual)
+            $exists = CategoryCompany::where('category_id', $categoryCompany->category_id)
+                ->where('company_id', $company_id)
+                ->whereRaw('UPPER(TRIM(nombre)) = ?', [strtoupper($nombre)])
+                ->where('id', '!=', $category_id)
+                ->exists();
+
+            if ($exists) {
+                return redirect()->back()->with('error', 'Ya existe otra categoría de empresa con el mismo nombre.');
+            }
+
+            $categoryCompany->update([
+                'nombre' => $nombre,
+                'group_id' => $request->input('group_id'),
+                'is_required' => $request->input('is_required', false),
+            ]);
+
+            return redirect()->back()->with('success', 'Categoría de empresa actualizada exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error al actualizar la categoría de empresa: ' . $e->getMessage());
         }
     }
 

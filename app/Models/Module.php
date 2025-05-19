@@ -35,6 +35,8 @@ class Module extends Model
         'company_report_id',
         'device',
         'version',
+        'vehicle_plate',
+        'vehicle_status',
     ];
 
     public function getGerenciaIdAttribute()

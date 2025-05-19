@@ -9,6 +9,7 @@ import { useState } from 'react';
 import CreateCategory from './create';
 import CreateCategoryCompany from './createCategoryCompany';
 import CreateGroup from './createGroupCompany';
+import UpdateCategoryCompany from './updateCategoryCompany';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -22,6 +23,7 @@ export default function Security() {
 
     const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
     const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
+    const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
 
     const [selectedCategory, setSelectedCategory] = useState<{
         id: number | null;
@@ -34,6 +36,8 @@ export default function Security() {
         isCategorized: null,
         groups: [],
     });
+
+    const [selectedItem, setSelectedItem] = useState<any>(null);
 
     const handleCategoryClick = (categoryId: number, title: string, isCategorized: string, groups: any[]) => {
         setSelectedCategory({
@@ -53,6 +57,32 @@ export default function Security() {
             groups,
         });
         setIsGroupDialogOpen(true);
+    };
+
+    // Acción para editar o eliminar
+    const handleActionClick = (item: any, action: string) => {
+        if (action === 'edit') {
+            // Buscar la categoría correspondiente al item
+            const category = categories.find(cat =>
+                cat.id === parseInt(item.category_id)
+            );
+            if (category) {
+                setSelectedCategory({
+                    id: category.id,
+                    name: category.nombre,
+                    isCategorized: category.is_categorized,
+                    groups: category.groups,
+                });
+            }
+            setSelectedItem(item);
+            setIsUpdateDialogOpen(true);
+            console.log('Acción:', action, 'Item:', item);
+            console.log('Categoría seleccionada:', selectedCategory);
+            console.log('Categoría:', category);
+        } else if (action === 'delete') {
+            // Aquí podrías implementar la lógica de eliminación
+            console.log('Acción:', action, 'Item:', item);
+        }
     };
 
     return (
@@ -77,7 +107,7 @@ export default function Security() {
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                <DataTable columns={getColumns(() => {}, groups)} data={category_companies} />
+                                <DataTable columns={getColumns(handleActionClick, groups)} data={category_companies} />
                             </CardContent>
                         </Card>
                     ))}
@@ -100,6 +130,17 @@ export default function Security() {
                         setIsDialogOpen={setIsGroupDialogOpen}
                     />
                 </>
+            )}
+            {selectedItem && (
+                <UpdateCategoryCompany
+                    categoryId={selectedCategory.id}
+                    title={selectedCategory.name!}
+                    isDialogOpen={isUpdateDialogOpen}
+                    setIsDialogOpen={setIsUpdateDialogOpen}
+                    isCategorized={selectedCategory.isCategorized}
+                    groups={selectedCategory.groups}
+                    item={selectedItem}
+                />
             )}
         </AppLayout>
     );

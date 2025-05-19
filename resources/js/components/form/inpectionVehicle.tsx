@@ -74,6 +74,7 @@ export default function InspectionVehicle({
         type_report: 'vehicular',
         type_inspection: type,
         causas: causas.map((causa) => ({ id: causa.id, state: '', observation: '' })),
+        status: '', // <-- Agrega el campo status
     });
 
     const [causaStates, setCausaStates] = useState(causas.map((causa) => ({ id: causa.id, state: '', observation: '' })));
@@ -88,9 +89,10 @@ export default function InspectionVehicle({
         return '';
     };
 
-    // Actualiza el resultado automáticamente cuando cambian las causas
+    // Actualiza el resultado y status automáticamente cuando cambian las causas
     React.useEffect(() => {
         setData('result', getAutoResult());
+        setData('status', getAutoResult()); // <-- Actualiza status también
     }, [causaStates]);
 
     // Solo permite enviar si todas las causas tienen estado y el resultado está calculado
@@ -190,7 +192,7 @@ export default function InspectionVehicle({
             return;
         }
 
-        setIsSubmitting(true); // Activar el preload del botón
+        setIsSubmitting(true);
 
         try {
             const response = await fetch(route('web.v1.saveReport'), {
@@ -200,7 +202,8 @@ export default function InspectionVehicle({
                 },
                 body: JSON.stringify({
                     ...data,
-                    causas: causaStates, // Incluir los estados de las causas en el envío
+                    causas: causaStates,
+                    status: getAutoResult(), // <-- Envía el status en el form
                 }),
             });
 
@@ -222,7 +225,7 @@ export default function InspectionVehicle({
             console.error(error);
             toast.error('Ocurrió un error al guardar el reporte. Intente de nuevo.');
         } finally {
-            setIsSubmitting(false); // Desactivar el preload del botón
+            setIsSubmitting(false);
         }
     };
 

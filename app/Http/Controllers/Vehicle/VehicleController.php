@@ -172,4 +172,17 @@ class VehicleController extends Controller
             return redirect()->back()->withErrors(['error' => 'Ocurrió un error al vincular el vehículo: ' . $e->getMessage()]);
         }
     }
+
+
+    public function show(Request $request, $id)
+    {
+        try {
+            $vehicle = Vehicle::findOrFail($id);
+            return Inertia::render('vehicle/detail', [
+                'vehicle' => $vehicle,
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'Ocurrió un error al mostrar el vehículo: ' . $e->getMessage()]);
+        }
+    }
 }

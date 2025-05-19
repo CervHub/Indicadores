@@ -10,36 +10,48 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
-type CategoryCompanyForm = { nombre: string; group_id?: string; is_required: boolean }; // Agregado is_required
+type CategoryCompanyForm = { nombre: string; group_id?: string; is_required: boolean };
 
-interface CreateCategoryCompanyProps {
+interface UpdateCategoryCompanyProps {
     categoryId: number;
     title: string;
     isDialogOpen: boolean;
     setIsDialogOpen: (isOpen: boolean) => void;
     isCategorized: string | null;
     groups: any[];
+    item: {
+        id: number;
+        nombre: string;
+        group_id?: string;
+        is_required: boolean;
+    } | null;
 }
 
-export default function CreateCategoryCompany({
+export default function UpdateCategoryCompany({
     categoryId,
     title,
     isDialogOpen,
     setIsDialogOpen,
     isCategorized,
     groups,
-}: CreateCategoryCompanyProps) {
-    const { data, setData, post, processing, errors, reset } = useForm<Required<CategoryCompanyForm>>({
-        nombre: '',
-        group_id: undefined,
-        is_required: false, // Por defecto no requerido
+    item,
+}: UpdateCategoryCompanyProps) {
+    const { data, setData, put, processing, errors, reset } = useForm<Required<CategoryCompanyForm>>({
+        nombre: item?.nombre || '',
+        group_id: item?.group_id ?? undefined,
+        is_required: item?.is_required === 1 || item?.is_required === "1",
     });
-    const [currentCategoryId, setCurrentCategoryId] = useState(categoryId);
 
     useEffect(() => {
-        setCurrentCategoryId(categoryId);
-        reset(); // Reset the form when categoryId changes
-    }, [categoryId]);
+        if (item) {
+            setData({
+                nombre: item.nombre,
+                group_id: item.group_id ?? undefined,
+                is_required: item.is_required === 1 || item.is_required === "1",
+            });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [item]);
 
     const handleSuccess = (page: any) => {
         const { success, error } = page.props.flash;
@@ -56,14 +68,16 @@ export default function CreateCategoryCompany({
 
     const handleError = () => {
         setIsDialogOpen(true);
-        toast.error('Ocurrió un error al intentar crear la categoría de empresa.');
+        toast.error('Ocurrió un error al intentar actualizar la categoría de empresa.');
     };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(route('admin.category.admin.store', { category_id: currentCategoryId || 0 }), {
+        if (!item) return;
+        put(route('admin.category.admin.update', { category_id: item.id }), {
             onSuccess: handleSuccess,
             onError: handleError,
+            preserveScroll: true,
         });
     };
 
@@ -72,8 +86,8 @@ export default function CreateCategoryCompany({
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Crear {title}</DialogTitle>
-                        <DialogDescription>Complete los campos para crear una nueva categoría de empresa.</DialogDescription>
+                        <DialogTitle>Editar {title}</DialogTitle>
+                        <DialogDescription>Modifique los campos para actualizar la categoría de empresa.</DialogDescription>
                     </DialogHeader>
                     <form onSubmit={submit} className="space-y-3">
                         <div className="grid gap-2">
@@ -93,6 +107,7 @@ export default function CreateCategoryCompany({
                             <div className="grid gap-2">
                                 <Label>Grupos disponibles:</Label>
                                 <Select
+                                    value={data.group_id}
                                     onValueChange={(value) => setData('group_id', value)}
                                 >
                                     <SelectTrigger>
@@ -123,7 +138,7 @@ export default function CreateCategoryCompany({
                         </div>
                         <Button type="submit" className="mt-2 w-auto" disabled={processing}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                            Guardar
+                            Actualizar
                         </Button>
                     </form>
                 </DialogContent>

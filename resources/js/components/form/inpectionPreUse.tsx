@@ -43,6 +43,7 @@ export default function InspectionVehiclePreUse({
         shift: '',
         driver: userName,
         mileage: '',
+        previousMileage: '', // <-- Nuevo campo para kilometraje anterior
         images: [] as string[],
         signature: '',
         observation: '',
@@ -52,6 +53,7 @@ export default function InspectionVehiclePreUse({
         userName,
         type_report: 'vehicular',
         type_inspection: 'pre-use',
+        status: '',
     });
 
     const [processing, setProcessing] = useState(false);
@@ -95,6 +97,7 @@ export default function InspectionVehiclePreUse({
                     ...prevData,
                     vehicleCode: responseData.data.code || '',
                     department: responseData.company.nombre || '',
+                    previousMileage: responseData.data.previous_mileage || '', // <-- Asigna el kilometraje anterior
                 }));
                 toast.success('Información del vehículo cargada con éxito.');
             } else if (responseData.status === 'warning') {
@@ -105,18 +108,21 @@ export default function InspectionVehiclePreUse({
                 setData((prevData) => ({
                     ...prevData,
                     vehicleCode: '',
+                    previousMileage: '', // Limpia si no hay datos
                 }));
             } else if (responseData.status === 'error') {
                 toast.error(responseData.message || 'No se encontró información para la placa ingresada.');
                 setData((prevData) => ({
                     ...prevData,
                     vehicleCode: '',
+                    previousMileage: '',
                 }));
             } else {
                 toast.error('No se encontró información para la placa ingresada.');
                 setData((prevData) => ({
                     ...prevData,
                     vehicleCode: '',
+                    previousMileage: '',
                 }));
             }
         } catch (error) {
@@ -125,11 +131,28 @@ export default function InspectionVehiclePreUse({
             setData((prevData) => ({
                 ...prevData,
                 vehicleCode: '',
+                previousMileage: '',
             }));
         } finally {
             setIsSearchingPlate(false);
         }
     };
+
+    // Calcula el status solo si todas las causas están marcadas
+    const getStatus = () => {
+        const allCausasValid = data.causas.every((causa) => causa.state !== '');
+        if (!allCausasValid) return '';
+        return data.causas.some((causa) => causa.state === 'Mal') ? 'Desaprobado' : 'Aprobado';
+    };
+
+    // Actualiza el status en el estado cada vez que cambian las causas
+    React.useEffect(() => {
+        const status = getStatus();
+        setData((prevData) => ({
+            ...prevData,
+            status,
+        }));
+    }, [data.causas]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -148,7 +171,7 @@ export default function InspectionVehiclePreUse({
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(data),
+                body: JSON.stringify({ ...data, status: getStatus() }), // previousMileage ya va incluido
             });
 
             if (!response.ok) {
@@ -169,6 +192,7 @@ export default function InspectionVehiclePreUse({
                 shift: '',
                 driver: userName,
                 mileage: '',
+                previousMileage: '', // <-- Reinicia el kilometraje anterior
                 images: [],
                 signature: '',
                 observation: '',
@@ -219,7 +243,7 @@ export default function InspectionVehiclePreUse({
                     Código de Llamada
                 </Label>
                 <Input
-                    readOnly
+                    disabled
                     type="text"
                     id="vehicle-code"
                     value={data.vehicleCode}
@@ -234,6 +258,7 @@ export default function InspectionVehiclePreUse({
                     Empresa
                 </Label>
                 <Input
+                    disabled
                     type="text"
                     id="department"
                     value={data.department}
@@ -258,6 +283,19 @@ export default function InspectionVehiclePreUse({
                     </SelectContent>
                 </Select>
                 {errors.shift && <p className="text-sm text-red-500">{errors.shift}</p>}
+            </div>
+
+            {/* Kilometraje anterior */}
+            <div className="col-span-2 md:col-span-1">
+                <Label htmlFor="previousMileage" className="mb-3">
+                    Kilometraje anterior
+                </Label>
+                <Input
+                    type="number"
+                    id="previousMileage"
+                    value={data.previousMileage}
+                    disabled
+                />
             </div>
 
             {/* Kilometraje */}
@@ -350,6 +388,25 @@ export default function InspectionVehiclePreUse({
                 {errors.observation && <p className="text-sm text-red-500">{errors.observation}</p>}
             </div>
 
+            {/* Estado final debajo de observaciones */}
+            <div className="col-span-auto">
+                <Label htmlFor="status" className="mb-3">
+                    Estado final
+                </Label>
+                <Input
+                    id="status"
+                    value={getStatus()}
+                    disabled
+                    className={
+                        getStatus() === 'Desaprobado'
+                            ? 'text-red-600 font-bold'
+                            : getStatus() === 'Aprobado'
+                                ? 'text-green-600 font-bold'
+                                : ''
+                    }
+                />
+            </div>
+            <br />
             {/* Imágenes adicionales */}
             {/* <div className="col-span-4">
                 <ImageDropZone
