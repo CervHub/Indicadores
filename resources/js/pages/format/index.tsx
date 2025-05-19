@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, Auth } from '@/types';
+import { usePage } from '@inertiajs/react';
 import { Head, Link } from '@inertiajs/react'; // Importamos Link de Inertia.js
 import { useState } from 'react';
 import IndicationsModal from './option'; // Importamos el modal de opciones
@@ -19,6 +20,7 @@ const staticReports = [
         image: '/reports/IMG-05.png',
         background: '/reports/FONDO%20AMARILLO.svg',
         route: route('format.acts'),
+        permissions: ['CA', 'IS', 'RU'],
     },
     {
         title: 'Reporte',
@@ -27,6 +29,7 @@ const staticReports = [
         image: '/reports/IMG-02.png',
         background: '/reports/FONDO%20ROJO.svg',
         route: route('format.conditions'),
+        permissions: ['CA', 'IS', 'RU'],
     },
     {
         title: 'Reporte',
@@ -35,6 +38,7 @@ const staticReports = [
         image: '/reports/IMG-03.png',
         background: '/reports/FONDO%20TURQUESA.svg',
         route: route('format.incidents'),
+        permissions: ['CA', 'IS', 'RU'],
     },
     {
         title: 'Inspección',
@@ -43,6 +47,7 @@ const staticReports = [
         image: '/reports/IMG-04.png',
         background: '/reports/FONDO%20VERDE.svg',
         route: route('format.inspection'),
+        permissions: ['CA', 'IS', 'RU'],
     },
     // Opciones adicionales de inspección vehicular
     {
@@ -52,6 +57,7 @@ const staticReports = [
         image: '/reports/IMG-01.png',
         background: '/reports/FONDO%20AMARILLO.svg',
         route: route('format.dailyVehicleInspection'),
+        permissions: ['CA', 'IS', 'RU'],
     },
     {
         title: 'Inspección',
@@ -60,6 +66,7 @@ const staticReports = [
         image: '/reports/IMG-01.png',
         background: '/reports/FONDO%20ROJO.svg',
         route: route('format.quarterlyVehicleInspection'),
+        permissions: ['CA', 'IS'],
     },
     {
         title: 'Inspección',
@@ -68,6 +75,7 @@ const staticReports = [
         image: '/reports/IMG-01.png',
         background: '/reports/FONDO%20TURQUESA.svg',
         route: route('format.semiannualVehicleInspection'),
+        permissions: ['CA', 'IS'],
     },
     {
         title: 'Inspección',
@@ -76,17 +84,41 @@ const staticReports = [
         image: '/reports/IMG-01.png',
         background: '/reports/FONDO%20VERDE.svg',
         route: route('format.annualVehicleShutdownInspection'),
+        permissions: ['CA', 'IS'],
     },
 ];
 
 export default function Format() {
+    const { auth } = usePage<{ auth: Auth }>().props;
+    const ROLE_CODE = auth.user.role_code;
+    const COMPANY_ID = auth.user.company_id;
+
+    let filteredReports = staticReports.filter(report =>
+        report.permissions.includes(ROLE_CODE)
+    );
+
+    if (ROLE_CODE === 'IS') {
+        if (COMPANY_ID === '1') {
+            // Empresa 1: quitar trimestral y anual
+            filteredReports = filteredReports.filter(
+                report =>
+                    report.route !== route('format.quarterlyVehicleInspection') &&
+                    report.route !== route('format.annualVehicleShutdownInspection')
+            );
+        } else {
+            // Otras empresas: quitar semestral
+            filteredReports = filteredReports.filter(
+                report => report.route !== route('format.semiannualVehicleInspection')
+            );
+        }
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Formatos" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-3">
-                    {staticReports.map((report, index) => (
+                    {filteredReports.map((report, index) => (
                         <Link
                             key={index}
                             href={report.route}

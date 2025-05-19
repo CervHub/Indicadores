@@ -27,7 +27,7 @@ const groupedNavItems = [
                 url: '/dashboard',
                 icon: LayoutDashboard,
                 isActive: window.location.pathname === '/dashboard',
-                roles: ['SA', 'IS', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS'], // Updated to use role codes
+                roles: ['SA', 'IS', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS','RU'], // Updated to use role codes
             },
             {
                 title: 'Empresas',
@@ -55,7 +55,7 @@ const groupedNavItems = [
                 url: '/vehicle',
                 icon: Truck,
                 isActive: window.location.pathname === '/vehicle',
-                roles: ['CA'], // No roles required
+                roles: ['CA','SA'], // No roles required
             },
         ],
     },
@@ -88,14 +88,14 @@ const groupedNavItems = [
                 url: '/format',
                 icon: FileText,
                 isActive: window.location.pathname === '/format',
-                roles: ['CA'], // No roles required
+                roles: ['RU', 'IS'], // No roles required
             },
             {
                 title: 'Inspecciones',
                 url: '/inspection',
                 icon: FileText,
                 isActive: window.location.pathname === '/inspection',
-                roles: ['CA'], // No roles required
+                roles: ['CA','RU'], // No roles required
             }
         ],
     },
@@ -155,9 +155,9 @@ export function AppSidebar() {
                 if (item.title === 'Ingeniero de Seguridad' && userCompanyId !== '1') {
                     return false;
                 }
-                if (item.title === 'Roles' && userCompanyId !== '1') {
-                    return false;
-                }
+                // if (item.title === 'Roles' && userCompanyId !== '1') {
+                //     return false;
+                // }
                 return item.roles.some((role) => userRoleCodes.includes(role)); // Compare with role_id
             }),
         }))

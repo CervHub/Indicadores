@@ -19,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 // Opciones para tipo de inspección y estado
 const TIPO_INSPECCION_OPTIONS = [
     { value: 'all', label: 'Todos' },
-    { value: 'Inspección Diaria Pre-User', label: 'Inspección Diaria Pre-Uso' },
+    { value: 'Inspección Diaria Pre-Uso', label: 'Inspección Diaria Pre-Uso' },
     { value: 'Inspección Trimestral', label: 'Inspección Trimestral' },
     { value: 'Inspección Semestral', label: 'Inspección Semestral' },
     { value: 'Inspección Anual', label: 'Inspección Anual' },

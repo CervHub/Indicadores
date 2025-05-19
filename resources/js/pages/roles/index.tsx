@@ -62,7 +62,6 @@ export default function Roles() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Roles" />
-            {companyId === '1' && (
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                     <RolePermission users={users.map(user => ({ value: user.id.toString(), label: `${user.nombres} ${user.apellidos}` }))}
                         roles={roles.map(role => ({ value: role.id.toString(), label: role.nombre }))} />
@@ -74,7 +73,7 @@ export default function Roles() {
                         </>
                     )}
                 </div>
-            )}
+            
         </AppLayout>
     );
 }

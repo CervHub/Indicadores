@@ -17,6 +17,10 @@ class RoleController extends Controller
         $excludedCodes = ['SA', 'CA', 'RU']; // Exclude roles with these codes
         $roles = Role::whereNotIn('code', $excludedCodes)->get(); // Filter roles by code
 
+        if (auth()->user()->company_id !== '1') {
+            $roles = Role::where('code', 'IS')->get();
+        }
+
         $security_engineers = SecurityEngineer::where('company_id', auth()->user()->company_id)->get();
         $role_users = RoleUser::all();
 
@@ -27,10 +31,10 @@ class RoleController extends Controller
             ->where('estado', 1)
             ->where('role_id', 2)
             ->get();
-
         $roleUsers = DB::table('role_users')
             ->join('users', 'role_users.user_id', '=', 'users.id')
             ->join('roles', 'role_users.role_id', '=', 'roles.id')
+            ->where('users.company_id', auth()->user()->company_id) // <-- Solo usuarios de la empresa actual
             ->select(
                 'role_users.user_id',
                 'role_users.role_id',

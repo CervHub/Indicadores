@@ -269,7 +269,7 @@
                         @endif
                     </td>
                     <td class="col-estado">
-                        @if (($causa['state'] ?? '') === 'No aplica')
+                        @if (($causa['state'] ?? '') === 'No Aplica')
                             <span class="x-mark">X</span>
                         @endif
                     </td>
@@ -316,7 +316,7 @@
             </td>
             <td class="th-mayus" style="text-align:left; width:20%;">Fecha de inspección:</td>
             <td style="text-align:left;">
-                {{ $date ?? '' }}
+                {{ $date ? \Carbon\Carbon::createFromFormat('d/m/Y H:i:s', $date)->setTimezone('America/Lima')->format('d/m/Y H:i:s') : '' }}
             </td>
         </tr>
     </table>

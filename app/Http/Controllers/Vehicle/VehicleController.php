@@ -23,16 +23,17 @@ class VehicleController extends Controller
 
     public function index()
     {
-        $vehiclesLinked = VehicleCompany::where('company_id', $this->company_id)
+        $vehicles = VehicleCompany::with('vehicle')
             ->where('is_linked', true)
-            ->pluck('vehicle_id');
-
-        // Obtener los vehículos
-        $vehicles = Vehicle::whereIn('id', $vehiclesLinked)->get();
-
+            ->when($this->company_id, function ($query) {
+                $query->where('company_id', $this->company_id);
+            })
+            ->get();
 
         return Inertia::render('vehicle/index', [
-            'vehicles' => $vehicles,
+            'vehicles' => $vehicles->map(function ($vehicleCompany) {
+                return $vehicleCompany->vehicle;
+            }),
         ]);
     }
 

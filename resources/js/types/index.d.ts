@@ -40,6 +40,7 @@ export interface User {
     created_at: string;
     updated_at: string;
     role_code: string;
+    company_id: string;
     [key: string]: unknown; // This allows for additional properties...
 }
 

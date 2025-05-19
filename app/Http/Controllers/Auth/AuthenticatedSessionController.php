@@ -64,9 +64,9 @@ class AuthenticatedSessionController extends Controller
                 return redirect()->route('login')->withErrors(['error' => 'Tu cuenta está inactiva.']);
             }
 
-            if ($user->role_code === 'RU') { // Denegar acceso a usuarios con role_code 'RU'
-                return redirect()->route('login')->withErrors(['error' => 'No tienes permiso para iniciar sesión.']);
-            }
+            // if ($user->role_code === 'RU') { // Denegar acceso a usuarios con role_code 'RU'
+            //     return redirect()->route('login')->withErrors(['error' => 'No tienes permiso para iniciar sesión.']);
+            // }
 
             // Verificar si la empresa del usuario está inactiva
             if (!$user->company || $user->company->estado !== '1') {
