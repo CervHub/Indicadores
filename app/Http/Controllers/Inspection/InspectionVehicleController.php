@@ -24,7 +24,8 @@ class InspectionVehicleController extends Controller
 
     public function index()
     {
-        $inspectionVehicles = collect(DB::select("
+        // Consulta base
+        $query = "
             SELECT
                 m.id,
                 m.fecha_evento,
@@ -43,7 +44,15 @@ class InspectionVehicleController extends Controller
             INNER JOIN users AS u ON u.id = m.user_id
             INNER JOIN companies AS c ON c.id = m.company_id
             WHERE m.tipo_reporte = 'vehicular'
-        "));
+        ";
+
+        $params = [];
+        if ($this->companyId != 1) {
+            $query .= " AND m.company_id = ?";
+            $params[] = $this->companyId;
+        }
+
+        $inspectionVehicles = collect(DB::select($query, $params));
 
         return Inertia::render('inspection/index', [
             'inspectionVehicles' => $inspectionVehicles,
@@ -52,9 +61,17 @@ class InspectionVehicleController extends Controller
 
     public function detalle($reportability_id)
     {
+        $isSecurityEngineer = auth()->user()->isSecurityEngineer();
         $user = User::find($this->userId);
         $reportability = Module::find($reportability_id);
         $companyNombre = Company::find($reportability->company_id)->nombre ?? 'Empresa no encontrada';
+
+        if ($isSecurityEngineer && $this->companyId === '1') {
+            $reportability->vehicle_status = 'Revisado';
+            $reportability->estado = 'Revisado';
+            $reportability->save();
+        }
+
         return Inertia::render('inspection/detalle', [
             'reportability' => $reportability,
             'reportability_id' => $reportability_id,
@@ -77,8 +94,8 @@ class InspectionVehicleController extends Controller
             abort(403, 'Reporte no encontrado');
         }
 
-        // Si el reporte no es de su empresa
-        if ($module->company_id != $this->companyId) {
+        // Solo valida la empresa si no es admin (company_id != 1)
+        if ($this->companyId != 1 && $module->company_id != $this->companyId) {
             abort(403, 'No autorizado para descargar este reporte');
         }
 

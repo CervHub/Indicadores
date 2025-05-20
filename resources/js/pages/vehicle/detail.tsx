@@ -4,59 +4,66 @@ import React, { useEffect, useState } from "react";
 import { TrendingUp } from "lucide-react";
 import { CartesianGrid, LabelList, Line, LineChart, XAxis } from "recharts";
 import {
-  Card as ChartCard,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+    Card as Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card";
 import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
+    ChartConfig,
+    ChartContainer,
+    ChartTooltip,
+    ChartTooltipContent,
 } from "@/components/ui/chart";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-// Datos ficticios de kilometraje del último mes (por día)
-const mileageChartData = [
-  { day: "01", km: 120 },
-  { day: "02", km: 135 },
-  { day: "03", km: 140 },
-  { day: "04", km: 150 },
-  { day: "05", km: 160 },
-  { day: "06", km: 170 },
-  { day: "07", km: 180 },
-  { day: "08", km: 200 },
-  { day: "09", km: 210 },
-  { day: "10", km: 220 },
-  { day: "11", km: 230 },
-  { day: "12", km: 250 },
-  { day: "13", km: 260 },
-  { day: "14", km: 270 },
-  { day: "15", km: 280 },
-  { day: "16", km: 290 },
-  { day: "17", km: 300 },
-  { day: "18", km: 310 },
-  { day: "19", km: 320 },
-  { day: "20", km: 340 },
-  { day: "21", km: 350 },
-  { day: "22", km: 360 },
-  { day: "23", km: 370 },
-  { day: "24", km: 380 },
-  { day: "25", km: 390 },
-  { day: "26", km: 400 },
-  { day: "27", km: 410 },
-  { day: "28", km: 420 },
-  { day: "29", km: 430 },
-  { day: "30", km: 440 },
-];
+// Generar datos de kilometraje diario y acumulado del último mes (acumulado inicia en 0)
+function generateMileageChartData() {
+    const today = new Date();
+    const start = new Date(today);
+    start.setMonth(today.getMonth() - 1);
+    // Si el mes anterior no tiene ese día (ej: 31), ajusta al último día del mes anterior
+    if (start.getMonth() === today.getMonth()) {
+        // setMonth desborda si el mes anterior no tiene ese día
+        start.setDate(0);
+    }
+    const data = [];
+    let current = new Date(start);
+    let accumulated = 0; // inicia en 0
+    while (current <= today) {
+        const daily = Math.floor(Math.random() * 40) + 10; // entre 10 y 49 km por día
+        accumulated += daily;
+        data.push({
+            day: current.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' }),
+            daily,
+            accumulated
+        });
+        current.setDate(current.getDate() + 1);
+    }
+    return data;
+}
 
-const mileageChartConfig = {
-  km: {
-    label: "Kilometraje",
-    color: "hsl(var(--chart-1))",
-  },
+const mileageChartData = generateMileageChartData();
+
+const mileageChartConfigDaily = {
+    daily: {
+        label: "Km por día",
+        color: "hsl(var(--chart-1, 0, 100%, 40%))",
+    },
+} satisfies ChartConfig;
+
+const mileageChartConfigAccum = {
+    accumulated: {
+        label: "Km acumulado",
+        color: "hsl(var(--chart-2, 0, 100%, 40%))",
+    },
 } satisfies ChartConfig;
 
 // Reloj digital simple
@@ -67,7 +74,10 @@ function Clock() {
         return () => clearInterval(timer);
     }, []);
     return (
-        <span className="font-mono text-sm text-gray-500">
+        <span
+            className="font-mono text-sm font-bold"
+            style={{ color: '#fff' }}
+        >
             {now.toLocaleDateString()} {now.toLocaleTimeString()}
         </span>
     );
@@ -80,56 +90,53 @@ function getVehicleShowUrl(vehicleId: number) {
 }
 
 export default function VehicleDetail() {
-    const { vehicle } = usePage().props;
+    const { vehicle, vehicleInspection } = usePage().props;
     console.log(vehicle);
 
-    // Datos ficticios de inspecciones
+    // Inspecciones desde backend (garantiza 4 tipos, aunque estén vacíos)
     const inspections = [
-        {
-            tipo: "Inspección Diaria Pre uso",
-            realizado_por: "Juan Pérez",
-            fecha: "2024-06-01",
-            vencimiento: "2024-06-02",
-            estado: "Aprobado",
-            observaciones: "Sin novedades"
+        vehicleInspection?.['pre-use'] && {
+            tipo: vehicleInspection['pre-use'].tipo_inspeccion,
+            realizado_por: vehicleInspection['pre-use'].realizado_por,
+            fecha: vehicleInspection['pre-use'].created_at,
+            vencimiento: vehicleInspection['pre-use'].vencimiento,
+            estado: vehicleInspection['pre-use'].estado,
+            observaciones: vehicleInspection['pre-use'].observaciones,
         },
-        {
-            tipo: "Inspección Trimestral",
-            realizado_por: "Ana Gómez",
-            fecha: "2024-04-10",
-            vencimiento: "2024-07-10",
-            estado: "Aprobado",
-            observaciones: "Cambio de aceite"
+        vehicleInspection?.['trimestral'] && {
+            tipo: vehicleInspection['trimestral'].tipo_inspeccion,
+            realizado_por: vehicleInspection['trimestral'].realizado_por,
+            fecha: vehicleInspection['trimestral'].created_at,
+            vencimiento: vehicleInspection['trimestral'].vencimiento,
+            estado: vehicleInspection['trimestral'].estado,
+            observaciones: vehicleInspection['trimestral'].observaciones,
         },
-        {
-            tipo: "Inspección Semestral",
-            realizado_por: "Carlos Ruiz",
-            fecha: "2024-01-15",
-            vencimiento: "2024-07-15",
-            estado: "Aprobado",
-            observaciones: "Revisión de frenos"
+        vehicleInspection?.['semestral'] && {
+            tipo: vehicleInspection['semestral'].tipo_inspeccion,
+            realizado_por: vehicleInspection['semestral'].realizado_por,
+            fecha: vehicleInspection['semestral'].created_at,
+            vencimiento: vehicleInspection['semestral'].vencimiento,
+            estado: vehicleInspection['semestral'].estado,
+            observaciones: vehicleInspection['semestral'].observaciones,
         },
-        {
-            tipo: "Inspección Parada Anual",
-            realizado_por: "María López",
-            fecha: "2023-12-01",
-            vencimiento: "2024-12-01",
-            estado: "Aprobado",
-            observaciones: "Mantenimiento general"
-        }
-    ];
+        vehicleInspection?.['anual'] && {
+            tipo: vehicleInspection['anual'].tipo_inspeccion,
+            realizado_por: vehicleInspection['anual'].realizado_por,
+            fecha: vehicleInspection['anual'].created_at,
+            vencimiento: vehicleInspection['anual'].vencimiento,
+            estado: vehicleInspection['anual'].estado,
+            observaciones: vehicleInspection['anual'].observaciones,
+        },
+    ].filter(Boolean);
 
     return (
         <>
             <Head title={`Hoja de Vida: ${vehicle.license_plate}`} />
-            <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 flex flex-col items-center justify-center py-8 px-2">
-                <div className="w-full max-w-4xl bg-white rounded-xl border shadow-2xl flex flex-col overflow-hidden print:shadow-none print:rounded-none print:bg-white">
+            <div className="min-h-screen bg-white flex flex-col items-center justify-center py-8 px-2">
+                <div className="w-full max-w-4xl bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden print:shadow-none print:rounded-none print:bg-white">
                     {/* Barra superior: título y reloj */}
-                    <div className="flex flex-col md:flex-row items-center justify-between border-b px-8 py-4 bg-gray-50 print:bg-white">
+                    <div className="flex flex-col md:flex-row items-center justify-between border-b px-8 py-4" style={{ backgroundColor: '#d7282f' }}>
                         <div className="flex flex-col md:flex-row md:items-center gap-2 w-full">
-                            <h1 className="text-3xl font-bold uppercase tracking-widest text-gray-700 flex-1 text-center md:text-left">
-                                Hoja de Vida Vehículo
-                            </h1>
                             <div>
                                 <Clock />
                             </div>
@@ -137,77 +144,135 @@ export default function VehicleDetail() {
                     </div>
                     {/* Encabezado con QR y datos principales */}
                     <div className="flex flex-col md:flex-row items-center justify-between border-b px-8 py-8 bg-white print:bg-white">
-                        <div className="flex-1 flex flex-col items-center md:items-start">
-                            <div className="flex items-center gap-4 mb-2">
-                                <span className="text-2xl font-bold text-blue-700">{vehicle.license_plate}</span>
-                                <span className="text-base bg-blue-100 text-blue-700 px-2 py-1 rounded">{vehicle.brand}</span>
-                                <span className="text-base bg-gray-100 text-gray-700 px-2 py-1 rounded">{vehicle.model}</span>
-                                <span className="text-base bg-gray-100 text-gray-700 px-2 py-1 rounded">{vehicle.year}</span>
-                            </div>
-                            <div className="text-sm text-gray-500 mb-2">
-                                <span className="mr-4">Chasis: <span className="font-semibold">{vehicle.chassis_number}</span></span>
-                                <span>Motor: <span className="font-semibold">{vehicle.engine_number}</span></span>
+                        <div className="flex-1 flex flex-col items-center md:items-start w-full">
+                            <div className="grid grid-cols-4 gap-4 w-full mb-2">
+                                <div className="rounded-lg p-3 flex flex-col items-center shadow-sm col-span-2" style={{ backgroundColor: '#d7282f' }}>
+                                    <span className="text-xs font-semibold" style={{ color: '#fff' }}>Placa Única Nacional de Rodaje</span>
+                                    <span className="text-base font-bold" style={{ color: '#fff' }}>{vehicle.license_plate}</span>
+                                </div>
+                                <div className="rounded-lg p-3 flex flex-col items-center shadow-sm col-span-2" style={{ backgroundColor: '#d7282f' }}>
+                                    <span className="text-xs font-semibold" style={{ color: '#fff' }}>Marca</span>
+                                    <span className="text-base font-bold" style={{ color: '#fff' }}>{vehicle.brand}</span>
+                                </div>
+                                <div className="bg-gray-50 rounded-lg p-3 flex flex-col items-center shadow-sm col-span-2">
+                                    <span className="text-xs text-gray-600 font-semibold">Modelo</span>
+                                    <span className="text-base font-bold text-gray-900">{vehicle.model}</span>
+                                </div>
+                                <div className="bg-gray-50 rounded-lg p-3 flex flex-col items-center shadow-sm col-span-2">
+                                    <span className="text-xs text-gray-600 font-semibold">Año de Fabricación</span>
+                                    <span className="text-base font-bold text-gray-900">{vehicle.year}</span>
+                                </div>
                             </div>
                         </div>
-                        <div className="flex flex-col items-center mt-6 md:mt-0">
-                            <div className="bg-white p-0 shadow border">
-                                <QRCode value={getVehicleShowUrl(vehicle.id)} size={110} bgColor="#fff" />
+                        <div className="flex flex-col items-center mt-8 md:mt-0 md:ml-8">
+                            <div className="bg-white p-4 shadow border rounded-lg flex items-center justify-center" style={{ minWidth: 170, minHeight: 170 }}>
+                                <QRCode value={getVehicleShowUrl(vehicle.id)} size={150} bgColor="#fff" />
                             </div>
                             <span className="text-xs text-gray-400 mt-2">QR Hoja de Vida</span>
                         </div>
                     </div>
                     {/* Datos del vehículo en formato tarjetas compactas */}
                     <div className="px-8 py-6">
-                        <h3 className="text-lg font-bold mb-4 text-blue-700">Datos del Vehículo</h3>
+                        <h3 className="text-lg font-bold mb-4" style={{ color: '#d7282f' }}>Datos del Vehículo</h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="bg-blue-50 rounded-lg p-3 flex flex-col items-center shadow-sm">
-                                <span className="text-xs text-blue-700 font-semibold">Cód. llamada</span>
-                                <span className="text-base font-bold text-blue-900">{vehicle.code}</span>
+                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm" style={{ backgroundColor: '#d7282f' }}>
+                                <span className="text-xs font-semibold" style={{ color: '#fff' }}>Código de Llamada</span>
+                                <span className="text-base font-bold" style={{ color: '#fff' }}>{vehicle.code}</span>
                             </div>
                             <div className="bg-gray-50 rounded-lg p-3 flex flex-col items-center shadow-sm">
-                                <span className="text-xs text-gray-600 font-semibold">Tipo</span>
+                                <span className="text-xs text-gray-600 font-semibold">Clase Vehicular</span>
                                 <span className="text-base font-bold text-gray-900">{vehicle.type}</span>
                             </div>
-                            <div className="bg-blue-50 rounded-lg p-3 flex flex-col items-center shadow-sm">
-                                <span className="text-xs text-blue-700 font-semibold">Color</span>
-                                <span className="text-base font-bold text-blue-900">{vehicle.color}</span>
+                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm" style={{ backgroundColor: '#d7282f' }}>
+                                <span className="text-xs font-semibold" style={{ color: '#fff' }}>Color</span>
+                                <span className="text-base font-bold" style={{ color: '#fff' }}>{vehicle.color}</span>
                             </div>
                             <div className="bg-gray-50 rounded-lg p-3 flex flex-col items-center shadow-sm">
-                                <span className="text-xs text-gray-600 font-semibold">Capacidad</span>
+                                <span className="text-xs text-gray-600 font-semibold">Capacidad de Pasajeros</span>
                                 <span className="text-base font-bold text-gray-900">{vehicle.seating_capacity}</span>
                             </div>
-                            <div className="bg-blue-50 rounded-lg p-3 flex flex-col items-center shadow-sm">
-                                <span className="text-xs text-blue-700 font-semibold">Combustible</span>
-                                <span className="text-base font-bold text-blue-900">{vehicle.fuel_type}</span>
+                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm" style={{ backgroundColor: '#d7282f' }}>
+                                <span className="text-xs font-semibold" style={{ color: '#fff' }}>Tipo de Combustible</span>
+                                <span className="text-base font-bold" style={{ color: '#fff' }}>{vehicle.fuel_type}</span>
                             </div>
                             <div className="bg-gray-50 rounded-lg p-3 flex flex-col items-center shadow-sm">
                                 <span className="text-xs text-gray-600 font-semibold">Kilometraje</span>
                                 <span className="text-base font-bold text-gray-900">{vehicle.mileage}</span>
                             </div>
-                            <div className="bg-blue-50 rounded-lg p-3 flex flex-col items-center shadow-sm">
-                                <span className="text-xs text-blue-700 font-semibold">SOAT</span>
-                                <span className="text-base font-bold text-blue-900">{vehicle.insurance_expiry_date}</span>
+                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm" style={{ backgroundColor: '#d7282f' }}>
+                                <span className="text-xs font-semibold" style={{ color: '#fff' }}>Número de Serie (VIN)</span>
+                                <span className="text-base font-bold" style={{ color: '#fff' }}>{vehicle.chassis_number}</span>
                             </div>
                             <div className="bg-gray-50 rounded-lg p-3 flex flex-col items-center shadow-sm">
-                                <span className="text-xs text-gray-600 font-semibold">Activo</span>
-                                <span className="text-base font-bold text-gray-900">{vehicle.is_active === "1" ? "Sí" : "No"}</span>
+                                <span className="text-xs text-gray-600 font-semibold">Número de Motor</span>
+                                <span className="text-base font-bold text-gray-900">{vehicle.engine_number}</span>
                             </div>
                         </div>
                     </div>
-                    {/* Gráfico de kilometraje */}
+
+                    {/* Tabla de inspecciones */}
+                    <div className="px-8 pb-10">
+                        <h3 className="text-lg font-bold mb-4 mt-2" style={{ color: '#d7282f' }}>Historial de Inspecciones</h3>
+                        <TooltipProvider>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full bg-white border border-gray-200 rounded-lg overflow-hidden text-xs">
+                                <thead>
+                                    <tr style={{ backgroundColor: '#d7282f' }}>
+                                        <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Tipo</th>
+                                        <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Realizado por</th>
+                                        <th className="px-2 py-1 text-left font-bold" style={{ color: '#fff' }}>Fecha</th>
+                                        <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Vencimiento</th>
+                                        <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Estado</th>
+                                        <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Observaciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {inspections.map((insp, idx) => {
+                                        const obs = insp.observaciones || "";
+                                        const isLong = obs.length > 25;
+                                        return (
+                                            <tr key={idx} className="hover:bg-red-50 border-t border-gray-200 text-xs">
+                                                <td className="px-2 py-1">{insp.tipo}</td>
+                                                <td className="px-2 py-1">{insp.realizado_por}</td>
+                                                <td className="px-2 py-1">{insp.fecha}</td>
+                                                <td className="px-2 py-1">{insp.vencimiento}</td>
+                                                <td className="px-2 py-1">{insp.estado}</td>
+                                                <td className="px-2 py-1 max-w-[120px] truncate">
+                                                    {isLong ? (
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <span className="cursor-pointer">
+                                                                    {obs.slice(0, 25) + '...'}
+                                                                </span>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <span className="whitespace-pre-line">{obs}</span>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    ) : (
+                                                        obs
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                        </TooltipProvider>
+                    </div>
+                    {/* Gráfico de kilometraje diario */}
                     <div className="px-8 pb-8">
-                        <ChartCard>
+                        <Card className='gap-0 shadow-none border-red-400'>
                             <CardHeader>
-                                <CardTitle>Kilometraje último mes</CardTitle>
-                                <CardDescription>Histórico diario</CardDescription>
+                                <CardTitle>Kilometraje diario último mes</CardTitle>
+                                <CardDescription>Consumo diario</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <ChartContainer config={mileageChartConfig}>
+                                <ChartContainer config={mileageChartConfigDaily} className='aspect-auto h-[250px] w-full'>
                                     <LineChart
                                         data={mileageChartData}
-                                        margin={{ top: 20, left: 12, right: 12 }}
-                                        width={400}
-                                        height={40} // altura reducida
+                                        margin={{ top: 20, left: 12, right: 12, bottom: 20 }}
                                     >
                                         <CartesianGrid vertical={false} />
                                         <XAxis
@@ -223,12 +288,12 @@ export default function VehicleDetail() {
                                             content={<ChartTooltipContent indicator="line" />}
                                         />
                                         <Line
-                                            dataKey="km"
+                                            dataKey="daily"
                                             type="monotone"
-                                            stroke="var(--color-desktop, #2563eb)"
+                                            stroke="#d7282f"
                                             strokeWidth={2}
                                             dot={{
-                                                fill: "var(--color-desktop, #2563eb)",
+                                                fill: "#d7282f",
                                             }}
                                             activeDot={{
                                                 r: 6,
@@ -245,44 +310,72 @@ export default function VehicleDetail() {
                                 </ChartContainer>
                             </CardContent>
                             <CardFooter className="flex-col items-start gap-2 text-sm">
-                                <div className="flex gap-2 font-medium leading-none">
-                                    Tendencia mensual <TrendingUp className="h-4 w-4" />
+                                <div className="flex gap-2 font-medium leading-none" style={{ color: '#d7282f' }}>
+                                    Tendencia diaria <TrendingUp className="h-4 w-4" style={{ color: '#d7282f' }} />
                                 </div>
                                 <div className="leading-none text-muted-foreground">
-                                    Kilometraje diario del último mes
+                                    Kilometraje consumido por día en el último mes
                                 </div>
                             </CardFooter>
-                        </ChartCard>
+                        </Card>
                     </div>
-                    {/* Tabla de inspecciones */}
-                    <div className="px-8 pb-10">
-                        <h3 className="text-lg font-bold mb-4 mt-2 text-blue-700">Historial de Inspecciones</h3>
-                        <div className="overflow-x-auto rounded-lg border">
-                            <table className="min-w-full text-sm bg-white">
-                                <thead>
-                                    <tr className="bg-blue-50">
-                                        <th className="px-3 py-2 border text-left font-semibold text-blue-700">Tipo</th>
-                                        <th className="px-3 py-2 border text-left font-semibold text-blue-700">Realizado por</th>
-                                        <th className="px-3 py-2 border text-left font-semibold text-blue-700">Fecha</th>
-                                        <th className="px-3 py-2 border text-left font-semibold text-blue-700">Vencimiento</th>
-                                        <th className="px-3 py-2 border text-left font-semibold text-blue-700">Estado</th>
-                                        <th className="px-3 py-2 border text-left font-semibold text-blue-700">Observaciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {inspections.map((insp, idx) => (
-                                        <tr key={idx} className="hover:bg-blue-50">
-                                            <td className="px-3 py-2 border">{insp.tipo}</td>
-                                            <td className="px-3 py-2 border">{insp.realizado_por}</td>
-                                            <td className="px-3 py-2 border">{insp.fecha}</td>
-                                            <td className="px-3 py-2 border">{insp.vencimiento}</td>
-                                            <td className="px-3 py-2 border">{insp.estado}</td>
-                                            <td className="px-3 py-2 border">{insp.observaciones}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                    {/* Gráfico de kilometraje acumulado */}
+                    <div className="px-8 pb-8">
+                        <Card className='gap-0 shadow-none border-red-400'>
+                            <CardHeader>
+                                <CardTitle>Kilometraje acumulado último mes</CardTitle>
+                                <CardDescription>Histórico acumulado</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ChartContainer config={mileageChartConfigAccum} className='aspect-auto h-[250px] w-full'>
+                                    <LineChart
+                                        data={mileageChartData}
+                                        margin={{ top: 20, left: 12, right: 12, bottom: 20 }}
+                                    >
+                                        <CartesianGrid vertical={false} />
+                                        <XAxis
+                                            dataKey="day"
+                                            tickLine={false}
+                                            axisLine={false}
+                                            tickMargin={8}
+                                            tickFormatter={(value) => `${value}`}
+                                            label={{ value: "Día", position: "insideBottom", offset: -5 }}
+                                        />
+                                        <ChartTooltip
+                                            cursor={false}
+                                            content={<ChartTooltipContent indicator="line" />}
+                                        />
+                                        <Line
+                                            dataKey="accumulated"
+                                            type="monotone"
+                                            stroke="#1e293b"
+                                            strokeWidth={2}
+                                            dot={{
+                                                fill: "#1e293b",
+                                            }}
+                                            activeDot={{
+                                                r: 6,
+                                            }}
+                                        >
+                                            <LabelList
+                                                position="top"
+                                                offset={12}
+                                                className="fill-foreground"
+                                                fontSize={12}
+                                            />
+                                        </Line>
+                                    </LineChart>
+                                </ChartContainer>
+                            </CardContent>
+                            <CardFooter className="flex-col items-start gap-2 text-sm">
+                                <div className="flex gap-2 font-medium leading-none" style={{ color: '#1e293b' }}>
+                                    Tendencia acumulada <TrendingUp className="h-4 w-4" style={{ color: '#1e293b' }} />
+                                </div>
+                                <div className="leading-none text-muted-foreground">
+                                    Kilometraje acumulado del último mes
+                                </div>
+                            </CardFooter>
+                        </Card>
                     </div>
                     {/* Pie de página tipo PDF */}
                     <div className="border-t px-8 py-4 text-xs text-gray-400 text-center print:hidden">

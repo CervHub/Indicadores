@@ -178,8 +178,10 @@ class VehicleController extends Controller
     {
         try {
             $vehicle = Vehicle::findOrFail($id);
+            $vehicleInspection = $vehicle->getCompanyInspections();
             return Inertia::render('vehicle/detail', [
                 'vehicle' => $vehicle,
+                'vehicleInspection' => $vehicleInspection,
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['error' => 'Ocurrió un error al mostrar el vehículo: ' . $e->getMessage()]);

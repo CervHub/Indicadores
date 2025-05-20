@@ -22,11 +22,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function ReportabilityPage() {
-    const { reportability_id, reportability, isSecurityEngineer, empresa_nombre: companyNombre } = usePage<{
+    const { reportability_id, reportability, isSecurityEngineer, companyNombre } = usePage<{
         reportability_id: number;
         reportability: any;
         isSecurityEngineer: boolean;
-        empresa_nombre?: string;
+        companyNombre?: string;
     }>().props;
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -94,7 +94,7 @@ export default function ReportabilityPage() {
                             </CardHeader>
                             <br />
                             <CardContent className="flex flex-col gap-2 space-y-2">
-                                <Stepper currentStep={currentStep} />
+                                {/* <Stepper currentStep={currentStep} /> */}
                                 <div className="space-y-2 d-none">
                                     <Label htmlFor="estado">Estado</Label>
                                     <Input id="estado" type="text" value={reportability.estado} disabled />
@@ -118,14 +118,14 @@ export default function ReportabilityPage() {
                             </CardContent>
                         </div>
                         <CardContent>
-                            <Button
+                            {/* <Button
                                 variant="destructive"
                                 className="mt-4 w-auto"
                                 onClick={() => setIsDialogOpen(true)}
                                 disabled={reportability.estado === 'Finalizado' || !isSecurityEngineer}
                             >
                                 Finalizar Reporte
-                            </Button>
+                            </Button> */}
                         </CardContent>
                     </Card>
                 </div>

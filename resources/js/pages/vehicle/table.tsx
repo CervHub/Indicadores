@@ -50,23 +50,76 @@ interface TableCardProps {
 
 const ITEMS_PER_PAGE = 15;
 
-// Utilidad para descargar QR como PNG usando canvas
-function downloadQRCodeCanvas(vehicleId: number, filename: string) {
-    const size = 256;
+// Utilidad para descargar QR como PNG en formato Card (placa arriba, QR grande, borde radius tipo sticker)
+function downloadQRCodeCanvas(vehicleId: number, licensePlate: string, filename: string) {
+    const width = 400;
+    const height = 450;
+    const plateHeight = 90;
+    const qrSize = 300;
+    const qrY = plateHeight + 30;
+    const borderRadius = 40;
+
     const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
+    canvas.width = width;
+    canvas.height = height;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const qrValue = getVehicleShowUrl(vehicleId);
+    // Dibuja fondo blanco con border radius (sticker)
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(borderRadius, 0);
+    ctx.lineTo(width - borderRadius, 0);
+    ctx.quadraticCurveTo(width, 0, width, borderRadius);
+    ctx.lineTo(width, height - borderRadius);
+    ctx.quadraticCurveTo(width, height, width - borderRadius, height);
+    ctx.lineTo(borderRadius, height);
+    ctx.quadraticCurveTo(0, height, 0, height - borderRadius);
+    ctx.lineTo(0, borderRadius);
+    ctx.quadraticCurveTo(0, 0, borderRadius, 0);
+    ctx.closePath();
+    ctx.clip();
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, width, height);
+    ctx.restore();
 
+    // Header rojo con placa
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(borderRadius, 0);
+    ctx.lineTo(width - borderRadius, 0);
+    ctx.quadraticCurveTo(width, 0, width, borderRadius);
+    ctx.lineTo(width, plateHeight);
+    ctx.lineTo(0, plateHeight);
+    ctx.lineTo(0, borderRadius);
+    ctx.quadraticCurveTo(0, 0, borderRadius, 0);
+    ctx.closePath();
+    ctx.clip();
+    ctx.fillStyle = "#d7282f";
+    ctx.fillRect(0, 0, width, plateHeight);
+    ctx.restore();
+
+    // Placa centrada, fuente más grande y bold
+    ctx.font = "bold 2.4rem Arial";
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(licensePlate, width / 2, plateHeight / 2);
+
+    // Generar QR en un canvas temporal
     import('qrcode').then(QRCodeLib => {
-        QRCodeLib.toCanvas(canvas, qrValue, { width: size, margin: 1 }, function (error: any) {
+        const qrCanvas = document.createElement('canvas');
+        qrCanvas.width = qrSize;
+        qrCanvas.height = qrSize;
+        QRCodeLib.toCanvas(qrCanvas, getVehicleShowUrl(vehicleId), { width: qrSize, margin: 1 }, function (error: any) {
             if (error) {
                 alert('No se pudo generar el QR para descargar.');
                 return;
             }
+            // Dibujar QR centrado debajo de la placa
+            ctx.drawImage(qrCanvas, (width - qrSize) / 2, qrY, qrSize, qrSize);
+
+            // Descargar
             const link = document.createElement('a');
             link.download = filename;
             link.href = canvas.toDataURL('image/png');
@@ -85,7 +138,7 @@ const TableCard: React.FC<TableCardProps> = ({ data, onAction }) => {
         .filter((vehicle) => vehicle.license_plate.toLowerCase().includes(searchTerm.toLowerCase()))
         .sort((a, b) => (b.is_linked === "1" ? 1 : 0) - (a.is_linked === "1" ? 1 : 0)); // Vinculados primero
 
-    // Calcular los datos para la página actual
+    // Calcular los datos para la página current
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
     const currentData = filteredData.slice(startIndex, endIndex);
@@ -115,7 +168,7 @@ const TableCard: React.FC<TableCardProps> = ({ data, onAction }) => {
         setDownloadingId(id);
         // Usar la URL de la route para el QR
         new Promise<void>((resolve) => {
-            downloadQRCodeCanvas(id, `qr_${license_plate}.png`);
+            downloadQRCodeCanvas(id, license_plate, `qr_${license_plate}.png`);
             resolve();
         }).finally(() => {
             setDownloadingId(null);
@@ -158,7 +211,11 @@ const TableCard: React.FC<TableCardProps> = ({ data, onAction }) => {
 
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <Button variant="destructive" size="icon" onClick={() => onAction(vehicle, 'desvincular')}>
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="icon"
+                                                            onClick={e => { e.preventDefault(); onAction(vehicle, 'desvincular'); }}
+                                                        >
                                                             <Unlink className="h-4 w-4" />
                                                         </Button>
                                                     </TooltipTrigger>
@@ -168,7 +225,11 @@ const TableCard: React.FC<TableCardProps> = ({ data, onAction }) => {
                                                 </Tooltip>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <Button variant="outline" size="icon" onClick={() => onAction(vehicle, 'actualizar')}>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            onClick={e => { e.preventDefault(); onAction(vehicle, 'actualizar'); }}
+                                                        >
                                                             <Edit className="h-4 w-4" />
                                                         </Button>
                                                     </TooltipTrigger>
@@ -181,7 +242,7 @@ const TableCard: React.FC<TableCardProps> = ({ data, onAction }) => {
                                                         <Button
                                                             variant="outline"
                                                             size="icon"
-                                                            onClick={() => handleDownloadQR(vehicle.license_plate, vehicle.id)}
+                                                            onClick={e => { e.preventDefault(); handleDownloadQR(vehicle.license_plate, vehicle.id); }}
                                                             disabled={downloadingId === vehicle.id}
                                                         >
                                                             {downloadingId === vehicle.id ? (
