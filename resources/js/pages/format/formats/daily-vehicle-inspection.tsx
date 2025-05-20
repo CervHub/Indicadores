@@ -31,7 +31,7 @@ export default function DailyVehicleInspection() {
     const userName = auth.user.name;
 
     // Formatear las causas para que tengan solo id y name
-    const formattedCausas = causas.slice(0, 3).map((causa: Causa) => ({
+    const formattedCausas = causas.map((causa: Causa) => ({
         id: causa.id,
         name: causa.nombre,
     }));
