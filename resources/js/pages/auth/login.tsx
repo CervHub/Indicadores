@@ -119,10 +119,10 @@ export default function Login({ status }: LoginProps) {
                         <form className="p-6 md:p-8" onSubmit={submit}>
                             <div className="flex flex-col gap-6">
                                 {/* Logos superiores */}
-                                {/* <div className="flex items-center justify-between gap-4">
+                                <div className="flex items-center justify-between gap-4">
                                     <img src="/auth/logo-SOUTHERN-PERU.png" alt="Logo Grupo México" className="h-4" />
                                     <img src="/auth/CRUZ-minimal-toquepala.png" alt="Logo Southern Peru" className="h-10" />
-                                </div> */}
+                                </div>
                                 <div className="mt-4 flex justify-center">
                                     <img src="/auth/logogrupomexico-mineria-02.png" alt="Logo Cruz Toquepala" className="h-12" />
                                 </div>
