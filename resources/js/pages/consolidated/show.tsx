@@ -5,6 +5,7 @@ import { getColumns } from '@/components/consolidated/company/columns';
 import { MinemTemplate1, getColumns as minem1GetColumns } from '@/components/consolidated/company/minem1';
 import { MinemTemplate2, getColumns as minem2GetColumns } from '@/components/consolidated/company/minem2';
 import { DataTable } from '@/components/file-status/show/data-table';
+import { DataTable as DataTableCompany } from '@/components/file-status/show/data-table-company';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -106,25 +107,19 @@ export default function ConsolidatedDetail() {
     const [openModalFileStatusDelete, setOpenModalFileStatusDelete] = useState(false);
     const [fileStatusSelected, setFileStatusSelected] = useState(null);
 
-    const { consolidated, fileStatuses, companyConsolidateds } = usePage<{
+    const { consolidated, fileStatuses, ueas, companyConsolidateds, auth, companyConsolidatedData } = usePage<{
         consolidated: any;
         fileStatuses: { contractor_company_id: number }[];
         ueas: any;
         contractorCompanyTypes: any;
         companyConsolidateds: any;
+        auth: any;
+        companyConsolidatedData: any;
     }>().props;
 
-    const uniqueCompanyIds = useMemo(() => Array.from(new Set(fileStatuses.map((status: any) => status.contractor_company_id))), [fileStatuses]);
+    console.log('companyConsolidateds', companyConsolidateds);
 
-    const companyWithData = useMemo(
-        () => companyConsolidateds.filter((company: any) => uniqueCompanyIds.includes(company.company_id)).map((company: any) => company.company),
-        [companyConsolidateds, uniqueCompanyIds],
-    );
-
-    const companyWithoutData = useMemo(
-        () => companyConsolidateds.filter((company: any) => !uniqueCompanyIds.includes(company.company_id)).map((company: any) => company.company),
-        [companyConsolidateds, uniqueCompanyIds],
-    );
+    const ROLE_CODE = auth.user.role_code;
 
     const annex24s = useMemo(() => addCompanyToAnnexes(fileStatuses, 'annex24'), [fileStatuses]);
     const annex25s = useMemo(() => addCompanyToAnnexes(fileStatuses, 'annex25'), [fileStatuses]);
@@ -164,130 +159,164 @@ export default function ConsolidatedDetail() {
         }
     }, []);
 
+    // Transforma companyConsolidatedData a la estructura solicitada
+    const transformedCompanies = useMemo(() => {
+        // Agrupa por empresa (ruc)
+        const grouped: Record<string, {
+            nombre: string;
+            ruc: string;
+            anexos: { uea: string | null; tipo: string | null; fecha: string | null }[];
+        }> = {};
+
+        companyConsolidatedData.forEach((item: any) => {
+            const key = item.company_ruc;
+            if (!grouped[key]) {
+                grouped[key] = {
+                    nombre: item.company_name,
+                    ruc: item.company_ruc,
+                    anexos: [],
+                };
+            }
+            if (item.uea_name || item.contractor_type_name || item.file_status_updated_at) {
+                grouped[key].anexos.push({
+                    uea: item.uea_name,
+                    tipo: item.contractor_type_name,
+                    fecha: item.file_status_updated_at,
+                });
+            }
+        });
+
+        // Devuelve el array transformado
+        return Object.values(grouped).map(company => ({
+            nombre: company.nombre,
+            ruc: company.ruc,
+            estado: company.anexos.length > 0 ? 'Subió' : 'No subió nada',
+            anexos: company.anexos, // [{uea, tipo, fecha}, ...]
+        }));
+    }, [companyConsolidatedData]);
+
+    console.log('Transformed Companies:', transformedCompanies);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Detalle del Consolidado" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <div className="grid grid-cols-12 gap-4">
-                    <div className="col-span-12 md:col-span-6 lg:col-span-4">
-                        <InfoCard data={consolidated} />
-                    </div>
-                    <div className="col-span-12 md:col-span-12 lg:col-span-8">
-                        <ChartComponent data={newFileStatus} />
-                    </div>
-                    <div className="col-span-12">
-                        <Tabs defaultValue="anexo24" className="w-full">
-                            <TabsList className="grid w-full grid-cols-8">
+                {ROLE_CODE === 'CA' && <>
+                    <div className="grid grid-cols-12 gap-4">
+                        <div className="col-span-12 md:col-span-6 lg:col-span-4">
+                            <InfoCard data={consolidated} />
+                        </div>
+                        <div className="col-span-12 md:col-span-12 lg:col-span-8">
+                            <ChartComponent data={newFileStatus} />
+                        </div>
+                        <div className="col-span-12">
+                            <Tabs defaultValue="anexo24" className="w-full">
+                                <TabsList className="grid w-full grid-cols-8">
+                                    {tabData.map((tab) => (
+                                        <React.Fragment key={tab.value}>
+                                            <TabsTrigger value={tab.value} className="sm:hidden">
+                                                {tab.abbreviation}
+                                            </TabsTrigger>
+                                            <TabsTrigger value={tab.value} className="hidden sm:block">
+                                                {tab.title}
+                                            </TabsTrigger>
+                                        </React.Fragment>
+                                    ))}
+                                </TabsList>
                                 {tabData.map((tab) => (
-                                    <React.Fragment key={tab.value}>
-                                        <TabsTrigger value={tab.value} className="sm:hidden">
-                                            {tab.abbreviation}
-                                        </TabsTrigger>
-                                        <TabsTrigger value={tab.value} className="hidden sm:block">
-                                            {tab.title}
-                                        </TabsTrigger>
-                                    </React.Fragment>
+                                    <TabsContent key={tab.value} value={tab.value}>
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>{tab.title}</CardTitle>
+                                                <CardDescription>{tab.description}</CardDescription>
+                                            </CardHeader>
+                                            <CardContent className="space-y-2">
+                                                {(() => {
+                                                    switch (tab.value) {
+                                                        case 'anexo24':
+                                                            return (
+                                                                <DataTable
+                                                                    columns={annexGetColumns(handleActionClick)}
+                                                                    data={Array.isArray(annex24s) ? (annex24s as Annex[]) : []}
+                                                                />
+                                                            );
+                                                        case 'anexo25':
+                                                            return (
+                                                                <DataTable
+                                                                    columns={annexGetColumns(handleActionClick)}
+                                                                    data={Array.isArray(annex25s) ? (annex25s as Annex[]) : []}
+                                                                />
+                                                            );
+                                                        case 'anexo26':
+                                                            return (
+                                                                <DataTable
+                                                                    columns={annexGetColumns(handleActionClick)}
+                                                                    data={Array.isArray(annex26s) ? (annex26s as Annex[]) : []}
+                                                                />
+                                                            );
+                                                        case 'anexo27':
+                                                            return (
+                                                                <DataTable
+                                                                    columns={annexGetColumns(handleActionClick)}
+                                                                    data={Array.isArray(annex27s) ? (annex27s as Annex[]) : []}
+                                                                />
+                                                            );
+                                                        case 'anexo28':
+                                                            return (
+                                                                <DataTable
+                                                                    columns={annex28GetColumns(handleActionClick)}
+                                                                    data={Array.isArray(annex28s) ? (annex28s as Annex28[]) : []}
+                                                                />
+                                                            );
+                                                        case 'anexo30':
+                                                            return (
+                                                                <DataTable
+                                                                    columns={annex30GetColumns(handleActionClick)}
+                                                                    data={Array.isArray(annex30s) ? (annex30s as Annex30[]) : []}
+                                                                />
+                                                            );
+                                                        case 'minem1':
+                                                            return (
+                                                                <DataTable
+                                                                    columns={minem1GetColumns(handleActionClick)}
+                                                                    data={Array.isArray(minemTemplate1) ? (minemTemplate1 as MinemTemplate1[]) : []}
+                                                                />
+                                                            );
+                                                        case 'minem2':
+                                                            return (
+                                                                <DataTable
+                                                                    columns={minem2GetColumns(handleActionClick)}
+                                                                    data={Array.isArray(minemTemplate2) ? (minemTemplate2 as MinemTemplate2[]) : []}
+                                                                />
+                                                            );
+                                                        default:
+                                                            return (
+                                                                <div className="space-y-1">
+                                                                    <Label htmlFor={`${tab.value}-name`}>Nombre</Label>
+                                                                    <Input id={`${tab.value}-name`} />
+                                                                </div>
+                                                            );
+                                                    }
+                                                })()}
+                                            </CardContent>
+                                        </Card>
+                                    </TabsContent>
                                 ))}
-                            </TabsList>
-                            {tabData.map((tab) => (
-                                <TabsContent key={tab.value} value={tab.value}>
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>{tab.title}</CardTitle>
-                                            <CardDescription>{tab.description}</CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="space-y-2">
-                                            {(() => {
-                                                switch (tab.value) {
-                                                    case 'anexo24':
-                                                        return (
-                                                            <DataTable
-                                                                columns={annexGetColumns(handleActionClick)}
-                                                                data={Array.isArray(annex24s) ? (annex24s as Annex[]) : []}
-                                                            />
-                                                        );
-                                                    case 'anexo25':
-                                                        return (
-                                                            <DataTable
-                                                                columns={annexGetColumns(handleActionClick)}
-                                                                data={Array.isArray(annex25s) ? (annex25s as Annex[]) : []}
-                                                            />
-                                                        );
-                                                    case 'anexo26':
-                                                        return (
-                                                            <DataTable
-                                                                columns={annexGetColumns(handleActionClick)}
-                                                                data={Array.isArray(annex26s) ? (annex26s as Annex[]) : []}
-                                                            />
-                                                        );
-                                                    case 'anexo27':
-                                                        return (
-                                                            <DataTable
-                                                                columns={annexGetColumns(handleActionClick)}
-                                                                data={Array.isArray(annex27s) ? (annex27s as Annex[]) : []}
-                                                            />
-                                                        );
-                                                    case 'anexo28':
-                                                        return (
-                                                            <DataTable
-                                                                columns={annex28GetColumns(handleActionClick)}
-                                                                data={Array.isArray(annex28s) ? (annex28s as Annex28[]) : []}
-                                                            />
-                                                        );
-                                                    case 'anexo30':
-                                                        return (
-                                                            <DataTable
-                                                                columns={annex30GetColumns(handleActionClick)}
-                                                                data={Array.isArray(annex30s) ? (annex30s as Annex30[]) : []}
-                                                            />
-                                                        );
-                                                    case 'minem1':
-                                                        return (
-                                                            <DataTable
-                                                                columns={minem1GetColumns(handleActionClick)}
-                                                                data={Array.isArray(minemTemplate1) ? (minemTemplate1 as MinemTemplate1[]) : []}
-                                                            />
-                                                        );
-                                                    case 'minem2':
-                                                        return (
-                                                            <DataTable
-                                                                columns={minem2GetColumns(handleActionClick)}
-                                                                data={Array.isArray(minemTemplate2) ? (minemTemplate2 as MinemTemplate2[]) : []}
-                                                            />
-                                                        );
-                                                    default:
-                                                        return (
-                                                            <div className="space-y-1">
-                                                                <Label htmlFor={`${tab.value}-name`}>Nombre</Label>
-                                                                <Input id={`${tab.value}-name`} />
-                                                            </div>
-                                                        );
-                                                }
-                                            })()}
-                                        </CardContent>
-                                    </Card>
-                                </TabsContent>
-                            ))}
-                        </Tabs>
+                            </Tabs>
+                        </div>
                     </div>
-                </div>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                </>}
+
+                <div className="grid grid-cols-1">
                     <Card>
                         <CardHeader>
                             <CardTitle>Contratas que subieron sus Excel</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <DataTable columns={getColumns(handleActionClick)} data={companyWithData} />
+                            <DataTableCompany columns={getColumns()} data={transformedCompanies} ueas={ueas} />
                         </CardContent>
                     </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Contratas que no subieron sus Excel</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <DataTable columns={getColumns(handleActionClick)} data={companyWithoutData} />
-                        </CardContent>
-                    </Card>
+
                 </div>
             </div>
             {companySelected && (

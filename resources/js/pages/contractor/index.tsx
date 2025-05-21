@@ -30,9 +30,10 @@ export default function ContractorDashboard() {
     const [isActivateDialogOpen, setIsActivateDialogOpen] = useState(false);
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
-    const { contractors } = usePage<{
+    const { contractors, contractorCompanyTypes, ueas } = usePage<{
         contractors: Contractor[];
         contractorCompanyTypes: ContractorCompanyType[];
+        ueas: any[];
     }>().props;
 
     const handleActionClick = useCallback(
@@ -52,17 +53,23 @@ export default function ContractorDashboard() {
         },
         [contractors],
     );
-
+    console.log('contractors', contractors);
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Contratistas" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <CreateContractor />
-                <DataTable columns={getColumns(handleActionClick)} data={contractors} />
+                <CreateContractor
+                    ueas={ueas}
+                    companyType={contractorCompanyTypes}
+                />
+                <DataTable columns={getColumns(handleActionClick, ueas)} data={contractors} ueas={ueas} />
             </div>
             {contractor && (
                 <>
-                    <EditContractor contractor={contractor} isDialogOpen={isEditDialogOpen} setIsDialogOpen={setIsEditDialogOpen} />
+                    <EditContractor contractor={contractor} isDialogOpen={isEditDialogOpen} setIsDialogOpen={setIsEditDialogOpen}
+                        ueas={ueas}
+                        companyType={contractorCompanyTypes}
+                    />
                     <DeleteContractor isDialogOpen={isDeleteDialogOpen} setIsDialogOpen={setIsDeleteDialogOpen} contractor={contractor} />
                     <ActivateContractor isDialogOpen={isActivateDialogOpen} setIsDialogOpen={setIsActivateDialogOpen} contractor={contractor} />
                     <ViewContractor isDialogOpen={isViewDialogOpen} setIsDialogOpen={setIsViewDialogOpen} contractor={contractor} />

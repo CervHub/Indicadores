@@ -37,12 +37,14 @@ export function Combobox({ data, value, onChange, placeholder = "Select...", cla
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("justify-between", className)}
+          className={cn("justify-between truncate", className)}
         >
-          {value
-            ? data.find((item) => item.value === value)?.label
-            : placeholder}
-          <ChevronsUpDown className="opacity-50" />
+          <span className="truncate block">
+            {value
+              ? data.find((item) => item.value === value)?.label
+              : placeholder}
+          </span>
+          <ChevronsUpDown className="opacity-50 flex-shrink-0" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className={cn("p-0", className)}>
@@ -53,23 +55,23 @@ export function Combobox({ data, value, onChange, placeholder = "Select...", cla
             <CommandGroup>
               {data.map((item) => (
                 <CommandItem
-                key={item.value}
-                value={`${item.value} ${item.label}`} // Aquí se concatena value y label
-                onSelect={(currentValue) => {
+                  key={item.value}
+                  value={`${item.value} ${item.label}`} // Aquí se concatena value y label
+                  onSelect={(currentValue) => {
                     const selectedItem = data.find((item) =>
-                    `${item.value} ${item.label}`.includes(currentValue)
+                      `${item.value} ${item.label}`.includes(currentValue)
                     )
                     onChange(selectedItem?.value || "")
                     setOpen(false)
-                }}
+                  }}
                 >
-                {item.label}
-                <Check
+                  {item.label}
+                  <Check
                     className={cn(
-                    "ml-auto",
-                    value === item.value ? "opacity-100" : "opacity-0"
+                      "ml-auto",
+                      value === item.value ? "opacity-100" : "opacity-0"
                     )}
-                />
+                  />
                 </CommandItem>
 
               ))}

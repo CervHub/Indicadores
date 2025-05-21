@@ -32,13 +32,17 @@ type ContractorForm = {
 interface CreateAnnexProps {
     contractorCompanyTypes: ContractorCompanyType[];
     ueas: Uea[];
+    company: any;
 }
 
-export default function CreateAnnex({ contractorCompanyTypes, ueas }: CreateAnnexProps) {
+export default function CreateAnnex({ contractorCompanyTypes, ueas, company }: CreateAnnexProps) {
     const currentYear = new Date().getFullYear();
     const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
     const [isOpenDownload, setIsOpenDownload] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    console.log('company', company);
+    console.log('ueas', ueas);
+    console.log('contractorCompanyTypes', contractorCompanyTypes);
 
     const { data, setData, post, processing, reset } = useForm<Required<ContractorForm>>({
         contractor_company_type_id: '',
@@ -90,6 +94,38 @@ export default function CreateAnnex({ contractorCompanyTypes, ueas }: CreateAnne
 
     const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
 
+    // Determinar si la empresa tiene UEAs asociadas
+    const companyUeas = Array.isArray(company?.uea) && company.uea.length > 0 ? company.uea : null;
+
+    const filteredUeas = companyUeas
+        ? ueas.filter(u =>
+            companyUeas.some((cu: any) => String(cu.uea_id) === String(u.id))
+        )
+        : ueas;
+
+    // Cuando cambia la UEA, busca todas las posibles alternativas de tipo de cliente (activity_id) para esa UEA
+    let filteredCompanyTypes = contractorCompanyTypes;
+    let possibleActivityIds: string[] = [];
+    if (companyUeas && data.uea_id) {
+        // Busca todas las configuraciones de esa UEA
+        const companyUeaConfigs = companyUeas.filter((cu: any) => String(cu.uea_id) === String(data.uea_id));
+        possibleActivityIds = companyUeaConfigs.map((cu: any) => String(cu.activity_id));
+        filteredCompanyTypes = contractorCompanyTypes.filter(
+            t => possibleActivityIds.includes(String(t.id))
+        );
+    }
+
+    // Cuando cambia la UEA, setea automáticamente el tipo de cliente si solo hay uno posible, si hay varios, limpia el campo
+    const handleUeaChange = (value: string) => {
+        setData('uea_id', value);
+        if (companyUeas) {
+            const companyUeaConfigs = companyUeas.filter((cu: any) => String(cu.uea_id) === String(value));
+            const activityIds = companyUeaConfigs.map((cu: any) => String(cu.activity_id));
+
+            setData('contractor_company_type_id', '');
+        }
+    };
+
     return (
         <div>
             {contractorCompanyTypes && ueas && (
@@ -111,22 +147,22 @@ export default function CreateAnnex({ contractorCompanyTypes, ueas }: CreateAnne
                         </DialogHeader>
 
                         <form onSubmit={submit} className="space-y-4">
+                            {/* Cambia el orden: primero UEA */}
                             <div className="grid gap-2">
-                                <Label>Tipo de Cliente</Label>
+                                <Label>UEA</Label>
                                 <Select
-                                    required
-                                    onValueChange={(value) => setData('contractor_company_type_id', value)}
-                                    value={data.contractor_company_type_id}
+                                    onValueChange={handleUeaChange}
+                                    value={data.uea_id}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Seleccione un tipo de cliente" />
+                                        <SelectValue placeholder="Seleccione una UEA" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            <SelectLabel>Tipos de Cliente</SelectLabel>
-                                            {contractorCompanyTypes.map((type) => (
-                                                <SelectItem key={type.id} value={String(type.id)}>
-                                                    {type.name}
+                                            <SelectLabel>UEAs</SelectLabel>
+                                            {filteredUeas.map((uea) => (
+                                                <SelectItem key={uea.id} value={String(uea.id)}>
+                                                    {uea.name}
                                                 </SelectItem>
                                             ))}
                                         </SelectGroup>
@@ -134,18 +170,24 @@ export default function CreateAnnex({ contractorCompanyTypes, ueas }: CreateAnne
                                 </Select>
                             </div>
 
+                            {/* Luego Tipo de Cliente, solo muestra las alternativas posibles */}
                             <div className="grid gap-2">
-                                <Label>UEA</Label>
-                                <Select onValueChange={(value) => setData('uea_id', value)} value={data.uea_id}>
+                                <Label>Tipo de Cliente</Label>
+                                <Select
+                                    required
+                                    onValueChange={(value) => setData('contractor_company_type_id', value)}
+                                    value={data.contractor_company_type_id}
+                                    disabled={!!companyUeas && !data.uea_id}
+                                >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Seleccione una UEA" />
+                                        <SelectValue placeholder="Seleccione un tipo de cliente" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            <SelectLabel>UEAs</SelectLabel>
-                                            {ueas.map((uea) => (
-                                                <SelectItem key={uea.id} value={String(uea.id)}>
-                                                    {uea.name}
+                                            <SelectLabel>Tipos de Cliente</SelectLabel>
+                                            {filteredCompanyTypes.map((type) => (
+                                                <SelectItem key={type.id} value={String(type.id)}>
+                                                    {type.name}
                                                 </SelectItem>
                                             ))}
                                         </SelectGroup>

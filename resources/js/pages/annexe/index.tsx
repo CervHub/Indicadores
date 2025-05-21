@@ -15,11 +15,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function ContractorDashboard() {
-    const { fileStatuses, contractorCompanyTypes, ueas, rules } = usePage<{
+    const { fileStatuses, contractorCompanyTypes, ueas, rules, company } = usePage<{
         contractorCompanyTypes: [];
         fileStatuses: FileStatus[];
         ueas: [];
         rules: [];
+        company: any
     }>().props;
 
     const [selectedItem, setSelectedItem] = useState(null);
@@ -35,7 +36,7 @@ export default function ContractorDashboard() {
             <Head title="Contratistas" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {/* Render CreateAnnex only when contractorCompanyTypes and ueas are available */}
-                {contractorCompanyTypes.length > 0 && ueas.length > 0 && <CreateAnnex contractorCompanyTypes={contractorCompanyTypes} ueas={ueas} />}
+                {contractorCompanyTypes.length > 0 && ueas.length > 0 && <CreateAnnex contractorCompanyTypes={contractorCompanyTypes} ueas={ueas} company={company} />}
                 <div className="w-full max-w-full overflow-x-auto">
                     <DataTable columns={getColumns(contractorCompanyTypes, ueas, handleSelectItem)} data={fileStatuses} />
                 </div>

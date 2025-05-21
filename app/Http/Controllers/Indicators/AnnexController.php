@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Indicators;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Company;
 use App\Models\Uea;
 use App\Models\ContractorCompanyType;
 use App\Models\FileStatus;
@@ -59,10 +60,13 @@ class AnnexController extends Controller
             $contractorCompanyTypes = collect(); // Empty collection if no company_id
         }
 
+        $company = Company::with('uea')->find($company_id);
+
         return Inertia::render('annexe/index', [
             'fileStatuses' => $fileStatuses,
             'ueas' => $ueas,
             'rules' => $rules,
+            'company' => $company,
             'contractorCompanyTypes' => $contractorCompanyTypes,
         ]);
     }

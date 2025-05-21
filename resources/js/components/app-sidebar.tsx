@@ -49,7 +49,7 @@ const rolesByApp: Record<string, Record<string, string[]>> = {
         Consolidados: ['SA', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS'],
         Reporte: ['SA', 'IS', 'CA', 'SCC'],
         Formatos: ['RU', 'IS'],
-        Inspecciones: ['CA', 'RU', 'IS'],
+        Inspecciones: [],
         Configuración: ['SA'],
         Personal: ['CA', 'IS'],
         'Ingeniero de Seguridad': [],
@@ -122,6 +122,7 @@ export function AppSidebar() {
     const userRoleCodes = userRoleCode ? [userRoleCode] : [];
 
     const currentPath = window.location.pathname;
+    const restrictedItems = ['Roles','Consolidados']; // Add more restricted items if needed
 
     const filteredNavGroups = groupedNavItems
         .map((group) => ({
@@ -133,7 +134,13 @@ export function AppSidebar() {
                     isActive: currentPath === item.url,
                 }))
                 .filter((item) => {
-                    if (item.title === 'Ingeniero de Seguridad' && userCompanyId !== '1') {
+                    let isRestricted = false;
+                    restrictedItems.forEach((restrictedItem) => {
+                        if (item.title === restrictedItem && userCompanyId !== '1') {
+                            isRestricted = true;
+                        }
+                    });
+                    if (isRestricted) {
                         return false;
                     }
                     return item.roles.some((role) => userRoleCodes.includes(role));

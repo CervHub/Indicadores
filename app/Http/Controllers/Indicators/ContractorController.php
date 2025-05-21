@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\ContractorCompanyType;
 use App\Models\Company as ContractorCompany;
+use App\Models\Uea;
 use Illuminate\Support\Facades\DB;
 
 class ContractorController extends Controller
@@ -15,14 +16,17 @@ class ContractorController extends Controller
     public function index()
     {
         // Aquí puedes obtener los datos de las contratistas desde la base de datos
-        $contractors = ContractorCompany::all();
+        $contractors = ContractorCompany::with('uea')
+            ->orderBy('created_at', 'desc')
+            ->get();
         $contractorCompanyTypes = ContractorCompanyType::all();
-
+        $ueas = Uea::all();
         return Inertia::render(
             'contractor/index',
             [
                 'contractors' => $contractors,
-                'contractorCompanyTypes' => $contractorCompanyTypes
+                'contractorCompanyTypes' => $contractorCompanyTypes,
+                'ueas' => $ueas,
             ]
         );
     }

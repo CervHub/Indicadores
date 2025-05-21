@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Http\Controllers\Repository\UserRepository;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\UeaCompany;
 use Illuminate\Support\Facades\DB;
 
 class ContrataController extends Controller
@@ -65,7 +66,7 @@ class ContrataController extends Controller
                     'nombres' => $request->nombre,
                     'apellidos' => '',
                     'password' => bcrypt($request->ruc),
-                    'text_password' => $request->ruc,
+                    // 'text_password' => $request->ruc,
                     'telefono' => null,
                     'email' => $request->email,
                     'codigo' => null,
@@ -74,6 +75,18 @@ class ContrataController extends Controller
                     'role_id' => Role::where('nombre', 'Company Admin')->first()->id,
                     'empresa' => $company->nombre,
                 ]);
+
+                // Agregar la ueaCompany
+                $ueaCompanyTypes = $request->ueaCompanyTypes;
+                if ($ueaCompanyTypes) {
+                    foreach ($ueaCompanyTypes as $ueaCompanyType) {
+                        UeaCompany::create([
+                            'company_id' => $company->id,
+                            'uea_id' => $ueaCompanyType['ueaId'],
+                            'activity_id' => $ueaCompanyType['companyTypeId'],
+                        ]);
+                    }
+                }
             });
 
             return back()->with('success', 'Creada correctamente.');
@@ -129,6 +142,21 @@ class ContrataController extends Controller
                         'email' => $request->email,
                         'empresa' => $request->nombre,
                     ]);
+                }
+
+                // Eliminar las ueaCompany existentes
+                UeaCompany::where('company_id', $company->id)->delete();
+
+                // Agregar la ueaCompany
+                $ueaCompanyTypes = $request->ueaCompanyTypes;
+                if ($ueaCompanyTypes) {
+                    foreach ($ueaCompanyTypes as $ueaCompanyType) {
+                        UeaCompany::create([
+                            'company_id' => $company->id,
+                            'uea_id' => $ueaCompanyType['ueaId'],
+                            'activity_id' => $ueaCompanyType['companyTypeId'],
+                        ]);
+                    }
                 }
             });
 

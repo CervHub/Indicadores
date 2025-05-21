@@ -98,14 +98,14 @@ export default function ConsolidatedDashboard() {
                 <div className="flex justify-between">
                     <Button 
                         onClick={() => setIsCreateDialogOpen(true)} 
-                        disabled={auth.user.role_code !== 'SA'}
+                        disabled={auth.user.role_code !== 'CA'}
                     >
                         Crear Consolidado
                     </Button>
                     <Button 
                         variant={'warning'} 
                         onClick={() => setIsUpdateFormatDialogOpen(true)} 
-                        disabled={auth.user.role_code !== 'SA'}
+                        disabled={auth.user.role_code !== 'CA'}
                     >
                         Actualizar Formato Anexo
                     </Button>

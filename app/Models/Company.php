@@ -24,6 +24,11 @@ class Company extends Model
         return $this->hasMany(Module::class);
     }
 
+    public function uea()
+    {
+        return $this->hasMany(UeaCompany::class);
+    }
+    
     public function categoryFilter($tipo_reporte, $startDate, $endDate, $estado = 'all', $gerencia = 'all', $superintendencia = 'all', $taller_seccion = 'all')
     {
         $tipo_reporte = strtolower($tipo_reporte);

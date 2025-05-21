@@ -59,12 +59,36 @@ class ConsolidatedController extends Controller
         $ueas = Uea::all();
         $companyConsolidateds = CompanyConsolidated::where('consolidated_id', $id)->with('company')->get();
         $contractorCompanyTypes = ContractorCompanyType::all();
+
+        // Nueva colección adicional con los datos solicitados
+        $companyConsolidatedData = \DB::table('company_consolidateds as cc')
+            ->leftJoin('companies as c', 'c.id', '=', 'cc.company_id')
+            ->leftJoin('file_statuses as fs', function($join) use ($consolidated) {
+                $join->on('fs.contractor_company_id', '=', 'c.id')
+                    ->where('fs.year', '=', $consolidated->year)
+                    ->where('fs.month', '=', $consolidated->month)
+                    ->where('fs.is_old', '=', false);
+            })
+            ->leftJoin('ueas as u', 'u.id', '=', 'fs.uea_id')
+            ->leftJoin('contractor_company_types as cct', 'cct.id', '=', 'fs.contractor_company_type_id')
+            ->where('cc.consolidated_id', $id)
+            ->select(
+                'c.nombre as company_name',
+                'c.ruc as company_ruc',
+                'u.name as uea_name',
+                'cct.name as contractor_type_name',
+                'cct.abbreviation as contractor_type_abbreviation',
+                'fs.updated_at as file_status_updated_at'
+            )
+            ->get();
+
         return Inertia::render('consolidated/show', [
             'consolidated' => $consolidated,
             'fileStatuses' => $fileStatuses,
             'ueas' => $ueas,
             'contractorCompanyTypes' => $contractorCompanyTypes,
-            'companyConsolidateds' => $companyConsolidateds
+            'companyConsolidateds' => $companyConsolidateds,
+            'companyConsolidatedData' => $companyConsolidatedData, // <-- nueva colección
         ]);
     }
 

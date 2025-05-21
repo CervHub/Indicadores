@@ -1,6 +1,7 @@
 import { useForm, usePage } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, Trash2, Plus } from 'lucide-react'; // Importa Plus
 import { FormEventHandler, useEffect, useState } from 'react';
+import { Combobox } from '@/components/ui/combobox';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -9,14 +10,30 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
+interface CreateContractorProps {
+    ueas: any[];
+    companyType: any[];
+}
+
 type ContractorForm = {
     ruc: string;
     nombre: string;
     descripcion: string;
     email: string;
+    ueaCompanyTypes: UeaCompanyType[]; // Agrega aquí el nuevo campo
 };
 
-export default function CreateContractor() {
+type UeaCompanyType = {
+    ueaId: string;
+    companyTypeId: string;
+};
+
+export default function CreateContractor({ ueas, companyType }: CreateContractorProps) {
+    // Estado para los pares ueaId y companyTypeId
+    const [ueaCompanyTypes, setUeaCompanyTypes] = useState<UeaCompanyType[]>([
+        { ueaId: '', companyTypeId: '' },
+    ]);
+
     const { flash } = usePage<{
         flash: { success?: string };
     }>().props;
@@ -26,17 +43,28 @@ export default function CreateContractor() {
         nombre: '',
         descripcion: '',
         email: '',
+        ueaCompanyTypes: [{ ueaId: '', companyTypeId: '' }],
     });
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+    // Sincroniza el estado local y el del formulario
     useEffect(() => {
         setData('email', `${data.ruc}@code.com.pe`);
     }, [data.ruc]);
 
+    // Sincroniza el array de configuraciones con el form
+    useEffect(() => {
+        setData('ueaCompanyTypes', ueaCompanyTypes);
+    }, [ueaCompanyTypes]);
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post(route('admin.contractor.store'), {
+            data: {
+                ...data,
+                ueaCompanyTypes, // enviar el array de pares
+            },
             onSuccess: (page) => {
                 const flash = page.props.flash;
                 if (flash.success) {
@@ -56,6 +84,71 @@ export default function CreateContractor() {
         });
     };
 
+    // Handlers para combos dinámicos
+    const handleUeaChange = (idx: number, value: string) => {
+        const newList = ueaCompanyTypes.map((item, i) =>
+            i === idx ? { ...item, ueaId: value } : item
+        );
+        const current = newList[idx];
+        if (
+            current.companyTypeId &&
+            newList.some(
+                (item, i) =>
+                    i !== idx &&
+                    item.ueaId === value &&
+                    item.companyTypeId === current.companyTypeId
+            )
+        ) {
+            toast.warning('Ya existe esta configuración de UEA y Tipo de Empresa.');
+            return;
+        }
+        setUeaCompanyTypes(newList);
+    };
+
+    const handleCompanyTypeChange = (idx: number, value: string) => {
+        const newList = ueaCompanyTypes.map((item, i) =>
+            i === idx ? { ...item, companyTypeId: value } : item
+        );
+        const current = newList[idx];
+        if (
+            current.ueaId &&
+            newList.some(
+                (item, i) =>
+                    i !== idx &&
+                    item.ueaId === current.ueaId &&
+                    item.companyTypeId === value
+            )
+        ) {
+            toast.warning('Ya existe esta configuración de UEA y Tipo de Empresa.');
+            return;
+        }
+        setUeaCompanyTypes(newList);
+    };
+
+    const handleAddRow = () => {
+        // No permitir agregar si ya existe una fila vacía
+        if (ueaCompanyTypes.some(item => item.ueaId === '' && item.companyTypeId === '')) {
+            toast.warning('Ya existe una fila vacía para completar.');
+            return;
+        }
+        setUeaCompanyTypes((prev) => [...prev, { ueaId: '', companyTypeId: '' }]);
+    };
+
+    const handleRemoveRow = (idx: number) => {
+        setUeaCompanyTypes((prev) => prev.filter((_, i) => i !== idx));
+    };
+
+    // Opciones para los combos
+    const ueaOptions = ueas.map((u: any) => ({
+        label: u.name || u.nombre || u.id,
+        value: u.id,
+    }));
+
+    const companyTypeOptions = companyType.map((c: any) => ({
+        label: c.name || c.nombre || c.id,
+        value: c.id,
+    }));
+
     return (
         <div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -64,60 +157,115 @@ export default function CreateContractor() {
                         <Button className="inline-block px-4 py-2">Crear Empresa</Button>
                     </DialogTrigger>
                 </div>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
                         <DialogTitle>Crear Empresa</DialogTitle>
                         <DialogDescription>Complete los campos para crear una nueva empresa.</DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={submit} className="space-y-3" method="post" action={route('admin.contractor.store')}>
-                        <div className="grid gap-2">
-                            <Label htmlFor="ruc">RUC</Label>
-                            <Input
-                                id="ruc"
-                                type="text"
-                                required
-                                value={data.ruc}
-                                onChange={(e) => setData('ruc', e.target.value)}
-                                disabled={processing}
-                                placeholder="RUC"
-                            />
-                            <InputError message={errors.ruc} />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="nombre">Nombre</Label>
-                            <Input
-                                id="nombre"
-                                type="text"
-                                required
-                                value={data.nombre}
-                                onChange={(e) => setData('nombre', e.target.value)}
-                                disabled={processing}
-                                placeholder="Nombre"
-                            />
-                            <InputError message={errors.nombre} />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="descripcion">Descripción</Label>
-                            <Input
-                                id="descripcion"
-                                type="text"
-                                required
-                                value={data.descripcion}
-                                onChange={(e) => setData('descripcion', e.target.value)}
-                                disabled={processing}
-                                placeholder="Descripción"
-                            />
-                            <InputError message={errors.descripcion} />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="text" required value={`${data.ruc}@code.com.pe`} disabled placeholder="Email" />
-                        </div>
-                        <Button type="submit" className="mt-2 w-auto" disabled={processing}>
-                            {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                            Guardar
-                        </Button>
-                    </form>
+                    <div className="max-h-[60vh] overflow-auto">
+                        <form onSubmit={submit} className="space-y-3" method="post" action={route('admin.contractor.store')}>
+                            <div className="grid gap-2">
+                                <Label htmlFor="ruc">RUC</Label>
+                                <Input
+                                    id="ruc"
+                                    type="text"
+                                    required
+                                    value={data.ruc}
+                                    onChange={(e) => setData('ruc', e.target.value)}
+                                    disabled={processing}
+                                    placeholder="RUC"
+                                />
+                                <InputError message={errors.ruc} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="nombre">Nombre</Label>
+                                <Input
+                                    id="nombre"
+                                    type="text"
+                                    required
+                                    value={data.nombre}
+                                    onChange={(e) => setData('nombre', e.target.value)}
+                                    disabled={processing}
+                                    placeholder="Nombre"
+                                />
+                                <InputError message={errors.nombre} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="descripcion">Descripción</Label>
+                                <Input
+                                    id="descripcion"
+                                    type="text"
+                                    required
+                                    value={data.descripcion}
+                                    onChange={(e) => setData('descripcion', e.target.value)}
+                                    disabled={processing}
+                                    placeholder="Descripción"
+                                />
+                                <InputError message={errors.descripcion} />
+                            </div>
+                            {/* <div className="grid gap-2">
+                                <Label htmlFor="email">Email</Label>
+                                <Input id="email" type="text" required value={`${data.ruc}@code.com.pe`} disabled placeholder="Email" />
+                            </div> */}
+                            {/* NUEVO: Combos dinámicos */}
+                            <div className="space-y-2">
+                                <Label>UEA y Tipo de Empresa</Label>
+                                {ueaCompanyTypes.map((item, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-2 items-end"
+                                    >
+                                        <div>
+                                            <Combobox
+                                                data={ueaOptions}
+                                                value={item.ueaId}
+                                                onChange={(value) => handleUeaChange(idx, value)}
+                                                placeholder="Seleccione UEA..."
+                                                className="w-full"
+                                            />
+                                        </div>
+                                        <div>
+                                            <Combobox
+                                                data={companyTypeOptions}
+                                                value={item.companyTypeId}
+                                                onChange={(value) => handleCompanyTypeChange(idx, value)}
+                                                placeholder="Seleccione tipo..."
+                                                className="w-full"
+                                            />
+                                        </div>
+                                        <div className="flex justify-start items-end">
+                                            <Button
+                                                type="button"
+                                                variant="destructive"
+                                                size="icon"
+                                                onClick={() => handleRemoveRow(idx)}
+                                                disabled={ueaCompanyTypes.length === 1}
+                                                className="mt-1"
+                                                style={{ width: 40, minWidth: 40, maxWidth: 40 }}
+                                                aria-label="Eliminar"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                                <Button
+                                    type="button"
+                                    onClick={handleAddRow}
+                                    className="mt-2"
+                                    variant="primary"
+                                    size="icon"
+                                    aria-label="Agregar"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                </Button>
+                            </div>
+                            <Button type="submit" className="mt-2 w-auto" disabled={processing}>
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                                Guardar
+                            </Button>
+                        </form>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>
