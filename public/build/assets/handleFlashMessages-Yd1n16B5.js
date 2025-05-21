@@ -1,1 +1,0 @@
-import{t as e}from"./index-Ci2KrBi8.js";function s(r,c="Operación realizada correctamente.",o="Ocurrió un error crítico al procesar la solicitud."){r!=null&&r.success?e.success(r.success):r!=null&&r.error?e.error(r.error):e.success(c)}function t(){e.error("Ocurrió un error crítico al procesar la solicitud.")}export{s as a,t as h};

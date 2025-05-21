@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { FilePieChart } from 'lucide-react';
+import { FilePieChart, Loader2 } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -40,6 +40,7 @@ export default function CreateAnnex({ contractorCompanyTypes, ueas, company }: C
     const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
     const [isOpenDownload, setIsOpenDownload] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [downloading, setDownloading] = useState(false);
     console.log('company', company);
     console.log('ueas', ueas);
     console.log('contractorCompanyTypes', contractorCompanyTypes);
@@ -126,6 +127,34 @@ export default function CreateAnnex({ contractorCompanyTypes, ueas, company }: C
         }
     };
 
+    // Handler para descargar la guía con loading (mínimo 1 segundo)
+    const handleDownloadGuide = async () => {
+        setDownloading(true);
+        const start = Date.now();
+        try {
+            const response = await fetch('/examples/guia.pptx');
+            if (!response.ok) throw new Error('No se pudo descargar el archivo');
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'guia.pptx';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (e) {
+            toast.error('No se pudo descargar la guía.');
+        } finally {
+            const elapsed = Date.now() - start;
+            if (elapsed < 1000) {
+                setTimeout(() => setDownloading(false), 1000 - elapsed);
+            } else {
+                setDownloading(false);
+            }
+        }
+    };
+
     return (
         <div>
             {contractorCompanyTypes && ueas && (
@@ -134,10 +163,28 @@ export default function CreateAnnex({ contractorCompanyTypes, ueas, company }: C
                         <DialogTrigger asChild>
                             <Button>Agregar Indicador</Button>
                         </DialogTrigger>
-                        <Button className="ml-2" variant="warning" onClick={() => setIsOpenDownload(true)} disabled={processing}>
-                            <FilePieChart className="mr-2 h-4 w-4" />
-                            Formato
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button className="ml-2" variant="warning" onClick={() => setIsOpenDownload(true)} disabled={processing}>
+                                <FilePieChart className="mr-2 h-4 w-4" />
+                                Formato
+                            </Button>
+                            <Button
+                                className="ml-2"
+                                variant="secondary"
+                                type="button"
+                                disabled={downloading}
+                                onClick={handleDownloadGuide}
+                            >
+                                {downloading ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Descargando...
+                                    </>
+                                ) : (
+                                    <>Descargar Guía</>
+                                )}
+                            </Button>
+                        </div>
                     </div>
 
                     <DialogContent onInteractOutside={(e) => e.preventDefault()}>

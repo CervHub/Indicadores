@@ -86,42 +86,22 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
 
     // Handlers para combos dinámicos
     const handleUeaChange = (idx: number, value: string) => {
+        // No permitir que una UEA se repita en cualquier fila
+        if (ueaCompanyTypes.some((item, i) => i !== idx && item.ueaId === value && value !== '')) {
+            toast.warning('Ya seleccionaste esta UEA en otra fila.');
+            return;
+        }
         const newList = ueaCompanyTypes.map((item, i) =>
             i === idx ? { ...item, ueaId: value } : item
         );
-        const current = newList[idx];
-        if (
-            current.companyTypeId &&
-            newList.some(
-                (item, i) =>
-                    i !== idx &&
-                    item.ueaId === value &&
-                    item.companyTypeId === current.companyTypeId
-            )
-        ) {
-            toast.warning('Ya existe esta configuración de UEA y Tipo de Empresa.');
-            return;
-        }
         setUeaCompanyTypes(newList);
     };
 
     const handleCompanyTypeChange = (idx: number, value: string) => {
+        // Ya no se valida repetidos para tipo de empresa
         const newList = ueaCompanyTypes.map((item, i) =>
             i === idx ? { ...item, companyTypeId: value } : item
         );
-        const current = newList[idx];
-        if (
-            current.ueaId &&
-            newList.some(
-                (item, i) =>
-                    i !== idx &&
-                    item.ueaId === current.ueaId &&
-                    item.companyTypeId === value
-            )
-        ) {
-            toast.warning('Ya existe esta configuración de UEA y Tipo de Empresa.');
-            return;
-        }
         setUeaCompanyTypes(newList);
     };
 

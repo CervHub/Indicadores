@@ -66,10 +66,16 @@ export function DataTable<TData extends { nombre?: string; ruc?: string; estado?
       filtered = filtered.filter(row => row.estado === estadoFilter);
     }
     if (ueaFilter && ueaFilter !== "__all__") {
-      filtered = filtered.filter(row =>
-        Array.isArray(row.uea) &&
-        row.uea.some((u: any) => String(u.uea_id) === ueaFilter)
-      );
+      if (ueaFilter === "none") {
+        filtered = filtered.filter(row =>
+          !Array.isArray(row.uea) || row.uea.length === 0
+        );
+      } else {
+        filtered = filtered.filter(row =>
+          Array.isArray(row.uea) &&
+          row.uea.some((u: any) => String(u.uea_id) === ueaFilter)
+        );
+      }
     }
     return filtered;
   }, [data, globalFilter, estadoFilter, ueaFilter]);
@@ -127,10 +133,13 @@ export function DataTable<TData extends { nombre?: string; ruc?: string; estado?
 
   // Opciones de UEA para el select
   const ueaOptions = React.useMemo(() => {
-    return ueas.map(u => ({
-      value: String(u.id),
-      label: u.name || u.nombre || u.id,
-    }));
+    return [
+      { value: "none", label: "Sin UEA" },
+      ...ueas.map(u => ({
+        value: String(u.id),
+        label: u.name || u.nombre || u.id,
+      })),
+    ];
   }, [ueas]);
 
   return (
