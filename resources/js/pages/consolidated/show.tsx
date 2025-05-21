@@ -238,6 +238,7 @@ export default function ConsolidatedDetail() {
                                                                 <DataTable
                                                                     columns={annexGetColumns(handleActionClick)}
                                                                     data={Array.isArray(annex24s) ? (annex24s as Annex[]) : []}
+                                                                    ueas={ueas}
                                                                 />
                                                             );
                                                         case 'anexo25':
@@ -245,6 +246,7 @@ export default function ConsolidatedDetail() {
                                                                 <DataTable
                                                                     columns={annexGetColumns(handleActionClick)}
                                                                     data={Array.isArray(annex25s) ? (annex25s as Annex[]) : []}
+                                                                    ueas={ueas}
                                                                 />
                                                             );
                                                         case 'anexo26':
@@ -252,6 +254,7 @@ export default function ConsolidatedDetail() {
                                                                 <DataTable
                                                                     columns={annexGetColumns(handleActionClick)}
                                                                     data={Array.isArray(annex26s) ? (annex26s as Annex[]) : []}
+                                                                    ueas={ueas}
                                                                 />
                                                             );
                                                         case 'anexo27':
@@ -259,6 +262,7 @@ export default function ConsolidatedDetail() {
                                                                 <DataTable
                                                                     columns={annexGetColumns(handleActionClick)}
                                                                     data={Array.isArray(annex27s) ? (annex27s as Annex[]) : []}
+                                                                    ueas={ueas}
                                                                 />
                                                             );
                                                         case 'anexo28':
@@ -266,6 +270,7 @@ export default function ConsolidatedDetail() {
                                                                 <DataTable
                                                                     columns={annex28GetColumns(handleActionClick)}
                                                                     data={Array.isArray(annex28s) ? (annex28s as Annex28[]) : []}
+                                                                    ueas={ueas}
                                                                 />
                                                             );
                                                         case 'anexo30':
@@ -273,6 +278,7 @@ export default function ConsolidatedDetail() {
                                                                 <DataTable
                                                                     columns={annex30GetColumns(handleActionClick)}
                                                                     data={Array.isArray(annex30s) ? (annex30s as Annex30[]) : []}
+                                                                    ueas={ueas}
                                                                 />
                                                             );
                                                         case 'minem1':
@@ -280,6 +286,7 @@ export default function ConsolidatedDetail() {
                                                                 <DataTable
                                                                     columns={minem1GetColumns(handleActionClick)}
                                                                     data={Array.isArray(minemTemplate1) ? (minemTemplate1 as MinemTemplate1[]) : []}
+                                                                    ueas={ueas}
                                                                 />
                                                             );
                                                         case 'minem2':
@@ -287,6 +294,7 @@ export default function ConsolidatedDetail() {
                                                                 <DataTable
                                                                     columns={minem2GetColumns(handleActionClick)}
                                                                     data={Array.isArray(minemTemplate2) ? (minemTemplate2 as MinemTemplate2[]) : []}
+                                                                    ueas={ueas}
                                                                 />
                                                             );
                                                         default:
@@ -316,7 +324,6 @@ export default function ConsolidatedDetail() {
                             <DataTableCompany columns={getColumns()} data={transformedCompanies} ueas={ueas} />
                         </CardContent>
                     </Card>
-
                 </div>
             </div>
             {companySelected && (
