@@ -55,6 +55,8 @@ class VehicleController extends Controller
                 'mileage' => 'nullable|string|max:255',
                 'is_active' => 'nullable|boolean',
                 'insurance_expiry_date' => 'nullable|date',
+                'spare_tire_count' => 'nullable',
+                'tire_count' => 'nullable',
             ], [
                 'required' => 'El campo :attribute es obligatorio.',
                 'string' => 'El campo :attribute debe ser una cadena de texto.',
@@ -64,7 +66,9 @@ class VehicleController extends Controller
                 'date' => 'El campo :attribute debe ser una fecha válida.',
                 'boolean' => 'El campo :attribute debe ser verdadero o falso.',
             ]);
-
+            $code = $validatedData['code'];
+            //quitar code de la validación
+            unset($validatedData['code']);
             $vehicle = Vehicle::updateOrCreate(
                 ['license_plate' => $validatedData['license_plate']],
                 $validatedData
@@ -78,6 +82,7 @@ class VehicleController extends Controller
                     'company_id' => $this->company_id,
                     'is_linked' => true,
                     'linked_by' => $this->user->id,
+                    'code' => $code
                 ]);
                 DB::commit();
             } catch (\Exception $e) {

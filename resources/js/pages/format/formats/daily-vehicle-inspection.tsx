@@ -25,6 +25,8 @@ interface Causa {
 export default function DailyVehicleInspection() {
     const { causas, auth } = usePage<{ causas: Causa[]; auth: { user: { id: string; company_id: string; name: string } } }>().props;
     const [open, setOpen] = useState(true);
+    // Variable para el área seleccionada (solo una)
+    const [area, setArea] = useState<string>('');
     // Extraer id, company_id y name del usuario
     const userId = auth.user.id;
     const companyId = auth.user.company_id;
@@ -40,9 +42,15 @@ export default function DailyVehicleInspection() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Inspección Vehicular Diaria" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <InspectionVehiclePreUse causas={formattedCausas} userId={userId} userName={userName} companyId={companyId} />
+                <InspectionVehiclePreUse
+                    causas={formattedCausas}
+                    userId={userId}
+                    userName={userName}
+                    companyId={companyId}
+                    area={area}
+                />
             </div>
-            <StatementDialog open={open} onOpenChange={setOpen} />
+            <StatementDialog open={open} onOpenChange={setOpen} setArea={setArea} />
         </AppLayout>
     );
 }

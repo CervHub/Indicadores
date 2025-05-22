@@ -16,13 +16,14 @@ function getLimaDateTimeString() {
         day: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
+        second: '2-digit', // Agrega los segundos
         hour12: false,
     });
 
     const parts = formatter.formatToParts(new Date());
     const get = (type: string) => parts.find((p) => p.type === type)?.value;
 
-    return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}`;
+    return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}:${get('second')}`;
 }
 
 export default function InspectionVehiclePreUse({
@@ -30,20 +31,21 @@ export default function InspectionVehiclePreUse({
     companyId,
     userId,
     userName,
+    area
 }: {
     causas: { id: string; name: string }[];
     companyId: string;
     userId: string;
     userName: string;
+    area: string;
 }) {
     const [data, setData] = useState({
         plate: '',
         vehicleCode: '',
         department: '',
-        shift: '',
+        shift: getLimaDateTimeString(), // shift ahora es la hora actual
         driver: userName,
         mileage: '',
-        previousMileage: '', // <-- Nuevo campo para kilometraje anterior
         images: [] as string[],
         signature: '',
         observation: '',
@@ -54,7 +56,18 @@ export default function InspectionVehiclePreUse({
         type_report: 'vehicular',
         type_inspection: 'pre-use',
         status: '',
+        area: area, // <-- inicializa con prop
     });
+
+    // Sincroniza el área si cambia desde el prop (por ejemplo, después de cerrar el diálogo)
+    React.useEffect(() => {
+        setData(prev => ({
+            ...prev,
+            area: area,
+        }));
+    }, [area]);
+
+    console.log('Area:', area);
 
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -73,9 +86,15 @@ export default function InspectionVehiclePreUse({
     };
 
     const handleCausaStateChange = (id: string, state: string) => {
+        // Busca el nombre del item (causa) por id
+        const causaItem = causas.find((c) => c.id === id);
         setData((prevData) => ({
             ...prevData,
-            causas: prevData.causas.map((causa) => (causa.id === id ? { ...causa, state } : causa)),
+            causas: prevData.causas.map((causa) =>
+                causa.id === id
+                    ? { ...causa, state, item: causaItem?.name || '' }
+                    : causa
+            ),
         }));
     };
 
@@ -97,7 +116,6 @@ export default function InspectionVehiclePreUse({
                     ...prevData,
                     vehicleCode: responseData.data.code || '',
                     department: responseData.company.nombre || '',
-                    previousMileage: responseData.data.previous_mileage || '', // <-- Asigna el kilometraje anterior
                 }));
                 toast.success('Información del vehículo cargada con éxito.');
             } else if (responseData.status === 'warning') {
@@ -108,21 +126,18 @@ export default function InspectionVehiclePreUse({
                 setData((prevData) => ({
                     ...prevData,
                     vehicleCode: '',
-                    previousMileage: '', // Limpia si no hay datos
                 }));
             } else if (responseData.status === 'error') {
                 toast.error(responseData.message || 'No se encontró información para la placa ingresada.');
                 setData((prevData) => ({
                     ...prevData,
                     vehicleCode: '',
-                    previousMileage: '',
                 }));
             } else {
                 toast.error('No se encontró información para la placa ingresada.');
                 setData((prevData) => ({
                     ...prevData,
                     vehicleCode: '',
-                    previousMileage: '',
                 }));
             }
         } catch (error) {
@@ -131,7 +146,6 @@ export default function InspectionVehiclePreUse({
             setData((prevData) => ({
                 ...prevData,
                 vehicleCode: '',
-                previousMileage: '',
             }));
         } finally {
             setIsSearchingPlate(false);
@@ -142,7 +156,8 @@ export default function InspectionVehiclePreUse({
     const getStatus = () => {
         const allCausasValid = data.causas.every((causa) => causa.state !== '');
         if (!allCausasValid) return '';
-        return data.causas.some((causa) => causa.state === 'Mal') ? 'Desaprobado' : 'Aprobado';
+        // Si existe al menos un "No Conforme", es "Desaprobado"
+        return data.causas.some((causa) => causa.state === 'No Conforme') ? 'Desaprobado' : 'Aprobado';
     };
 
     // Actualiza el status en el estado cada vez que cambian las causas
@@ -153,6 +168,17 @@ export default function InspectionVehiclePreUse({
             status,
         }));
     }, [data.causas]);
+
+    // Actualiza la hora en vivo cada segundo
+    React.useEffect(() => {
+        const interval = setInterval(() => {
+            setData((prevData) => ({
+                ...prevData,
+                shift: getLimaDateTimeString(),
+            }));
+        }, 1000); // cada segundo
+        return () => clearInterval(interval);
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -189,10 +215,9 @@ export default function InspectionVehiclePreUse({
                 plate: '',
                 vehicleCode: '',
                 department: '',
-                shift: '',
+                shift: getLimaDateTimeString(), // Reinicia a la hora actual
                 driver: userName,
                 mileage: '',
-                previousMileage: '', // <-- Reinicia el kilometraje anterior
                 images: [],
                 signature: '',
                 observation: '',
@@ -207,7 +232,7 @@ export default function InspectionVehiclePreUse({
     };
 
     return (
-        <form className="grid grid-cols-1 gap-6 md:grid-cols-5" onSubmit={handleSubmit}>
+        <form className="grid grid-cols-4 gap-6 md:grid-cols-4 lg:grid-cols-5" onSubmit={handleSubmit}>
             {/* Placa con botón de búsqueda */}
             <div className="col-span-4 flex items-end gap-2 md:col-span-1">
                 <div className="flex-1">
@@ -267,33 +292,15 @@ export default function InspectionVehiclePreUse({
                 {errors.department && <p className="text-sm text-red-500">{errors.department}</p>}
             </div>
 
-            {/* Turno */}
-            <div className="col-span-4 md:col-span-1">
-                <Label htmlFor="shift" className="mb-3">
-                    Turno
-                </Label>
-                <Select onValueChange={(value) => setData((prevData) => ({ ...prevData, shift: value }))} value={data.shift}>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Seleccione un turno" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="Mañana">Mañana</SelectItem>
-                        <SelectItem value="Tarde">Tarde</SelectItem>
-                        <SelectItem value="Noche">Noche</SelectItem>
-                    </SelectContent>
-                </Select>
-                {errors.shift && <p className="text-sm text-red-500">{errors.shift}</p>}
-            </div>
-
-            {/* Kilometraje anterior */}
+            {/* Turno (hora actual, solo lectura y en vivo) */}
             <div className="col-span-2 md:col-span-1">
-                <Label htmlFor="previousMileage" className="mb-3">
-                    Kilometraje anterior
+                <Label htmlFor="shift" className="mb-3">
+                    Hora actual
                 </Label>
                 <Input
-                    type="number"
-                    id="previousMileage"
-                    value={data.previousMileage}
+                    id="shift"
+                    type="datetime-local"
+                    value={data.shift}
                     disabled
                 />
             </div>
@@ -319,17 +326,12 @@ export default function InspectionVehiclePreUse({
                     <Table>
                         <TableHeader>
                             <TableRow className="bg-muted/50 border-b">
-                                <TableHead className="h-9 w-7/10 border-r py-2" rowSpan={2}>
+                                <TableHead className="h-9 w-9/10 border-r py-2">
                                     Item
                                 </TableHead>
-                                <TableHead className="h-9 border-r py-2" colSpan={3}>
+                                <TableHead className="h-9 w-1/10 py-2">
                                     Estado
                                 </TableHead>
-                            </TableRow>
-                            <TableRow className="bg-muted/50 border-b">
-                                <TableHead className="h-9 w-1/10 border-r py-2">Bien</TableHead>
-                                <TableHead className="h-9 w-1/10 border-r py-2">Mal</TableHead>
-                                <TableHead className="h-9 w-1/10 py-2">No Aplica</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -337,35 +339,18 @@ export default function InspectionVehiclePreUse({
                                 <TableRow key={causa.id}>
                                     <TableCell className="border-r py-2 font-medium whitespace-normal">{causa.name}</TableCell>
                                     <TableCell className="text-center">
-                                        <input
-                                            type="radio"
-                                            name={`estado-${causa.id}`}
-                                            value="Bien"
-                                            checked={data.causas.find((c) => c.id === causa.id)?.state === 'Bien'}
-                                            onChange={() => handleCausaStateChange(causa.id, 'Bien')}
-                                            className="w-6 h-6 accent-green-600 cursor-pointer"
-
-                                        />
-                                    </TableCell>
-                                    <TableCell className="border-r border-l text-center">
-                                        <input
-                                            type="radio"
-                                            name={`estado-${causa.id}`}
-                                            value="Mal"
-                                            checked={data.causas.find((c) => c.id === causa.id)?.state === 'Mal'}
-                                            onChange={() => handleCausaStateChange(causa.id, 'Mal')}
-                                            className="w-6 h-6 accent-red-500 cursor-pointer"
-                                        />
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <input
-                                            type="radio"
-                                            name={`estado-${causa.id}`}
-                                            value="No Aplica"
-                                            checked={data.causas.find((c) => c.id === causa.id)?.state === 'No Aplica'}
-                                            onChange={() => handleCausaStateChange(causa.id, 'No Aplica')}
-                                            className="w-6 h-6 accent-gray-600 cursor-pointer"
-                                        />
+                                        <Select
+                                            value={data.causas.find((c) => c.id === causa.id)?.state || ''}
+                                            onValueChange={(value) => handleCausaStateChange(causa.id, value)}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Seleccione estado" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Conforme">Conforme</SelectItem>
+                                                <SelectItem value="No Conforme">No Conforme</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -407,72 +392,6 @@ export default function InspectionVehiclePreUse({
                 />
             </div>
             <br />
-            {/* Imágenes adicionales */}
-            {/* <div className="col-span-4">
-                <ImageDropZone
-                    images={data.images}
-                    onUpload={(files) => {
-                        files.forEach((file) => {
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                                const base64Image = reader.result as string;
-                                const img = new Image();
-                                img.src = base64Image;
-                                img.onload = () => {
-                                    const canvas = document.createElement('canvas');
-                                    const ctx = canvas.getContext('2d');
-                                    const maxWidth = 800; // Set the maximum width for the image
-                                    const scale = maxWidth / img.width;
-                                    canvas.width = maxWidth;
-                                    canvas.height = img.height * scale;
-                                    ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-                                    const resizedBase64Image = canvas.toDataURL('image/jpeg', 0.8); // Adjust quality if needed
-                                    setData((prevData) => ({
-                                        ...prevData,
-                                        images: [...prevData.images, resizedBase64Image].slice(0, 4),
-                                    }));
-                                };
-                            };
-                            reader.readAsDataURL(file);
-                        });
-                    }}
-                    onRemove={(index) => {
-                        const updatedImages = data.images.filter((_, i) => i !== index);
-                        setData((prevData) => ({ ...prevData, images: updatedImages }));
-                    }}
-                    label="Imágenes adicionales"
-                />
-            </div> */}
-
-            {/* Firma */}
-            {/* <div className="col-span-4">
-                <ImageDropZone
-                    images={data.signature ? [data.signature] : []}
-                    maxImages={1}
-                    onUpload={(files) => {
-                        const reader = new FileReader();
-                        reader.onload = () => {
-                            const base64Signature = reader.result as string;
-                            const img = new Image();
-                            img.src = base64Signature;
-                            img.onload = () => {
-                                const canvas = document.createElement('canvas');
-                                const ctx = canvas.getContext('2d');
-                                const maxWidth = 800; // Set the maximum width for the image
-                                const scale = maxWidth / img.width;
-                                canvas.width = maxWidth;
-                                canvas.height = img.height * scale;
-                                ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-                                const resizedBase64Signature = canvas.toDataURL('image/jpeg', 0.8); // Adjust quality if needed
-                                setData((prevData) => ({ ...prevData, signature: resizedBase64Signature }));
-                            };
-                        };
-                        reader.readAsDataURL(files[0]);
-                    }}
-                    onRemove={() => setData((prevData) => ({ ...prevData, signature: '' }))}
-                    label="Firma"
-                />
-            </div> */}
 
             {/* Botón de envío */}
             <div className="col-span-4">

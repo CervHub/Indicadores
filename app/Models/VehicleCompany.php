@@ -14,6 +14,7 @@ class VehicleCompany extends Model
         'is_linked',
         'linked_by',
         'unlinked_by',
+        'code',
     ];
 
     // Relaciones

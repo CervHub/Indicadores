@@ -7,15 +7,19 @@ use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\Group;
 use App\Models\CategoryCompany;
+use App\Models\CategoryAttribute;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
     public function index()
     {
         $company_id = 1;
-        $categories = Category::where('company_id', $company_id)->with('categoryCompanies', 'groups')->get();
+        $categories = Category::where('company_id', $company_id)
+            ->with(['categoryCompanies.categoryAttributes', 'groups'])
+            ->get();
         return Inertia::render('category/index', [
             'categories' => $categories
         ]);
@@ -93,12 +97,10 @@ class CategoryController extends Controller
             $category = Category::find($category_id);
             if ($category) {
                 $documentPath = null;
+                // Solo guardar documento si has_document es true, hay archivo y attribute_type no es null
                 if ($request->input('has_document') && $request->hasFile('document_url')) {
-                    $file = $request->file('document_url');
-                    $uniqueName = uniqid('doc_') . '_' . time() . '.' . $file->getClientOriginalExtension();
-                    $documentPath = $file->storeAs('documents', $uniqueName);
+                    $documentPath = $this->saveUploadedFile($request->file('document_url'));
                 }
-
                 $category_company = CategoryCompany::create([
                     'category_id' => $category_id,
                     'company_id' => $company_id,
@@ -110,7 +112,14 @@ class CategoryController extends Controller
                     'has_attributes' => $request->input('has_attributes', false),
                     'document_name' => $request->input('document_name'),
                     'document_url' => $documentPath,
+                    'is_for_mine' => $request->input('is_for_mine', false),
                 ]);
+
+                // Guardar atributos si aplica
+                if ($request->input('has_attributes') && is_array($request->input('optional_configs'))) {
+                    $this->saveCategoryAttributes($category_company->id, $request->input('optional_configs'));
+                }
+
                 return redirect()->back()->with('success', 'Categoría asignada a la empresa exitosamente');
             } else {
                 return redirect()->back()->with('error', 'Categoría no encontrada');
@@ -198,5 +207,46 @@ class CategoryController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al crear el grupo: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Guarda o actualiza los atributos de una categoría de empresa.
+     *
+     * @param int $categoryCompanyId
+     * @param array $attributes
+     * @return void
+     */
+    private function saveCategoryAttributes($categoryCompanyId, array $attributes)
+    {
+        foreach ($attributes as $attr) {
+            if (!empty($attr['nombre']) && !empty($attr['tipo'])) {
+                CategoryAttribute::updateOrCreate(
+                    [
+                        'category_id' => $categoryCompanyId,
+                        'name' => $attr['nombre'],
+                    ],
+                    [
+                        'attribute_type' => $attr['tipo'],
+                    ]
+                );
+            }
+        }
+    }
+
+    /**
+     * Guarda un archivo subido y retorna el path público (ej: storage/documents/archivo.pdf).
+     *
+     * @param \Illuminate\Http\UploadedFile $file
+     * @return string|null
+     */
+    private function saveUploadedFile($file)
+    {
+        if (!$file) {
+            return null;
+        }
+        $uniqueName = uniqid('doc_') . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $relativePath = 'documents/' . $uniqueName;
+        Storage::disk('public')->put($relativePath, file_get_contents($file));
+        return 'storage/' . $relativePath;
     }
 }

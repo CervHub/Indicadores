@@ -22,6 +22,7 @@ type CategoryCompanyForm = {
     nombre: string;
     group_id?: string;
     is_required: boolean; // Ahora representa "Solamente para grúa"
+    is_for_mine?: boolean;
     has_attributes: boolean;
     attribute_type?: AttributeType;
     optional_configs?: OptionalConfig[];
@@ -53,6 +54,7 @@ export default function CreateCategoryCompany({
         nombre: '',
         group_id: undefined,
         is_required: false,
+        is_for_mine: false,
         has_attributes: false,
         attribute_type: undefined,
         optional_configs: [],
@@ -116,6 +118,7 @@ export default function CreateCategoryCompany({
         if (data.instruction) formData.append('instruction', data.instruction);
         formData.append('has_document', String(data.has_document ?? false));
         if (data.document_name) formData.append('document_name', data.document_name);
+        // Solo agregar si hay archivo
         if (data.document_url) formData.append('document_url', data.document_url);
 
         post(route('admin.category.admin.store', { category_id: currentCategoryId || 0 }), {
@@ -211,7 +214,6 @@ export default function CreateCategoryCompany({
                                             <SelectItem value="fecha">Fecha</SelectItem>
                                             <SelectItem value="entero">Entero</SelectItem>
                                             <SelectItem value="texto">Texto</SelectItem>
-                                            <SelectItem value="conforme">Conforme/No conforme</SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
@@ -261,6 +263,16 @@ export default function CreateCategoryCompany({
                                 disabled={processing}
                             />
                             <Label htmlFor="is_required">¿Solamente para grúa?</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <input
+                                id="is_for_mine"
+                                type="checkbox"
+                                checked={data.is_for_mine}
+                                onChange={(e) => setData('is_for_mine', e.target.checked)}
+                                disabled={processing}
+                            />
+                            <Label htmlFor="is_for_mine">¿Solamente para mina?</Label>
                         </div>
                         <div className="flex items-center space-x-2">
                             <input

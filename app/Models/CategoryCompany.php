@@ -9,5 +9,14 @@ class CategoryCompany extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['category_id', 'company_id', 'nombre', 'group_id', 'is_required'];
+    protected $fillable = ['category_id', 'company_id', 'nombre', 'group_id', 'is_required', 'attribute_type', 'instruction', 'has_attributes', 'document_name', 'document_url', 'is_for_mine'];
+
+    /**
+     * Relación uno a muchos con CategoryAttribute.
+     * category_company_id (en CategoryAttribute) referencia id (en CategoryCompany)
+     */
+    public function categoryAttributes()
+    {
+        return $this->hasMany(CategoryAttribute::class, 'category_id', 'id');
+    }
 }

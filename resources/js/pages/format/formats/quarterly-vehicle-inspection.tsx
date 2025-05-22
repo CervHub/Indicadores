@@ -31,13 +31,36 @@ export default function QuarterlyVehicleInspection() {
     const userName = auth.user.name;
     const company = auth.user.company;
 
-    // Solo las 3 primeras causas
-    const filteredCausas = causas.map(({ id, nombre, group }) => ({
-        id,
-        name: nombre,
-        group,
-    }));
+    // Mapear todas las propiedades relevantes de cada causa
+    const filteredCausas = causas.map(
+        ({
+            id,
+            nombre,
+            group,
+            is_crane,
+            is_for_mine,
+            instruction,
+            document_url,
+            document_name,
+            attribute_type,
+            has_attributes,
+            category_attributes,
+        }) => ({
+            id,
+            name: nombre,
+            group,
+            is_crane,
+            is_for_mine,
+            instruction,
+            document_url,
+            document_name,
+            attribute_type,
+            has_attributes,
+            category_attributes,
+        })
+    );
 
+    console.log('Causas:', causas);
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Inspección Vehicular Trimestral" />

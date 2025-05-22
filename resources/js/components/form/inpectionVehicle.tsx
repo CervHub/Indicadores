@@ -3,11 +3,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useForm } from '@inertiajs/react'; // Importamos useForm para manejar el envío de datos
-import { Search } from 'lucide-react';
+import { router } from '@inertiajs/react';
+import { Search, FileText, Download, Info } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import ImageDropZone from './image';
+import { VEHICLE_TYPE_OPTIONS } from '@/lib/utils';
+import {
+    Causa,
+    useCausasState,
+    CausasTableWithModal,
+} from './causasVehicle';
+
 function getLimaDateTimeString() {
     const formatter = new Intl.DateTimeFormat('en-CA', {
         timeZone: 'America/Lima',
@@ -24,18 +33,6 @@ function getLimaDateTimeString() {
 
     return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}`;
 }
-
-type Causa = { id: string; name: string; group: string };
-
-const vehicleTypes = {
-    camioneta: 'Camioneta',
-    combi: 'Combi',
-    ambulancia: 'Ambulancia',
-    bus: 'Bus',
-    camión: 'Camión',
-    'camión grúa': 'Camión Grúa',
-    otros: 'Otros',
-};
 
 export default function InspectionVehicle({
     causas,
@@ -59,6 +56,7 @@ export default function InspectionVehicle({
         model: '',
         engineNumber: '',
         year: '',
+        mileage: '', // <-- Change to English: mileage
         company: '',
         driver: '',
         licenseNumber: '',
@@ -73,18 +71,33 @@ export default function InspectionVehicle({
         userName,
         type_report: 'vehicular',
         type_inspection: type,
-        causas: causas.map((causa) => ({ id: causa.id, state: '', observation: '' })),
-        status: '', // <-- Agrega el campo status
+        causas: causas.map((causa) => ({ id: causa.id, name: causa.name, state: '', observation: '' })),
+        status: '',
     });
 
-    const [causaStates, setCausaStates] = useState(causas.map((causa) => ({ id: causa.id, state: '', observation: '' })));
+    // Causas state y modal centralizado
+    const {
+        causaStates,
+        setCausaStates,
+        extraFormData,
+        setExtraFormData,
+        modalOpen,
+        setModalOpen,
+        modalAttributes,
+        setModalAttributes,
+        modalTitle,
+        setModalTitle,
+        modalCausaId,
+        setModalCausaId,
+    } = useCausasState(causas);
+
     const [isSearchingPlate, setIsSearchingPlate] = useState(false);
     const [isSearchingLicense, setIsSearchingLicense] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Calcula el resultado automáticamente
     const getAutoResult = () => {
-        if (causaStates.some((c) => c.state === 'Mal')) return 'Desaprobado';
+        if (causaStates.some((c) => c.state === 'No Conforme')) return 'Desaprobado';
         if (causaStates.every((c) => c.state)) return 'Aprobado';
         return '';
     };
@@ -95,8 +108,15 @@ export default function InspectionVehicle({
         setData('status', getAutoResult()); // <-- Actualiza status también
     }, [causaStates]);
 
-    // Solo permite enviar si todas las causas tienen estado y el resultado está calculado
+    // Solo permite enviar si todas las causas tienen estado, el resultado está calculado y todos los formularios extra requeridos están completos
     const isFormValid = () => {
+        // Verifica si todos los formularios extra requeridos están completos
+        const allExtraFormsComplete = causas.every((causa) => {
+            if (!causa.has_attributes || !causa.category_attributes) return true;
+            const formState = extraFormData[causa.id] || {};
+            return causa.category_attributes.every(attr => !!formState[attr.id]);
+        });
+
         return (
             data.plate &&
             data.type &&
@@ -106,22 +126,9 @@ export default function InspectionVehicle({
             data.year &&
             data.company &&
             getAutoResult() &&
-            causaStates.every((c) => c.state)
+            causaStates.every((c) => c.state) &&
+            allExtraFormsComplete
         );
-    };
-
-    const handleCausaStateChange = (id: string, state: string, observation: string) => {
-        const updatedCausaStates = causaStates.map((causa) =>
-            causa.id === id
-                ? {
-                    ...causa,
-                    state: state || causa.state,
-                    observation,
-                }
-                : causa,
-        );
-        setCausaStates(updatedCausaStates);
-        setData('causas', updatedCausaStates);
     };
 
     const handleSearchPlate = async () => {
@@ -195,6 +202,25 @@ export default function InspectionVehicle({
         setIsSubmitting(true);
 
         try {
+            // Combina causas y extraFormData para enviar ambos, incluyendo id, valor y nombre del atributo
+            const causasWithForm = causaStates.map(causa => {
+                const extraForm = extraFormData[causa.id] || {};
+                // Para cada atributo, agrega id, valor y nombre
+                let attributes: { id: string | number, value: any, name: string }[] = [];
+                const causaObj = causas.find(c => c.id === causa.id);
+                if (causaObj && causaObj.category_attributes) {
+                    attributes = causaObj.category_attributes.map(attr => ({
+                        id: attr.id,
+                        value: extraForm[attr.id] ?? '',
+                        name: attr.name,
+                    }));
+                }
+                return {
+                    ...causa,
+                    extraForm: attributes,
+                };
+            });
+
             const response = await fetch(route('web.v1.saveReport'), {
                 method: 'POST',
                 headers: {
@@ -202,8 +228,8 @@ export default function InspectionVehicle({
                 },
                 body: JSON.stringify({
                     ...data,
-                    causas: causaStates,
-                    status: getAutoResult(), // <-- Envía el status en el form
+                    causas: causasWithForm,
+                    status: getAutoResult(),
                 }),
             });
 
@@ -218,8 +244,10 @@ export default function InspectionVehicle({
             } else {
                 const responseData = await response.json();
                 toast.success(responseData.message || 'Reporte guardado con éxito.');
-                reset(); // Resetear el formulario
-                setCausaStates(causas.map((causa) => ({ id: causa.id, state: '', observation: '' }))); // Resetear las causas
+                reset();
+                setCausaStates(causas.map((causa) => ({ id: causa.id, state: '', observation: '' })));
+                // Redirige con Inertia a admin.reportability
+                router.visit(route('admin.reportability'));
             }
         } catch (error) {
             console.error(error);
@@ -229,6 +257,7 @@ export default function InspectionVehicle({
         }
     };
 
+    // Agrupa causas por grupo
     const groupedCausas = causas.reduce(
         (groups, causa) => {
             if (!groups[causa.group]) {
@@ -241,268 +270,218 @@ export default function InspectionVehicle({
     );
 
     return (
-        <form className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5" onSubmit={handleSubmit}>
-            {/* Placa */}
-            <div className="">
-                <Label htmlFor="plate" className="mb-3">
-                    Placa
-                </Label>
-                <div className="relative flex items-center gap-2">
-                    <Input type="text" id="plate" value={data.plate || ''} onChange={(e) => setData('plate', e.target.value)} className="flex-1" />
-                    <Button
-                        variant={'outline'}
-                        type="button"
-                        onClick={handleSearchPlate}
-                        className="flex items-center px-2"
-                        disabled={isSearchingPlate}
-                    >
-                        {isSearchingPlate ? (
-                            <span className="loader h-5 w-5 animate-spin rounded-full border-2 border-gray-500 border-t-transparent"></span>
+        <>
+            <form className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5" onSubmit={handleSubmit}>
+                {/* Placa */}
+                <div className="">
+                    <Label htmlFor="plate" className="mb-3">
+                        Placa
+                    </Label>
+                    <div className="relative flex items-center gap-2">
+                        <Input type="text" id="plate" value={data.plate || ''} onChange={(e) => setData('plate', e.target.value)} className="flex-1" />
+                        <Button
+                            variant={'outline'}
+                            type="button"
+                            onClick={handleSearchPlate}
+                            className="flex items-center px-2"
+                            disabled={isSearchingPlate}
+                        >
+                            {isSearchingPlate ? (
+                                <span className="loader h-5 w-5 animate-spin rounded-full border-2 border-gray-500 border-t-transparent"></span>
+                            ) : (
+                                <Search className="h-5 w-5 text-gray-500" />
+                            )}
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Código Autogenerado */}
+                <div className="">
+                    <Label htmlFor="vehicleCode" className="mb-3">
+                        Código de llamada
+                    </Label>
+                    <Input type="text" id="vehicleCode" value={data.vehicleCode || ''} disabled />
+                </div>
+
+                {/* Tipo */}
+                <div className="">
+                    <Label htmlFor="type" className="mb-3">
+                        Tipo
+                    </Label>
+                    <Select value={data.type} disabled>
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Seleccione un tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {VEHICLE_TYPE_OPTIONS.map(({ value, label }) => (
+                                <SelectItem key={value} value={value}>
+                                    {label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Marca */}
+                <div className="">
+                    <Label htmlFor="brand" className="mb-3">
+                        Marca
+                    </Label>
+                    <Input type="text" id="brand" value={data.brand || ''} disabled />
+                </div>
+
+                {/* Modelo */}
+                <div className="">
+                    <Label htmlFor="model" className="mb-3">
+                        Modelo
+                    </Label>
+                    <Input type="text" id="model" value={data.model || ''} disabled />
+                </div>
+
+                {/* Nº Motor */}
+                <div className="">
+                    <Label htmlFor="engineNumber" className="mb-3">
+                        Nº Motor
+                    </Label>
+                    <Input type="text" id="engineNumber" value={data.engineNumber || ''} disabled />
+                </div>
+
+                {/* Año */}
+                <div className="">
+                    <Label htmlFor="year" className="mb-3">
+                        Año
+                    </Label>
+                    <Input type="text" id="year" value={data.year || ''} disabled />
+                </div>
+
+
+                {/* Empresa */}
+                <div className="">
+                    <Label htmlFor="company" className="mb-3">
+                        Empresa
+                    </Label>
+                    <Input type="text" id="company" value={data.company || ''} disabled />
+                </div>
+                {/* Mileage (Kilometraje) */}
+                <div className="">
+                    <Label htmlFor="mileage" className="mb-3">
+                        Kilometraje
+                    </Label>
+                    <Input
+                        type="number"
+                        id="mileage"
+                        value={data.mileage || ''}
+                        onChange={e => {
+                            const value = e.target.value.replace(/\D/g, '').slice(0, 7); // solo dígitos, máx 7
+                            setData('mileage', value);
+                        }}
+                        min={0}
+                        max={9999999}
+                        placeholder="Ingrese el kilometraje"
+                    />
+                </div>
+                {/* Tabla de causas */}
+                <div className="col-span-full">
+                    <h3 className="mb-4 text-lg font-bold">Causas</h3>
+                    <div className="bg-background overflow-hidden rounded-md border">
+                        <CausasTableWithModal
+                            causas={causas}
+                            causaStates={causaStates}
+                            setCausaStates={setCausaStates}
+                            extraFormData={extraFormData}
+                            setExtraFormData={setExtraFormData}
+                            groupedCausas={groupedCausas}
+                            modalOpen={modalOpen}
+                            setModalOpen={setModalOpen}
+                            modalAttributes={modalAttributes}
+                            setModalAttributes={setModalAttributes}
+                            modalTitle={modalTitle}
+                            setModalTitle={setModalTitle}
+                            modalCausaId={modalCausaId}
+                            setModalCausaId={setModalCausaId}
+                        />
+                    </div>
+                </div>
+
+                {/* Imágenes adicionales */}
+                <div className="col-span-full">
+                    <ImageDropZone
+                        images={data.images}
+                        onUpload={(files) => {
+                            files.forEach((file) => {
+                                const reader = new FileReader();
+                                reader.onload = () => {
+                                    const base64Image = reader.result as string;
+                                    const img = new Image();
+                                    img.src = base64Image;
+                                    img.onload = () => {
+                                        const canvas = document.createElement('canvas');
+                                        const ctx = canvas.getContext('2d');
+                                        const maxWidth = 800; // Set the maximum width for the image
+                                        const scale = maxWidth / img.width;
+                                        canvas.width = maxWidth;
+                                        canvas.height = img.height * scale;
+                                        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                        const resizedBase64Image = canvas.toDataURL('image/jpeg', 0.8); // Adjust quality if needed
+                                        setData((prevData) => ({
+                                            ...prevData,
+                                            images: [...prevData.images, resizedBase64Image].slice(0, 4),
+                                        }));
+                                    };
+                                };
+                                reader.readAsDataURL(file);
+                            });
+                        }}
+                        onRemove={(index) => {
+                            const updatedImages = data.images.filter((_, i) => i !== index);
+                            setData((prevData) => ({ ...prevData, images: updatedImages }));
+                        }}
+                        label="Imágenes adicionales"
+                    />
+                </div>
+
+                {/* Inspeccionado por */}
+                <div className="col-span-2">
+                    <Label htmlFor="inspectedBy" className="mb-3">
+                        Inspeccionado por
+                    </Label>
+                    <Input type="text" id="inspectedBy" value={userName} disabled />
+                </div>
+
+                {/* Aprobado/Desaprobado */}
+                <div className="flex flex-col justify-center h-full">
+                    <Label htmlFor="result" className="mb-3">
+                        Resultado
+                    </Label>
+                    <Input
+                        type="text"
+                        id="result"
+                        value={getAutoResult()}
+                        disabled
+                        className={
+                            getAutoResult() === 'Desaprobado'
+                                ? 'text-red-600 font-bold'
+                                : getAutoResult() === 'Aprobado'
+                                    ? 'text-green-600 font-bold'
+                                    : ''
+                        }
+                    />
+                </div>
+
+                {/* Botón de envío */}
+                <div className="col-span-full flex">
+                    <Button type="submit" className="flex items-center" disabled={!isFormValid() || isSubmitting}>
+                        {isSubmitting ? (
+                            <>
+                                <span className="loader mr-2 h-5 w-5 animate-spin rounded-full border-2 border-gray-500 border-t-transparent"></span>
+                                Generando reporte...
+                            </>
                         ) : (
-                            <Search className="h-5 w-5 text-gray-500" />
+                            'Generar reporte'
                         )}
                     </Button>
                 </div>
-            </div>
-
-
-            {/* Código Autogenerado */}
-            <div className="">
-                <Label htmlFor="vehicleCode" className="mb-3">
-                    Código de llamada
-                </Label>
-                <Input type="text" id="vehicleCode" value={data.vehicleCode || ''} disabled />
-            </div>
-
-            {/* Tipo */}
-            <div className="">
-                <Label htmlFor="type" className="mb-3">
-                    Tipo
-                </Label>
-                <Select value={data.type} disabled>
-                    <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Seleccione un tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {Object.entries(vehicleTypes).map(([key, label]) => (
-                            <SelectItem key={label} value={label}>
-                                {label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-
-            {/* Marca */}
-            <div className="">
-                <Label htmlFor="brand" className="mb-3">
-                    Marca
-                </Label>
-                <Input type="text" id="brand" value={data.brand || ''} disabled />
-            </div>
-
-            {/* Modelo */}
-            <div className="">
-                <Label htmlFor="model" className="mb-3">
-                    Modelo
-                </Label>
-                <Input type="text" id="model" value={data.model || ''} disabled />
-            </div>
-
-            {/* Nº Motor */}
-            <div className="">
-                <Label htmlFor="engineNumber" className="mb-3">
-                    Nº Motor
-                </Label>
-                <Input type="text" id="engineNumber" value={data.engineNumber || ''} disabled />
-            </div>
-
-            {/* Año */}
-            <div className="">
-                <Label htmlFor="year" className="mb-3">
-                    Año
-                </Label>
-                <Input type="text" id="year" value={data.year || ''} disabled />
-            </div>
-
-
-            {/* Empresa */}
-            <div className="">
-                <Label htmlFor="company" className="mb-3">
-                    Empresa
-                </Label>
-                <Input type="text" id="company" value={data.company || ''} disabled />
-            </div>
-            {/* Tabla de causas */}
-            <div className="col-span-full">
-                <h3 className="mb-4 text-lg font-bold">Causas</h3>
-                <div className="bg-background overflow-hidden rounded-md border">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="bg-muted/50 border-b">
-                                <TableHead className="h-8 border-r py-2" rowSpan={2} style={{ width: '50%' }}>
-                                    Item
-                                </TableHead>
-                                <TableHead className="h-8 border-r py-2" colSpan={3}>
-                                    Estado
-                                </TableHead>
-                                <TableHead className="h-8 border-l py-2" rowSpan={2} style={{ width: '20%' }}>
-                                    Observaciones
-                                </TableHead>
-                            </TableRow>
-                            <TableRow className="bg-muted/50 border-b">
-                                <TableHead className="h-8 border-r py-2" style={{ width: '10%' }}>
-                                    Bien
-                                </TableHead>
-                                <TableHead className="h-8 border-r py-2" style={{ width: '10%' }}>
-                                    Mal
-                                </TableHead>
-                                <TableHead className="h-8 py-2" style={{ width: '10%' }}>
-                                    No Aplica
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {Object.entries(groupedCausas).map(([group, groupCausas]) => (
-                                <React.Fragment key={group}>
-                                    <TableRow className="bg-muted/50">
-                                        <TableCell colSpan={5} className="text-center font-bold">
-                                            {group}
-                                        </TableCell>
-                                    </TableRow>
-                                    {groupCausas.map((causa) => (
-                                        <TableRow key={causa.id}>
-                                            <TableCell className="border-r py-1 font-medium whitespace-normal">{causa.name}</TableCell>
-                                            <TableCell className="text-center">
-                                                <label className="inline-flex items-center cursor-pointer">
-                                                    <input
-                                                        type="radio"
-                                                        name={`estado-${causa.id}`}
-                                                        value="Bien"
-                                                        checked={causaStates.find((c) => c.id === causa.id)?.state === 'Bien'}
-                                                        onChange={() => handleCausaStateChange(causa.id, 'Bien', '')}
-                                                        className="w-6 h-6 accent-green-600 cursor-pointer"
-                                                    />
-                                                </label>
-                                            </TableCell>
-                                            <TableCell className="border-r border-l text-center">
-                                                <label className="inline-flex items-center cursor-pointer">
-                                                    <input
-                                                        type="radio"
-                                                        name={`estado-${causa.id}`}
-                                                        value="Mal"
-                                                        checked={causaStates.find((c) => c.id === causa.id)?.state === 'Mal'}
-                                                        onChange={() => handleCausaStateChange(causa.id, 'Mal', '')}
-                                                        className="w-6 h-6 accent-red-500 cursor-pointer"
-                                                    />
-                                                </label>
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <label className="inline-flex items-center cursor-pointer">
-                                                    <input
-                                                        type="radio"
-                                                        name={`estado-${causa.id}`}
-                                                        value="No Aplica"
-                                                        checked={causaStates.find((c) => c.id === causa.id)?.state === 'No Aplica'}
-                                                        onChange={() => handleCausaStateChange(causa.id, 'No Aplica', '')}
-                                                        className="w-6 h-6 accent-gray-600 cursor-pointer"
-                                                    />
-                                                </label>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Input
-                                                    type="text"
-                                                    value={causaStates.find((c) => c.id === causa.id)?.observation || ''}
-                                                    onChange={(e) => handleCausaStateChange(causa.id, '', e.target.value)}
-                                                />
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </React.Fragment>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
-            </div>
-
-            {/* Imágenes adicionales */}
-            <div className="col-span-full">
-                <ImageDropZone
-                    images={data.images}
-                    onUpload={(files) => {
-                        files.forEach((file) => {
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                                const base64Image = reader.result as string;
-                                const img = new Image();
-                                img.src = base64Image;
-                                img.onload = () => {
-                                    const canvas = document.createElement('canvas');
-                                    const ctx = canvas.getContext('2d');
-                                    const maxWidth = 800; // Set the maximum width for the image
-                                    const scale = maxWidth / img.width;
-                                    canvas.width = maxWidth;
-                                    canvas.height = img.height * scale;
-                                    ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-                                    const resizedBase64Image = canvas.toDataURL('image/jpeg', 0.8); // Adjust quality if needed
-                                    setData((prevData) => ({
-                                        ...prevData,
-                                        images: [...prevData.images, resizedBase64Image].slice(0, 4),
-                                    }));
-                                };
-                            };
-                            reader.readAsDataURL(file);
-                        });
-                    }}
-                    onRemove={(index) => {
-                        const updatedImages = data.images.filter((_, i) => i !== index);
-                        setData((prevData) => ({ ...prevData, images: updatedImages }));
-                    }}
-                    label="Imágenes adicionales"
-                />
-            </div>
-
-            {/* Inspeccionado por */}
-            <div className="col-span-2">
-                <Label htmlFor="inspectedBy" className="mb-3">
-                    Inspeccionado por
-                </Label>
-                <Input type="text" id="inspectedBy" value={userName} disabled />
-            </div>
-
-            {/* Aprobado/Desaprobado */}
-            <div className="flex flex-col justify-center h-full">
-                <Label htmlFor="result" className="mb-3">
-                    Resultado
-                </Label>
-                <Input
-                    type="text"
-                    id="result"
-                    value={getAutoResult()}
-                    disabled
-                    className={
-                        getAutoResult() === 'Desaprobado'
-                            ? 'text-red-600 font-bold'
-                            : getAutoResult() === 'Aprobado'
-                            ? 'text-green-600 font-bold'
-                            : ''
-                    }
-                />
-            </div>
-
-            {/* Botón de envío */}
-            <div className="col-span-full flex">
-                <Button type="submit" className="flex items-center" disabled={!isFormValid() || isSubmitting}>
-                    {isSubmitting ? (
-                        <>
-                            <span className="loader mr-2 h-5 w-5 animate-spin rounded-full border-2 border-gray-500 border-t-transparent"></span>
-                            Generando reporte...
-                        </>
-                    ) : (
-                        'Generar reporte'
-                    )}
-                </Button>
-            </div>
-        </form>
+            </form>
+        </>
     );
 }

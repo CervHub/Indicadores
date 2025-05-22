@@ -26,6 +26,8 @@ class Vehicle extends Model
         'mileage', // Kilometraje del vehículo
         'is_active', // Estado activo/inactivo del vehículo
         'insurance_expiry_date', // Fecha de vencimiento del seguro
+        'tire_count', // Cantidad de llantas
+        'spare_tire_count', // Cantidad de llantas de repuesto
     ];
 
     /**

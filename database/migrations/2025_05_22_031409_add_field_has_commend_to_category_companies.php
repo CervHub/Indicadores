@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('instruction')->nullable();
             $table->string('document_url')->nullable();
             $table->string('document_name')->nullable();
+            $table->boolean('is_for_mine')->default(false); // Nuevo campo para mina
         });
     }
 
@@ -24,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('category_companies', function (Blueprint $table) {
-            $table->dropColumn(['instruction', 'document_url', 'document_name']);
+            $table->dropColumn(['instruction', 'document_url', 'document_name', 'is_for_mine']);
         });
     }
 };

@@ -97,21 +97,21 @@ export default function Format() {
         report.permissions.includes(ROLE_CODE)
     );
 
-    if (ROLE_CODE === 'IS') {
-        if (COMPANY_ID === '1') {
-            // Empresa 1: quitar trimestral y anual
-            filteredReports = filteredReports.filter(
-                report =>
-                    report.route !== route('format.quarterlyVehicleInspection') &&
-                    report.route !== route('format.annualVehicleShutdownInspection')
-            );
-        } else {
-            // Otras empresas: quitar semestral
-            filteredReports = filteredReports.filter(
-                report => report.route !== route('format.semiannualVehicleInspection')
-            );
-        }
-    }
+    // if (ROLE_CODE === 'IS') {
+    //     if (COMPANY_ID === '1') {
+    //         // Empresa 1: quitar trimestral y anual
+    //         filteredReports = filteredReports.filter(
+    //             report =>
+    //                 report.route !== route('format.quarterlyVehicleInspection') &&
+    //                 report.route !== route('format.annualVehicleShutdownInspection')
+    //         );
+    //     } else {
+    //         // Otras empresas: quitar semestral
+    //         filteredReports = filteredReports.filter(
+    //             report => report.route !== route('format.semiannualVehicleInspection')
+    //         );
+    //     }
+    // }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

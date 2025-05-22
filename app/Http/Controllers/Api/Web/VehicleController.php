@@ -78,6 +78,7 @@ class VehicleController extends Controller
                 ->first();
 
             if ($lastLink && $lastLink->is_linked) {
+                $vehicle->code = $lastLink->code;
                 return response()->json([
                     'status' => 'success',
                     'message' => null,

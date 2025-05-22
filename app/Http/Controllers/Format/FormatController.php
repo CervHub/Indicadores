@@ -44,7 +44,7 @@ class FormatController extends Controller
     }
     public function dailyVehicleInspection(Request $request)
     {
-        $category = Category::where('nombre', 'Inspección Vehicular PreUso')->first();
+        $category = Category::where('code', 'IVDPU')->first();
         $causas = [];
         if ($category) {
             $causas = $category->categoryCompanies()->get();
@@ -58,13 +58,32 @@ class FormatController extends Controller
     }
     public function quarterlyVehicleInspection(Request $request)
     {
-        $category = Category::where('nombre', 'Inspección Vehicular')->first();
+        $categoryIds = Category::where('code', 'IVT')->pluck('id');
         $causas = [];
-        if ($category) {
-            $causas = CategoryCompany::select('category_companies.id', 'category_companies.nombre', 'groups.name as group')
+        if ($categoryIds->isNotEmpty()) {
+            $causas = CategoryCompany::with('categoryAttributes')
+                ->select(
+                    'category_companies.id',
+                    'category_companies.nombre',
+                    'groups.name as group',
+                    'category_companies.is_required as is_crane',
+                    'category_companies.is_for_mine',
+                    'category_companies.instruction',
+                    'category_companies.document_url',
+                    'category_companies.document_name',
+                    'category_companies.attribute_type',
+                    'category_companies.has_attributes'
+                )
                 ->join('groups', 'category_companies.group_id', '=', 'groups.id')
-                ->where('category_companies.category_id', $category->id)
-                ->get();
+                ->whereIn('category_companies.category_id', $categoryIds)
+                ->where('category_companies.is_active', 1)
+                ->get()
+                ->map(function ($item) {
+                    $item->is_crane = $item->is_crane == 1;
+                    $item->is_for_mine = $item->is_for_mine == 1;
+                    $item->has_attributes = $item->has_attributes == 1;
+                    return $item;
+                });
         }
         return Inertia::render(
             'format/formats/quarterly-vehicle-inspection',
@@ -73,15 +92,34 @@ class FormatController extends Controller
             ]
         );
     }
+
     public function semiannualVehicleInspection(Request $request)
     {
         $category = Category::where('nombre', 'Inspección Vehicular')->first();
         $causas = [];
         if ($category) {
-            $causas = CategoryCompany::select('category_companies.id', 'category_companies.nombre', 'groups.name as group')
+            $causas = CategoryCompany::select(
+                    'category_companies.id',
+                    'category_companies.nombre',
+                    'groups.name as group',
+                    'category_companies.is_required as is_crane',
+                    'category_companies.is_for_mine',
+                    'category_companies.instruction',
+                    'category_companies.document_url',
+                    'category_companies.document_name',
+                    'category_companies.attribute_type',
+                    'category_companies.has_attributes'
+                )
                 ->join('groups', 'category_companies.group_id', '=', 'groups.id')
                 ->where('category_companies.category_id', $category->id)
-                ->get();
+                ->where('category_companies.is_active', 1)
+                ->get()
+                ->map(function ($item) {
+                    $item->is_crane = $item->is_crane == 1;
+                    $item->is_for_mine = $item->is_for_mine == 1;
+                    $item->has_attributes = $item->has_attributes == 1;
+                    return $item;
+                });
         }
         return Inertia::render(
             'format/formats/semiannual-vehicle-inspection',
@@ -95,10 +133,28 @@ class FormatController extends Controller
         $category = Category::where('nombre', 'Inspección Vehicular')->first();
         $causas = [];
         if ($category) {
-            $causas = CategoryCompany::select('category_companies.id', 'category_companies.nombre', 'groups.name as group')
+            $causas = CategoryCompany::select(
+                    'category_companies.id',
+                    'category_companies.nombre',
+                    'groups.name as group',
+                    'category_companies.is_required as is_crane',
+                    'category_companies.is_for_mine',
+                    'category_companies.instruction',
+                    'category_companies.document_url',
+                    'category_companies.document_name',
+                    'category_companies.attribute_type',
+                    'category_companies.has_attributes'
+                )
                 ->join('groups', 'category_companies.group_id', '=', 'groups.id')
                 ->where('category_companies.category_id', $category->id)
-                ->get();
+                ->where('category_companies.is_active', 1)
+                ->get()
+                ->map(function ($item) {
+                    $item->is_crane = $item->is_crane == 1;
+                    $item->is_for_mine = $item->is_for_mine == 1;
+                    $item->has_attributes = $item->has_attributes == 1;
+                    return $item;
+                });
         }
         return Inertia::render(
             'format/formats/annual-vehicle-shutdown-inspection',

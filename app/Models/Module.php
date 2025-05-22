@@ -37,6 +37,8 @@ class Module extends Model
         'version',
         'vehicle_plate',
         'vehicle_status',
+        'mileage',
+        'area',
     ];
 
     public function getGerenciaIdAttribute()
