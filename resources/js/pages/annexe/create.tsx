@@ -56,6 +56,7 @@ export default function CreateAnnex({ contractorCompanyTypes, ueas, company }: C
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
+        // Validación de campos requeridos, incluyendo el archivo
         if (!data.contractor_company_type_id || !data.uea_id || !data.year || !data.month || !data.file) {
             toast.error('Por favor, complete todos los campos antes de enviar.', {
                 duration: 20000,
@@ -64,6 +65,7 @@ export default function CreateAnnex({ contractorCompanyTypes, ueas, company }: C
             return;
         }
 
+        // Aquí Inertia detecta que 'file' es un objeto File y automáticamente crea un FormData
         post(route('annexes.store'), {
             onSuccess: (page) => {
                 const flash = page.props?.flash as { success?: string; error?: string };

@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::table('categories', function (Blueprint $table) {
             $table->string('code')->nullable();
-            $table->boolean('is_persona')
         });
     }
 

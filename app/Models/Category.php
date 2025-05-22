@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    protected $fillable = ['nombre', 'company_id', 'is_categorized', 'is_risk'];
+    protected $fillable = ['nombre', 'company_id', 'is_categorized', 'is_risk', 'code'];
     use HasFactory;
 
     public function company()

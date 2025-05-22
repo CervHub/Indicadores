@@ -26,6 +26,7 @@ class CategoryController extends Controller
         try {
             $company_id = Auth::user()->company->id ?? 1; // Empresa por defecto es 1
             $nombre = trim($request->nombre); // Eliminar espacios
+            $code = trim($request->code);
 
             // Verificar si ya existe una categoría con el mismo nombre para la empresa
             $existingCategory = Category::whereRaw('UPPER(TRIM(nombre)) = ?', [strtoupper($nombre)])
@@ -36,11 +37,20 @@ class CategoryController extends Controller
                 return redirect()->back()->with('error', 'Ya existe una categoría con el mismo nombre.');
             }
 
+            // Verificar si ya existe una categoría con el mismo código para la empresa
+            $existingCode = Category::whereRaw('UPPER(TRIM(code)) = ?', [strtoupper($code)])
+                ->where('company_id', $company_id)
+                ->first();
+
+            if ($existingCode) {
+                return redirect()->back()->with('error', 'Ya existe una categoría con el mismo código.');
+            }
+
             $category = Category::create([
                 'nombre' => $nombre,
                 'company_id' => $company_id,
                 'is_categorized' => $request->is_categorized,
-                'is_risk' => $request->is_risk,
+                'code' => $code,
             ]);
 
             return redirect()->back()->with('success', 'Categoría creada exitosamente');
@@ -82,12 +92,24 @@ class CategoryController extends Controller
 
             $category = Category::find($category_id);
             if ($category) {
+                $documentPath = null;
+                if ($request->input('has_document') && $request->hasFile('document_url')) {
+                    $file = $request->file('document_url');
+                    $uniqueName = uniqid('doc_') . '_' . time() . '.' . $file->getClientOriginalExtension();
+                    $documentPath = $file->storeAs('documents', $uniqueName);
+                }
+
                 $category_company = CategoryCompany::create([
                     'category_id' => $category_id,
                     'company_id' => $company_id,
                     'nombre' => $nombre,
-                    'group_id' => $request->input('group_id'), // Asignar el grupo si se proporciona
-                    'is_required' => $request->input('is_required', false), // Asignar requerido si se proporciona
+                    'group_id' => $request->input('group_id'),
+                    'is_required' => $request->input('is_required', false),
+                    'attribute_type' => $request->input('attribute_type'),
+                    'instruction' => $request->input('instruction'),
+                    'has_attributes' => $request->input('has_attributes', false),
+                    'document_name' => $request->input('document_name'),
+                    'document_url' => $documentPath,
                 ]);
                 return redirect()->back()->with('success', 'Categoría asignada a la empresa exitosamente');
             } else {
@@ -103,6 +125,7 @@ class CategoryController extends Controller
         try {
             $company_id = 1; // O usa Auth::user()->company_id si aplica
             $nombre = trim($request->input('nombre'));
+            $code = trim($request->input('code'));
 
             // Buscar la categoría de empresa por ID
             $categoryCompany = CategoryCompany::find($category_id);
@@ -120,6 +143,24 @@ class CategoryController extends Controller
 
             if ($exists) {
                 return redirect()->back()->with('error', 'Ya existe otra categoría de empresa con el mismo nombre.');
+            }
+
+            // Verificar si ya existe otra categoría con el mismo código (ignorando el actual)
+            if ($code) {
+                $existsCode = Category::whereRaw('UPPER(TRIM(code)) = ?', [strtoupper($code)])
+                    ->where('company_id', $company_id)
+                    ->where('id', '!=', $categoryCompany->category_id)
+                    ->exists();
+
+                if ($existsCode) {
+                    return redirect()->back()->with('error', 'Ya existe otra categoría con el mismo código.');
+                }
+
+                // Actualizar el código en la categoría principal si se proporciona
+                $category = Category::find($categoryCompany->category_id);
+                if ($category) {
+                    $category->update(['code' => $code]);
+                }
             }
 
             $categoryCompany->update([
