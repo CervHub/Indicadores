@@ -41,6 +41,7 @@ export default function InspectionVehicle({
     companyId,
     userName,
     company,
+    area
 }: {
     causas: Causa[];
     type: string;
@@ -48,6 +49,7 @@ export default function InspectionVehicle({
     companyId: string;
     userName: string;
     company: string;
+    area: string;
 }) {
     const { data, setData, reset } = useForm({
         plate: '',
@@ -73,6 +75,7 @@ export default function InspectionVehicle({
         type_inspection: type,
         causas: causas.map((causa) => ({ id: causa.id, name: causa.name, state: '', observation: '' })),
         status: '',
+        area: area,
     });
 
     // Causas state y modal centralizado
@@ -90,6 +93,14 @@ export default function InspectionVehicle({
         modalCausaId,
         setModalCausaId,
     } = useCausasState(causas);
+
+    // Sincroniza el área si cambia desde el prop (por ejemplo, después de cerrar el diálogo)
+    React.useEffect(() => {
+        setData(prev => ({
+            ...prev,
+            area: area,
+        }));
+    }, [area]);
 
     const [isSearchingPlate, setIsSearchingPlate] = useState(false);
     const [isSearchingLicense, setIsSearchingLicense] = useState(false);

@@ -8,6 +8,8 @@ import { Search } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import ImageDropZone from './image';
+import { VEHICLE_TYPE_OPTIONS } from '@/lib/utils';
+
 function getLimaDateTimeString() {
     const formatter = new Intl.DateTimeFormat('en-CA', {
         timeZone: 'America/Lima',
@@ -37,13 +39,14 @@ const vehicleTypes = {
     otros: 'Otros',
 };
 
-export default function InspectionVehicle({
+export default function InspectionVehicleSemiAnual({
     causas,
     type,
     userId,
     companyId,
     userName,
     company,
+    area
 }: {
     causas: Causa[];
     type: string;
@@ -51,6 +54,7 @@ export default function InspectionVehicle({
     companyId: string;
     userName: string;
     company: string;
+    area: string;
 }) {
     const { data, setData, reset } = useForm({
         plate: '',
@@ -60,6 +64,7 @@ export default function InspectionVehicle({
         engineNumber: '',
         year: '',
         company: '',
+        mileage: '', // <-- Nuevo campo kilometraje
         driver: '',
         licenseNumber: '',
         generalState: '',
@@ -75,7 +80,16 @@ export default function InspectionVehicle({
         type_inspection: type,
         causas: causas.map((causa) => ({ id: causa.id, name: causa.name, state: '', observation: '' })),
         status: '', // <-- Agrega el campo status
+        area,
     });
+
+    // Sincroniza el área si cambia desde el prop (por ejemplo, después de cerrar el diálogo)
+    React.useEffect(() => {
+        setData(prev => ({
+            ...prev,
+            area: area,
+        }));
+    }, [area]);
 
     const [causaStates, setCausaStates] = useState(
         causas.map((causa) => ({ id: causa.id, name: causa.name, state: '', observation: '' }))
@@ -286,8 +300,8 @@ export default function InspectionVehicle({
                         <SelectValue placeholder="Seleccione un tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                        {Object.entries(vehicleTypes).map(([key, label]) => (
-                            <SelectItem key={label} value={label}>
+                        {VEHICLE_TYPE_OPTIONS.map(({ value, label }) => (
+                            <SelectItem key={value} value={value}>
                                 {label}
                             </SelectItem>
                         ))}
@@ -334,6 +348,20 @@ export default function InspectionVehicle({
                     Empresa
                 </Label>
                 <Input type="text" id="company" value={data.company || ''} disabled />
+            </div>
+            {/* Kilometraje */}
+            <div className="">
+                <Label htmlFor="mileage" className="mb-3">
+                    Kilometraje
+                </Label>
+                <Input
+                    type="number"
+                    id="mileage"
+                    value={data.mileage || ''}
+                    onChange={e => setData('mileage', e.target.value)}
+                    min={0}
+                    placeholder="Ingrese el kilometraje"
+                />
             </div>
             {/* Tabla de causas */}
             <div className="col-span-full">
@@ -457,8 +485,8 @@ export default function InspectionVehicle({
                         getAutoResult() === 'Desaprobado'
                             ? 'text-red-600 font-bold'
                             : getAutoResult() === 'Aprobado'
-                            ? 'text-green-600 font-bold'
-                            : ''
+                                ? 'text-green-600 font-bold'
+                                : ''
                     }
                 />
             </div>

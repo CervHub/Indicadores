@@ -1,4 +1,4 @@
-import InspectionVehicle from '@/components/form/inpectionVehicle';
+import InspectionVehicleSemiAnual from '@/components/form/inpectionVehicleSemiAnual';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { useState } from 'react';
@@ -31,6 +31,9 @@ export default function SemiannualVehicleInspection() {
     const userName = auth.user.name;
     const company = auth.user.company;
 
+    // Variable para el área seleccionada (solo una)
+    const [area, setArea] = useState<string>('');
+
     // Filtrar las primeras 5 causas con solo id, name y group
     // Generar el campo 'name' dinámicamente basado en 'nombre'
     const filteredCausas = causas.map(({ id, nombre, group }) => ({
@@ -43,9 +46,9 @@ export default function SemiannualVehicleInspection() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Inspección Vehicular Semestral" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <InspectionVehicle causas={filteredCausas} type={TYPE} userId={userId} companyId={companyId} userName={userName} company={company} />
+                <InspectionVehicleSemiAnual causas={filteredCausas} type={TYPE} userId={userId} companyId={companyId} userName={userName} company={company} area={area} />
             </div>
-            <StatementDialog open={open} onOpenChange={setOpen} />
+            <StatementDialog open={open} onOpenChange={setOpen} setArea={setArea} />
 
         </AppLayout>
     );

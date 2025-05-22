@@ -67,8 +67,6 @@ export default function InspectionVehiclePreUse({
         }));
     }, [area]);
 
-    console.log('Area:', area);
-
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSearchingPlate, setIsSearchingPlate] = useState(false);

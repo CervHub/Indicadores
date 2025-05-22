@@ -95,7 +95,7 @@ class FormatController extends Controller
 
     public function semiannualVehicleInspection(Request $request)
     {
-        $category = Category::where('nombre', 'Inspección Vehicular')->first();
+        $category = Category::where('code', 'IVS')->first();
         $causas = [];
         if ($category) {
             $causas = CategoryCompany::select(

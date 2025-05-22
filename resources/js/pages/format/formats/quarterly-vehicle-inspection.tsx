@@ -25,6 +25,9 @@ export default function QuarterlyVehicleInspection() {
     }>().props;
 
     const [open, setOpen] = useState(true);
+
+    // Variable para el área seleccionada (solo una)
+    const [area, setArea] = useState<string>('');
     // Extraer id, company_id y name del usuario
     const userId = auth.user.id;
     const companyId = auth.user.company_id;
@@ -65,9 +68,9 @@ export default function QuarterlyVehicleInspection() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Inspección Vehicular Trimestral" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <InspectionVehicle causas={filteredCausas} type={TYPE} userId={userId} companyId={companyId} userName={userName} company={company} />
+                <InspectionVehicle causas={filteredCausas} type={TYPE} userId={userId} companyId={companyId} userName={userName} company={company} area={area} />
             </div>
-            <StatementDialog open={open} onOpenChange={setOpen} />
+            <StatementDialog open={open} onOpenChange={setOpen} setArea={setArea} />
 
         </AppLayout>
     );
