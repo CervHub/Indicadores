@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Vehicle;
 use App\Models\VehicleCompany;
 use Illuminate\Support\Facades\Log;
+use App\Models\Log as LogModel;
 
 class VehicleController extends Controller
 {
