@@ -77,7 +77,7 @@ export default function UpdateCategoryCompany({
         !!item?.document_url ||
         !!item?.document_name;
 
-    const { data, setData, put, processing, errors, reset } = useForm<Required<CategoryCompanyForm>>({
+    const { data, setData, post, processing, errors, reset } = useForm<Required<CategoryCompanyForm>>({
         nombre: item?.nombre || '',
         group_id: item?.group_id ?? undefined,
         is_required: item?.is_required === 1 || item?.is_required === "1",
@@ -179,7 +179,7 @@ export default function UpdateCategoryCompany({
             formData.append('optional_configs', JSON.stringify(data.optional_configs));
         }
 
-        put(route('admin.category.admin.update', { category_id: item.id }), {
+        post(route('admin.category.admin.update', { category_id: item.id }), {
             data: formData,
             onSuccess: handleSuccess,
             onError: handleError,

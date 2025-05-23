@@ -101,6 +101,7 @@ class InspectionVehicleController extends Controller
 
         // Procesar toda la data necesaria
         $data = $this->processModuleData($module);
+        // dd($data);
         // Generar y retornar el PDF
         return $this->streamInspectionPdf($data);
     }
@@ -148,17 +149,28 @@ class InspectionVehicleController extends Controller
 
                     foreach ($causasRaw as $causa) {
                         $cat = $categories[$causa['id']] ?? null;
+                        $extraForm = isset($causa['extraForm']) && is_array($causa['extraForm']) && !empty($causa['extraForm'])
+                            ? array_map(function ($item) {
+                                return [
+                                    'id' => $item['id'] ?? null,
+                                    'value' => $item['value'] ?? null,
+                                    'name' => $item['name'] ?? null,
+                                ];
+                            }, $causa['extraForm'])
+                            : null;
+
                         $causas[] = [
-                            'id' => $causa['id'],
                             'nombre_categoria' => $cat->nombre_categoria ?? null,
                             'state' => $causa['state'] ?? null,
                             'observation' => $causa['observation'] ?? null,
                             'nombre_grupo' => $cat->nombre_grupo ?? null,
+                            'extraForm' => $extraForm,
                         ];
                     }
                 }
                 unset($decoded['causas']);
             }
+
 
             // Buscar el vehículo por plate si existe
             if (isset($decoded['plate'])) {

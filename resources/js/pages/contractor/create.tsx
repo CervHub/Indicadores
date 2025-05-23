@@ -2,6 +2,9 @@ import { useForm, usePage } from '@inertiajs/react';
 import { LoaderCircle, Trash2, Plus } from 'lucide-react'; // Importa Plus
 import { FormEventHandler, useEffect, useState } from 'react';
 import { Combobox } from '@/components/ui/combobox';
+import { 
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+} from '@/components/ui/select';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -17,6 +20,7 @@ interface CreateContractorProps {
 
 type ContractorForm = {
     ruc: string;
+    code: string; // Nuevo campo code
     nombre: string;
     descripcion: string;
     email: string;
@@ -40,6 +44,7 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
 
     const { data, setData, post, processing, errors, reset } = useForm<Required<ContractorForm>>({
         ruc: '',
+        code: '', // Nuevo campo code
         nombre: '',
         descripcion: '',
         email: '',
@@ -118,15 +123,17 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
         setUeaCompanyTypes((prev) => prev.filter((_, i) => i !== idx));
     };
 
+    console.log('ueas', ueas);
+
     // Opciones para los combos
     const ueaOptions = ueas.map((u: any) => ({
-        label: u.name || u.nombre || u.id,
-        value: u.id,
+        label: u.name || u.nombre || String(u.id),
+        value: String(u.id), // Asegura que value sea string
     }));
 
     const companyTypeOptions = companyType.map((c: any) => ({
-        label: c.name || c.nombre || c.id,
-        value: c.id,
+        label: c.name || c.nombre || String(c.id),
+        value: String(c.id), // Asegura que value sea string
     }));
 
     return (
@@ -156,6 +163,19 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
                                     placeholder="RUC"
                                 />
                                 <InputError message={errors.ruc} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="code">Código</Label>
+                                <Input
+                                    id="code"
+                                    type="text"
+                                    required
+                                    value={data.code}
+                                    onChange={(e) => setData('code', e.target.value)}
+                                    disabled={processing}
+                                    placeholder="Código o correlativo"
+                                />
+                                <InputError message={errors.code} />
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="nombre">Nombre</Label>
@@ -193,40 +213,56 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
                                 {ueaCompanyTypes.map((item, idx) => (
                                     <div
                                         key={idx}
-                                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-2 items-end"
+                                        className="flex gap-2 items-end"
                                     >
-                                        <div>
-                                            <Combobox
-                                                data={ueaOptions}
-                                                value={item.ueaId}
-                                                onChange={(value) => handleUeaChange(idx, value)}
-                                                placeholder="Seleccione UEA..."
-                                                className="w-full"
-                                            />
-                                        </div>
-                                        <div>
-                                            <Combobox
-                                                data={companyTypeOptions}
-                                                value={item.companyTypeId}
-                                                onChange={(value) => handleCompanyTypeChange(idx, value)}
-                                                placeholder="Seleccione tipo..."
-                                                className="w-full"
-                                            />
-                                        </div>
-                                        <div className="flex justify-start items-end">
-                                            <Button
-                                                type="button"
-                                                variant="destructive"
-                                                size="icon"
-                                                onClick={() => handleRemoveRow(idx)}
-                                                disabled={ueaCompanyTypes.length === 1}
-                                                className="mt-1"
-                                                style={{ width: 40, minWidth: 40, maxWidth: 40 }}
-                                                aria-label="Eliminar"
+                                        <div className="flex-1">
+                                            <Select
+                                                value={item.ueaId ? String(item.ueaId) : undefined}
+                                                onValueChange={(value) => handleUeaChange(idx, value)}
+                                                disabled={processing}
                                             >
-                                                <Trash2 className="w-5 h-5" />
-                                            </Button>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Seleccione UEA..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {ueaOptions.map((option) => (
+                                                        <SelectItem key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
+                                        <div className="flex-1">
+                                            <Select
+                                                value={item.companyTypeId ? String(item.companyTypeId) : undefined}
+                                                onValueChange={(value) => handleCompanyTypeChange(idx, value)}
+                                                disabled={processing}
+                                            >
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Seleccione tipo..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {companyTypeOptions.map((option) => (
+                                                        <SelectItem key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            size="icon"
+                                            onClick={() => handleRemoveRow(idx)}
+                                            disabled={ueaCompanyTypes.length === 1}
+                                            className="mt-1"
+                                            style={{ width: 40, minWidth: 40, maxWidth: 40 }}
+                                            aria-label="Eliminar"
+                                        >
+                                            <Trash2 className="w-5 h-5" />
+                                        </Button>
                                     </div>
                                 ))}
                                 <Button

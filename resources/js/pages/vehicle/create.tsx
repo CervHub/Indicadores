@@ -35,17 +35,18 @@ type CreateVehicleProps = {
     isDialogOpen: boolean;
     setIsDialogOpen: (open: boolean) => void;
     companyId: string;
+    companyCode: string;
 };
 
 const TIRE_COUNT_OPTIONS = [
     { value: "4", label: "4", img: "/images/neumaticos/01.png" },
     { value: "6", label: "6", img: "/images/neumaticos/02.png" },
-    { value: "10-I", label: "10-I", img: "/images/neumaticos/03.png" },
-    { value: "12-I", label: "12-I", img: "/images/neumaticos/04.png" },
-    { value: "12-II", label: "12-II", img: "/images/neumaticos/05.png" },
-    { value: "10-II", label: "10-II", img: "/images/neumaticos/06.png" },
-    { value: "14-I", label: "14-I", img: "/images/neumaticos/07.png" },
-    { value: "14-II", label: "14-II", img: "/images/neumaticos/08.png" },
+    { value: "10", label: "10", img: "/images/neumaticos/03.png" },
+    // { value: "12-I", label: "12-I", img: "/images/neumaticos/04.png" },
+    // { value: "12-II", label: "12-II", img: "/images/neumaticos/05.png" },
+    // { value: "10-II", label: "10-II", img: "/images/neumaticos/06.png" },
+    // { value: "14-I", label: "14-I", img: "/images/neumaticos/07.png" },
+    // { value: "14-II", label: "14-II", img: "/images/neumaticos/08.png" },
 ];
 
 const FormField = ({
@@ -61,6 +62,7 @@ const FormField = ({
     options,
     rightElement,
     rightLoading = false,
+    companyCode, // <-- agregar aquí
 }: {
     id: string;
     label: string;
@@ -74,6 +76,7 @@ const FormField = ({
     options?: { value: string; label: string }[];
     rightElement?: React.ReactNode;
     rightLoading?: boolean;
+    companyCode?: string; // <-- agregar aquí
 }) => (
     <div className="grid gap-2">
         <Label htmlFor={id}>
@@ -96,7 +99,11 @@ const FormField = ({
                     className="pr-20"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-background px-2 py-0.5 rounded text-muted-foreground text-xs sm:text-sm font-mono border border-input">
-                    {value ? `COD${value.toString().padStart(3, "0")}` : "COD___"}
+                    {companyCode
+                        ? `${companyCode}${value ? value.toString().padStart(3, "0") : "___"}`
+                        : value
+                        ? `COD${value.toString().padStart(3, "0")}`
+                        : "COD___"}
                 </span>
             </div>
         ) : options ? (
@@ -164,7 +171,7 @@ const FormField = ({
     </div>
 );
 
-export default function CreateVehicle({ isDialogOpen, setIsDialogOpen, companyId }: CreateVehicleProps) {
+export default function CreateVehicle({ isDialogOpen, setIsDialogOpen, companyId, companyCode }: CreateVehicleProps) {
     const { data, setData, post, processing, errors, reset } = useForm<Required<VehicleForm>>({
         code: '',
         license_plate: '',
@@ -307,7 +314,7 @@ export default function CreateVehicle({ isDialogOpen, setIsDialogOpen, companyId
     const formFields = [
         { id: 'license_plate', label: 'Placa', required: true },
         { id: 'type', label: 'Tipo', required: true, options: VEHICLE_TYPE_OPTIONS },
-        { id: 'code', label: 'Código', required: true },
+        { id: 'code', label: 'Código', required: true, companyCode }, // pasar companyCode aquí
         { id: 'brand', label: 'Marca', required: true },
         { id: 'model', label: 'Modelo', required: true },
         { id: 'color', label: 'Color', required: true },
@@ -417,7 +424,7 @@ export default function CreateVehicle({ isDialogOpen, setIsDialogOpen, companyId
                         <DialogTitle>Seleccione el número de neumáticos</DialogTitle>
                     </DialogHeader>
                     <div
-                        className="grid grid-cols-3 gap-4 py-2 max-h-80 overflow-y-auto"
+                        className="grid grid-cols-2 gap-4 py-2 max-h-80 overflow-y-auto"
                         style={{ scrollbarGutter: "stable" }}
                     >
                         {TIRE_COUNT_OPTIONS.map(option => (
@@ -434,7 +441,7 @@ export default function CreateVehicle({ isDialogOpen, setIsDialogOpen, companyId
                                     src={option.img}
                                     alt={option.label}
                                     className="w-full h-auto object-contain"
-                                    style={{ aspectRatio: "4/3", maxHeight: 120 }}
+                                    style={{ aspectRatio: "3/5", maxHeight: 220 }}
                                 />
                             </button>
                         ))}

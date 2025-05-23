@@ -144,8 +144,35 @@ export default function InspectionVehicle({
         setModalCausaId,
     } = useCausasState(causasFiltradas);
 
-
-    
+    // Sincroniza causaStates y extraFormData cuando cambian las causas filtradas
+    React.useEffect(() => {
+        setCausaStates(prevStates => {
+            // Mantén los estados existentes y agrega los nuevos
+            const newStates = causasFiltradas.map(causa => {
+                const found = prevStates.find(cs => cs.id === causa.id);
+                return found
+                    ? found
+                    : { id: causa.id, name: causa.name, state: '', observation: '' };
+            });
+            return newStates;
+        });
+        setExtraFormData(prevData => {
+            // Mantén los datos existentes y agrega los nuevos
+            const newData = { ...prevData };
+            causasFiltradas.forEach(causa => {
+                if (!(causa.id in newData)) {
+                    newData[causa.id] = {};
+                }
+            });
+            // Elimina los que ya no existen
+            Object.keys(newData).forEach(id => {
+                if (!causasFiltradas.some(c => String(c.id) === String(id))) {
+                    delete newData[id];
+                }
+            });
+            return newData;
+        });
+    }, [causasFiltradas, setCausaStates, setExtraFormData]);
 
     // Sincroniza el área si cambia desde el prop (por ejemplo, después de cerrar el diálogo)
     React.useEffect(() => {

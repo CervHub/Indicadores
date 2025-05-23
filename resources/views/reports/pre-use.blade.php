@@ -192,7 +192,7 @@
             <td style="border:1px solid #222;">
                 {{ $details['mileage'] ?? '' }}
             </td>
-            <td class="th-mayus" style="border:1px solid #222; font-weight:bold;">Registro N°</td>
+            <td class="th-mayus" style="border:1px solid #222; font-weight:bold;"></td>
             <td style="border:1px solid #222;">
                 {{ $details['registro'] ?? '' }}
             </td>
@@ -213,12 +213,12 @@
             <tr>
                 <td class="col-item">{{ $causa['nombre_categoria'] ?? '' }}</td>
                 <td class="col-estado">
-                    @if (($causa['state'] ?? '') === 'Bien')
+                    @if (($causa['state'] ?? '') === 'Conforme')
                         <span class="x-mark">X</span>
                     @endif
                 </td>
                 <td class="col-estado">
-                    @if (($causa['state'] ?? '') === 'Mal')
+                    @if (($causa['state'] ?? '') === 'No Conforme')
                         <span class="x-mark">X</span>
                     @endif
                 </td>

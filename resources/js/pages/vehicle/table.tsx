@@ -50,14 +50,13 @@ interface TableCardProps {
 
 const ITEMS_PER_PAGE = 15;
 
-// Utilidad para descargar QR como PNG en formato Card (placa arriba, QR grande, borde radius tipo sticker)
-function downloadQRCodeCanvas(vehicleId: number, licensePlate: string, filename: string) {
-    const width = 400;
-    const height = 450;
-    const plateHeight = 90;
-    const qrSize = 300;
-    const qrY = plateHeight + 30;
-    const borderRadius = 40;
+// Utilidad para descargar QR como PNG en formato rectangular de dos columnas bordeado
+function downloadQRCodeCanvas(vehicle: VehicleData, filename: string) {
+    const width = 420;
+    const height = 220;
+    const qrSize = 180;
+    const borderRadius = 28;
+    const padding = 24;
 
     const canvas = document.createElement('canvas');
     canvas.width = width;
@@ -65,7 +64,7 @@ function downloadQRCodeCanvas(vehicleId: number, licensePlate: string, filename:
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Dibuja fondo blanco con border radius (sticker)
+    // Dibuja fondo blanco con borde redondeado
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(borderRadius, 0);
@@ -83,41 +82,92 @@ function downloadQRCodeCanvas(vehicleId: number, licensePlate: string, filename:
     ctx.fillRect(0, 0, width, height);
     ctx.restore();
 
-    // Header rojo con placa
+    // Borde exterior
     ctx.save();
+    ctx.strokeStyle = "#d1d5db";
+    ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.moveTo(borderRadius, 0);
-    ctx.lineTo(width - borderRadius, 0);
-    ctx.quadraticCurveTo(width, 0, width, borderRadius);
-    ctx.lineTo(width, plateHeight);
-    ctx.lineTo(0, plateHeight);
-    ctx.lineTo(0, borderRadius);
-    ctx.quadraticCurveTo(0, 0, borderRadius, 0);
+    ctx.moveTo(borderRadius, 2);
+    ctx.lineTo(width - borderRadius, 2);
+    ctx.quadraticCurveTo(width - 2, 2, width - 2, borderRadius);
+    ctx.lineTo(width - 2, height - borderRadius);
+    ctx.quadraticCurveTo(width - 2, height - 2, width - borderRadius, height - 2);
+    ctx.lineTo(borderRadius, height - 2);
+    ctx.quadraticCurveTo(2, height - 2, 2, height - borderRadius);
+    ctx.lineTo(2, borderRadius);
+    ctx.quadraticCurveTo(2, 2, borderRadius, 2);
     ctx.closePath();
-    ctx.clip();
-    ctx.fillStyle = "#d7282f";
-    ctx.fillRect(0, 0, width, plateHeight);
+    ctx.stroke();
     ctx.restore();
 
-    // Placa centrada, fuente más grande y bold
-    ctx.font = "bold 2.4rem Arial";
-    ctx.fillStyle = "#fff";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(licensePlate, width / 2, plateHeight / 2);
-
-    // Generar QR en un canvas temporal
+    // Columna 1: QR centrado verticalmente
     import('qrcode').then(QRCodeLib => {
         const qrCanvas = document.createElement('canvas');
         qrCanvas.width = qrSize;
         qrCanvas.height = qrSize;
-        QRCodeLib.toCanvas(qrCanvas, getVehicleShowUrl(vehicleId), { width: qrSize, margin: 1 }, function (error: any) {
+        QRCodeLib.toCanvas(qrCanvas, getVehicleShowUrl(vehicle.id), { width: qrSize, margin: 1 }, function (error: any) {
             if (error) {
                 alert('No se pudo generar el QR para descargar.');
                 return;
             }
-            // Dibujar QR centrado debajo de la placa
-            ctx.drawImage(qrCanvas, (width - qrSize) / 2, qrY, qrSize, qrSize);
+            // QR centrado en la primera columna
+            ctx.drawImage(qrCanvas, padding, (height - qrSize) / 2, qrSize, qrSize);
+
+            // Columna 2: Placa en recuadro rojo redondeado
+            const placaBoxX = padding + qrSize + 32;
+            const placaBoxY = padding;
+            const placaBoxW = width - placaBoxX - padding;
+            const placaBoxH = 54;
+            const placaRadius = 18;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(placaBoxX + placaRadius, placaBoxY);
+            ctx.lineTo(placaBoxX + placaBoxW - placaRadius, placaBoxY);
+            ctx.quadraticCurveTo(placaBoxX + placaBoxW, placaBoxY, placaBoxX + placaBoxW, placaBoxY + placaRadius);
+            ctx.lineTo(placaBoxX + placaBoxW, placaBoxY + placaBoxH - placaRadius);
+            ctx.quadraticCurveTo(placaBoxX + placaBoxW, placaBoxY + placaBoxH, placaBoxX + placaBoxW - placaRadius, placaBoxY + placaBoxH);
+            ctx.lineTo(placaBoxX + placaRadius, placaBoxY + placaBoxH);
+            ctx.quadraticCurveTo(placaBoxX, placaBoxY + placaBoxH, placaBoxX, placaBoxY + placaBoxH - placaRadius);
+            ctx.lineTo(placaBoxX, placaBoxY + placaRadius);
+            ctx.quadraticCurveTo(placaBoxX, placaBoxY, placaBoxX + placaRadius, placaBoxY);
+            ctx.closePath();
+            ctx.fillStyle = "#d7282f";
+            ctx.fill();
+
+            // Placa texto centrado
+            ctx.font = "bold 2.1rem Arial";
+            ctx.fillStyle = "#fff";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(vehicle.license_plate, placaBoxX + placaBoxW / 2, placaBoxY + placaBoxH / 2);
+
+            // Datos: modelo, marca, año, color
+            ctx.font = "bold 1.1rem Arial";
+            ctx.fillStyle = "#222";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "top";
+            let infoY = placaBoxY + placaBoxH + 18;
+            const infoX = placaBoxX;
+
+            ctx.fillText(`Modelo:`, infoX, infoY);
+            ctx.font = "1.1rem Arial";
+            ctx.fillText(vehicle.model, infoX + 90, infoY);
+
+            ctx.font = "bold 1.1rem Arial";
+            ctx.fillText(`Marca:`, infoX, infoY + 28);
+            ctx.font = "1.1rem Arial";
+            ctx.fillText(vehicle.brand, infoX + 90, infoY + 28);
+
+            ctx.font = "bold 1.1rem Arial";
+            ctx.fillText(`Año:`, infoX, infoY + 56);
+            ctx.font = "1.1rem Arial";
+            ctx.fillText(vehicle.year, infoX + 90, infoY + 56);
+
+            ctx.font = "bold 1.1rem Arial";
+            ctx.fillText(`Color:`, infoX, infoY + 84);
+            ctx.font = "1.1rem Arial";
+            ctx.fillText(vehicle.color ?? '', infoX + 90, infoY + 84);
 
             // Descargar
             const link = document.createElement('a');
@@ -166,9 +216,10 @@ const TableCard: React.FC<TableCardProps> = ({ data, onAction }) => {
     // Nueva función para descargar QR como PNG usando canvas
     const handleDownloadQR = (license_plate: string, id: number) => {
         setDownloadingId(id);
-        // Usar la URL de la route para el QR
+        const vehicle = data.find(v => v.id === id);
+        if (!vehicle) return;
         new Promise<void>((resolve) => {
-            downloadQRCodeCanvas(id, license_plate, `qr_${license_plate}.png`);
+            downloadQRCodeCanvas(vehicle, `qr_${license_plate}.png`);
             resolve();
         }).finally(() => {
             setDownloadingId(null);

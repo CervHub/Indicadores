@@ -17,12 +17,15 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 
 export default function Vehicle() {
-    const { vehicles, auth } = usePage().props;
+    const { vehicles, auth, company } = usePage().props;
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
     const [destroyDialogOpen, setDestroyDialogOpen] = useState(false);
     const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+
+
+    console.log('Company', company);
 
     const handleAction = (item: any, action: string) => {
         if (action === 'desvincular') {
@@ -50,13 +53,17 @@ export default function Vehicle() {
                     <TableCard data={vehicles} onAction={handleAction} />
                 </div>
             </div>
-            <CreateVehicle isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} companyId={auth.user.company_id} />
+            <CreateVehicle isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} companyId={auth.user.company_id}
+                companyCode={company?.code}
+            />
             {selectedVehicle && (
                 <>
                     <EditVehicle
                         isDialogOpen={editDialogOpen}
                         setIsDialogOpen={setEditDialogOpen}
                         vehicle={selectedVehicle}
+                        companyCode={company?.code}
+
                     />
                     <DestroyVehicle
                         isDialogOpen={destroyDialogOpen}

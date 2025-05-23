@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 class Company extends Model
 {
     protected $table = 'companies';
-    protected $fillable = ['nombre', 'ruc', 'descripcion', 'email'];
+    protected $fillable = ['nombre', 'ruc', 'descripcion', 'email', 'code'];
     public $timestamps = true;
     use HasFactory;
 

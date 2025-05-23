@@ -29,11 +29,16 @@ class VehicleController extends Controller
                 $query->where('company_id', $this->company_id);
             })
             ->get();
+        
+        $company = $this->user->company ?? null;
 
         return Inertia::render('vehicle/index', [
             'vehicles' => $vehicles->map(function ($vehicleCompany) {
-                return $vehicleCompany->vehicle;
+                $vehicle = $vehicleCompany->vehicle;
+                $vehicle->code = $vehicleCompany->code; // Reemplazar el code del vehículo con el code del VehicleCompany
+                return $vehicle;
             }),
+            'company' => $company,
         ]);
     }
 

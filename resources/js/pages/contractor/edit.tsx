@@ -2,6 +2,9 @@ import { useForm, usePage } from '@inertiajs/react';
 import { LoaderCircle, Trash2, Plus } from 'lucide-react';
 import { FormEventHandler, useEffect, useState } from 'react';
 import { Combobox } from '@/components/ui/combobox';
+import { 
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+} from '@/components/ui/select';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -17,6 +20,7 @@ type UeaCompanyType = {
 
 type ContractorForm = {
     id: string;
+    code: string; // Agrega el campo code
     ruc: string | null;
     nombre: string | null;
     descripcion: string | null;
@@ -45,6 +49,7 @@ export default function EditContractor({
     // Inicializa el form
     const { data, setData, put, processing, errors, reset } = useForm<Required<ContractorForm>>({
         id: contractor?.id || '',
+        code: contractor?.code || '', // Inicializa code
         ruc: contractor?.ruc || '',
         nombre: contractor?.nombre || '',
         descripcion: contractor?.descripcion || '',
@@ -57,6 +62,7 @@ export default function EditContractor({
         if (contractor) {
             setData({
                 id: contractor.id,
+                code: contractor.code || '', // Asigna code
                 ruc: contractor.ruc,
                 nombre: contractor.nombre,
                 descripcion: contractor.descripcion,
@@ -89,6 +95,11 @@ export default function EditContractor({
         // No permitir que una UEA se repita en cualquier fila
         if (ueaCompanyTypes.some((item, i) => i !== idx && item.ueaId === value && value !== '')) {
             toast.warning('Ya seleccionaste esta UEA en otra fila.');
+            // Limpia el seleccionado si es duplicado
+            const newList = ueaCompanyTypes.map((item, i) =>
+                i === idx ? { ...item, ueaId: '' } : item
+            );
+            setUeaCompanyTypes(newList);
             return;
         }
         const newList = ueaCompanyTypes.map((item, i) =>
@@ -119,13 +130,13 @@ export default function EditContractor({
 
     // Opciones para los combos
     const ueaOptions = ueas.map((u: any) => ({
-        label: u.name || u.nombre || u.id,
-        value: u.id,
+        label: u.name || u.nombre || String(u.id),
+        value: String(u.id),
     }));
 
     const companyTypeOptions = companyType.map((c: any) => ({
-        label: c.name || c.nombre || c.id,
-        value: c.id,
+        label: c.name || c.nombre || String(c.id),
+        value: String(c.id),
     }));
 
     const submit: FormEventHandler = (e) => {
@@ -185,6 +196,19 @@ export default function EditContractor({
                             <InputError message={errors.ruc} />
                         </div>
                         <div className="grid gap-2">
+                            <Label htmlFor="code">Código</Label>
+                            <Input
+                                id="code"
+                                type="text"
+                                required
+                                value={data.code || ''}
+                                onChange={(e) => setData('code', e.target.value)}
+                                disabled={processing}
+                                placeholder="Código o correlativo"
+                            />
+                            <InputError message={errors.code} />
+                        </div>
+                        <div className="grid gap-2">
                             <Label htmlFor="nombre">Nombre</Label>
                             <Input
                                 id="nombre"
@@ -210,37 +234,67 @@ export default function EditContractor({
                             />
                             <InputError message={errors.descripcion} />
                         </div>
-                        {/* <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="text" required value={`${data.ruc}@code.com.pe`} disabled placeholder="Email" />
-                        </div> */}
                         {/* NUEVO: Combos dinámicos */}
                         <div className="space-y-2">
                             <Label>UEA y Tipo de Empresa</Label>
-                            {ueaCompanyTypes.map((item, idx) => (
-                                <div
-                                    key={idx}
-                                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-2 items-end"
-                                >
-                                    <div>
-                                        <Combobox
-                                            data={ueaOptions}
-                                            value={parseInt(item.ueaId)}
-                                            onChange={(value) => handleUeaChange(idx, value)}
-                                            placeholder="Seleccione UEA..."
-                                            className="w-full"
-                                        />
-                                    </div>
-                                    <div>
-                                        <Combobox
-                                            data={companyTypeOptions}
-                                            value={parseInt(item.companyTypeId)}
-                                            onChange={(value) => handleCompanyTypeChange(idx, value)}
-                                            placeholder="Seleccione tipo..."
-                                            className="w-full"
-                                        />
-                                    </div>
-                                    <div className="flex justify-start items-end">
+                            {ueaCompanyTypes.map((item, idx) => {
+                                // Calcula las opciones disponibles para este select
+                                const selectedUeaIds = ueaCompanyTypes
+                                    .filter((_, i) => i !== idx)
+                                    .map((it) => it.ueaId)
+                                    .filter(Boolean);
+                                const availableUeaOptions = ueaOptions.filter(
+                                    (option) =>
+                                        !selectedUeaIds.includes(option.value) ||
+                                        option.value === item.ueaId // Permite mantener la seleccionada
+                                );
+                                return (
+                                    <div
+                                        key={idx}
+                                        className="flex gap-2 items-end"
+                                    >
+                                        <div className="flex-1 min-w-0">
+                                            <Select
+                                                value={item.ueaId ? String(item.ueaId) : undefined}
+                                                onValueChange={(value) => handleUeaChange(idx, value)}
+                                                disabled={processing}
+                                            >
+                                                <SelectTrigger className="w-full min-w-0">
+                                                    <SelectValue
+                                                        placeholder="Seleccione UEA..."
+                                                        className="truncate"
+                                                    />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {availableUeaOptions.map((option) => (
+                                                        <SelectItem key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <Select
+                                                value={item.companyTypeId ? String(item.companyTypeId) : undefined}
+                                                onValueChange={(value) => handleCompanyTypeChange(idx, value)}
+                                                disabled={processing}
+                                            >
+                                                <SelectTrigger className="w-full min-w-0">
+                                                    <SelectValue
+                                                        placeholder="Seleccione tipo..."
+                                                        className="truncate"
+                                                    />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {companyTypeOptions.map((option) => (
+                                                        <SelectItem key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                         <Button
                                             type="button"
                                             variant="destructive"
@@ -254,8 +308,8 @@ export default function EditContractor({
                                             <Trash2 className="w-5 h-5" />
                                         </Button>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                             <Button
                                 type="button"
                                 onClick={handleAddRow}
@@ -263,6 +317,7 @@ export default function EditContractor({
                                 variant="primary"
                                 size="icon"
                                 aria-label="Agregar"
+                                disabled={ueaCompanyTypes.length >= 3}
                             >
                                 <Plus className="w-5 h-5" />
                             </Button>

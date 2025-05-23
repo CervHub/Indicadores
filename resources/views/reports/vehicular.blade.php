@@ -256,15 +256,15 @@
             </tr>
             @foreach ($items as $causa)
                 <tr>
-                    <td>{{ $counter++ }}</td>
+                    <td>{{ $counter }}</td>
                     <td class="col-item">{{ $causa['nombre_categoria'] ?? '' }}</td>
                     <td class="col-estado">
-                        @if (($causa['state'] ?? '') === 'Bien')
+                        @if (($causa['state'] ?? '') === 'Conforme')
                             <span class="x-mark">X</span>
                         @endif
                     </td>
                     <td class="col-estado">
-                        @if (($causa['state'] ?? '') === 'Mal')
+                        @if (($causa['state'] ?? '') === 'No Conforme')
                             <span class="x-mark">X</span>
                         @endif
                     </td>
@@ -277,6 +277,22 @@
                         {{ $causa['observation'] ?? '' }}
                     </td>
                 </tr>
+                @php $detalleIndex = 1; @endphp
+                @if (!empty($causa['extraForm']) && is_array($causa['extraForm']))
+                    @foreach ($causa['extraForm'] as $detalle)
+                        <tr>
+                            <td>{{ $counter . '.' . $detalleIndex }}</td>
+                            <td colspan="4" style="text-align:left; font-style:italic; color:#444;">
+                                {{ $detalle['name'] ?? '' }}
+                            </td>
+                            <td style="text-align:left; font-style:italic; color:#444;">
+                                {{ $detalle['value'] ?? '' }}
+                            </td>
+                        </tr>
+                        @php $detalleIndex++; @endphp
+                    @endforeach
+                @endif
+                @php $counter++; @endphp
             @endforeach
         @endforeach
     </table>

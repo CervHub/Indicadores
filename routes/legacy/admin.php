@@ -48,7 +48,7 @@ Route::delete('admin/category/{category}', [CategoryController::class, 'destroy'
 
 //Rutas para categories admin
 Route::post('admin/category/admin/{category_id}', [CategoryController::class, 'storeCompany'])->name('admin.category.admin.store');
-Route::put('admin/category/admin/{category_id}', [CategoryController::class, 'updateCompany'])->name('admin.category.admin.update');
+Route::post('admin/category/update/{category_id}', [CategoryController::class, 'updateCompany'])->name('admin.category.admin.update');
 //Rutas para group
 Route::post('group/store/{category_id}', [CategoryController::class, 'groupStore'])->name('group.store');
 

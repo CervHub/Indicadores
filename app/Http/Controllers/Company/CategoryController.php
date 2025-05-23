@@ -172,11 +172,23 @@ class CategoryController extends Controller
                 }
             }
 
+
+
             $categoryCompany->update([
                 'nombre' => $nombre,
                 'group_id' => $request->input('group_id'),
                 'is_required' => $request->input('is_required', false),
             ]);
+
+
+            // Guardar atributos si aplica
+            if ($request->input('has_attributes') && is_array($request->input('optional_configs'))) {
+
+                //Eliminar anteriormente los atributos
+                CategoryAttribute::where('category_id', $categoryCompany->id)->delete();
+
+                $this->saveCategoryAttributes($categoryCompany->id, $request->input('optional_configs'));
+            }
 
             return redirect()->back()->with('success', 'Categoría de empresa actualizada exitosamente.');
         } catch (\Exception $e) {

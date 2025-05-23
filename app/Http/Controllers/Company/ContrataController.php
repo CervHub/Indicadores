@@ -30,14 +30,15 @@ class ContrataController extends Controller
     {
         try {
             DB::transaction(function () use ($request) {
-                // Verificar si ya existe una empresa con el mismo nombre, correo o RUC
+                // Verificar si ya existe una empresa con el mismo nombre, correo, RUC o code
                 $existingCompany = Company::where('ruc', $request->ruc)
                     ->orWhere('email', $request->email)
                     ->orWhere('nombre', $request->nombre)
+                    ->orWhere('code', $request->code)
                     ->first();
 
                 if ($existingCompany) {
-                    throw new \Exception('Ya existe una empresa con el mismo nombre, correo electrónico o RUC.');
+                    throw new \Exception('Ya existe una empresa con el mismo nombre, correo electrónico, RUC o código.');
                 }
 
                 // Crear la empresa si no existe
@@ -46,7 +47,8 @@ class ContrataController extends Controller
                     [
                         'nombre' => $request->nombre,
                         'descripcion' => $request->descripcion,
-                        'email' => $request->email
+                        'email' => $request->email,
+                        'code' => $request->code,
                     ]
                 );
 
@@ -101,14 +103,15 @@ class ContrataController extends Controller
             DB::transaction(function () use ($request, $id) {
                 $company = Company::findOrFail($id);
 
-                // Verificar si el RUC o el email ya existen para otra empresa
+                // Verificar si el RUC, email o code ya existen para otra empresa
                 $existingCompany = Company::where(function ($query) use ($request, $id) {
                     $query->where('ruc', $request->ruc)
-                        ->orWhere('email', $request->email);
+                        ->orWhere('email', $request->email)
+                        ->orWhere('code', $request->code);
                 })->where('id', '<>', $id)->first();
 
                 if ($existingCompany) {
-                    throw new \Exception('Ya existe una empresa con el mismo RUC o email.');
+                    throw new \Exception('Ya existe una empresa con el mismo RUC, email o código.');
                 }
 
                 // Verificar si el email ya existe para otro usuario
@@ -132,6 +135,7 @@ class ContrataController extends Controller
                     'descripcion' => $request->descripcion,
                     'email' => $request->email,
                     'ruc' => $request->ruc,
+                    'code' => $request->code,
                 ]);
 
 

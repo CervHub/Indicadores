@@ -164,22 +164,13 @@
             <th>MAL</th>
             <th>NO APLICA</th>
         </tr>
-        @php
-            $causes = [
-                ['id' => 1, 'name' => 'Nivel de aceite de motor', 'state' => 'Bien'],
-                ['id' => 2, 'name' => 'Nivel de líquido de freno', 'state' => 'Mal'],
-                ['id' => 3, 'name' => 'Nivel de agua de radiador', 'state' => 'No Aplica'],
-                ['id' => 4, 'name' => 'Dirección', 'state' => 'Bien'],
-                ['id' => 5, 'name' => 'Freno de servicio', 'state' => 'Mal'],
-                // ...agregar más causas según sea necesario...
-            ];
-        @endphp
+        {{-- Usar el array de causas recibido --}}
         @foreach ($causes as $cause)
         <tr>
-            <td>{{ $cause['name'] }}</td>
-            <td>@if ($cause['state'] === 'Bien') X @endif</td>
-            <td>@if ($cause['state'] === 'Mal') X @endif</td>
-            <td>@if ($cause['state'] === 'No Aplica') X @endif</td>
+            <td>{{ $cause['nombre_categoria'] ?? $cause['name'] ?? '' }}</td>
+            <td>@if (($cause['state'] ?? '') === 'Conforme') X @endif</td>
+            <td>@if (($cause['state'] ?? '') === 'No Conforme') X @endif</td>
+            <td>@if (!in_array(($cause['state'] ?? ''), ['Conforme', 'No Conforme'])) X @endif</td>
         </tr>
         @endforeach
     </table>
