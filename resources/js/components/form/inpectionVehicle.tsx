@@ -51,6 +51,54 @@ export default function InspectionVehicle({
     company: string;
     area: string;
 }) {
+    // Excluir causas cuyo nombre empieza con "Neumáticos", contiene "Grúa"/"grua" o contiene "Banderín"
+    const causasFiltradasBase = causas.filter(
+        c =>
+            !c.name?.toLowerCase().startsWith('neumáticos') &&
+            !c.name?.toLowerCase().includes('grúa') &&
+            !c.name?.toLowerCase().includes('grua') &&
+            !c.name?.toLowerCase().includes('banderín') &&
+            !c.name?.toLowerCase().includes('banderin')
+    );
+    // Lista de causas de neumáticos (todas)
+    const causasNeumaticos = causas.filter(
+        c => c.name?.toLowerCase().startsWith('neumáticos')
+    );
+    // Lista de causas de grúa (todas)
+    const causasGrua = causas.filter(
+        c => c.name?.toLowerCase().includes('grúa') || c.name?.toLowerCase().includes('grua')
+    );
+    // Lista de causas de banderín (todas)
+    const causasBanderin = causas.filter(
+        c => c.name?.toLowerCase().includes('banderín') || c.name?.toLowerCase().includes('banderin')
+    );
+
+    const [causasFiltradas, setCausasFiltradas] = React.useState<Causa[]>(() => {
+        // Inicialmente base + banderín según área
+        let base = [...causasFiltradasBase];
+        if (area?.toLowerCase() === 'mina') {
+            const banderinRojo = causasBanderin.find(c => c.name?.toLowerCase().includes('rojo'));
+            if (banderinRojo) base.push(banderinRojo);
+        } else {
+            const banderinVerde = causasBanderin.find(c => c.name?.toLowerCase().includes('verde'));
+            if (banderinVerde) base.push(banderinVerde);
+        }
+        return base;
+    });
+
+    // Actualiza banderín si cambia el área
+    React.useEffect(() => {
+        let base = [...causasFiltradasBase];
+        if (area?.toLowerCase() === 'mina') {
+            const banderinRojo = causasBanderin.find(c => c.name?.toLowerCase().includes('rojo'));
+            if (banderinRojo) base.push(banderinRojo);
+        } else {
+            const banderinVerde = causasBanderin.find(c => c.name?.toLowerCase().includes('verde'));
+            if (banderinVerde) base.push(banderinVerde);
+        }
+        setCausasFiltradas(base);
+    }, [area]);
+
     const { data, setData, reset } = useForm({
         plate: '',
         type: '',
@@ -73,10 +121,12 @@ export default function InspectionVehicle({
         userName,
         type_report: 'vehicular',
         type_inspection: type,
-        causas: causas.map((causa) => ({ id: causa.id, name: causa.name, state: '', observation: '' })),
+        causas: causasFiltradasBase.map((causa) => ({ id: causa.id, name: causa.name, state: '', observation: '' })),
         status: '',
         area: area,
     });
+
+
 
     // Causas state y modal centralizado
     const {
@@ -92,7 +142,10 @@ export default function InspectionVehicle({
         setModalTitle,
         modalCausaId,
         setModalCausaId,
-    } = useCausasState(causas);
+    } = useCausasState(causasFiltradas);
+
+
+    
 
     // Sincroniza el área si cambia desde el prop (por ejemplo, después de cerrar el diálogo)
     React.useEffect(() => {
@@ -122,7 +175,7 @@ export default function InspectionVehicle({
     // Solo permite enviar si todas las causas tienen estado, el resultado está calculado y todos los formularios extra requeridos están completos
     const isFormValid = () => {
         // Verifica si todos los formularios extra requeridos están completos
-        const allExtraFormsComplete = causas.every((causa) => {
+        const allExtraFormsComplete = causasFiltradas.every((causa) => {
             if (!causa.has_attributes || !causa.category_attributes) return true;
             const formState = extraFormData[causa.id] || {};
             return causa.category_attributes.every(attr => !!formState[attr.id]);
@@ -166,6 +219,39 @@ export default function InspectionVehicle({
                     year: responseData.data.year || '',
                     company: responseData.company.nombre || '',
                 }));
+
+                // Manejo de Neumáticos {tire_count}
+                let nuevasCausas = [...causasFiltradasBase];
+                // Banderín según área
+                if (area?.toLowerCase() === 'mina') {
+                    const banderinRojo = causasBanderin.find(c => c.name?.toLowerCase().includes('rojo'));
+                    if (banderinRojo) nuevasCausas.push(banderinRojo);
+                } else {
+                    const banderinVerde = causasBanderin.find(c => c.name?.toLowerCase().includes('verde'));
+                    if (banderinVerde) nuevasCausas.push(banderinVerde);
+                }
+                const tireCount = responseData.data.tire_count;
+                if (tireCount) {
+                    const neumaticoName = `Neumáticos ${Number(tireCount)}`;
+                    const neumaticoCausa = causasNeumaticos.find(c => c.name === neumaticoName);
+                    if (neumaticoCausa && !nuevasCausas.some(c => c.id === neumaticoCausa.id)) {
+                        nuevasCausas = [...nuevasCausas, neumaticoCausa];
+                    }
+                }
+
+                // Manejo de Grúa
+                const tipoVehiculo = (responseData.data.type || '').toLowerCase();
+                if (tipoVehiculo.includes('grúa') || tipoVehiculo.includes('grua')) {
+                    // Añadir todas las causas de grúa que no estén ya
+                    causasGrua.forEach(gruaCausa => {
+                        if (!nuevasCausas.some(c => c.id === gruaCausa.id)) {
+                            nuevasCausas.push(gruaCausa);
+                        }
+                    });
+                }
+
+                setCausasFiltradas(nuevasCausas);
+
                 toast.success('Información del vehículo cargada con éxito.');
             } else if (responseData.status === 'warning') {
                 toast.warning(
@@ -269,7 +355,7 @@ export default function InspectionVehicle({
     };
 
     // Agrupa causas por grupo
-    const groupedCausas = causas.reduce(
+    const groupedCausas = causasFiltradas.reduce(
         (groups, causa) => {
             if (!groups[causa.group]) {
                 groups[causa.group] = [];
@@ -396,7 +482,7 @@ export default function InspectionVehicle({
                     <h3 className="mb-4 text-lg font-bold">Causas</h3>
                     <div className="bg-background overflow-hidden rounded-md border">
                         <CausasTableWithModal
-                            causas={causas}
+                            causas={causasFiltradas}
                             causaStates={causaStates}
                             setCausaStates={setCausaStates}
                             extraFormData={extraFormData}

@@ -63,7 +63,6 @@ export default function QuarterlyVehicleInspection() {
         })
     );
 
-    console.log('Causas:', causas);
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Inspección Vehicular Trimestral" />

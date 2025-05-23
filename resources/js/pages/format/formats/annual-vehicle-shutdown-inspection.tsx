@@ -31,22 +31,47 @@ export default function AnnualVehicleShutdownInspection() {
     const company = auth.user.company;
 
     const [open, setOpen] = useState(true);
+    // Variable para el área seleccionada (solo una)
+    const [area, setArea] = useState<string>('');
 
     // Filtrar las primeras 5 causas con solo id, name y group
     // Generar el campo 'name' dinámicamente basado en 'nombre'
-    const filteredCausas = causas.map(({ id, nombre, group }) => ({
-        id,
-        name: nombre,
-        group,
-    }));
+    // Mapear todas las propiedades relevantes de cada causa
+    const filteredCausas = causas.map(
+        ({
+            id,
+            nombre,
+            group,
+            is_crane,
+            is_for_mine,
+            instruction,
+            document_url,
+            document_name,
+            attribute_type,
+            has_attributes,
+            category_attributes,
+        }) => ({
+            id,
+            name: nombre,
+            group,
+            is_crane,
+            is_for_mine,
+            instruction,
+            document_url,
+            document_name,
+            attribute_type,
+            has_attributes,
+            category_attributes,
+        })
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Inspección Vehicular Parada Anual" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <InspectionVehicle causas={filteredCausas} type={TYPE} userId={userId} companyId={companyId} userName={userName} company={company} />
+                <InspectionVehicle causas={filteredCausas} type={TYPE} userId={userId} companyId={companyId} userName={userName} company={company} area={area} />
             </div>
-            <StatementDialog open={open} onOpenChange={setOpen} />
+            <StatementDialog open={open} onOpenChange={setOpen} setArea={setArea} />
 
         </AppLayout>
     );
