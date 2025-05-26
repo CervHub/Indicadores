@@ -237,6 +237,7 @@ class Vehicle extends Model
             'trimestral' => 'Trimestral',
             'semestral'  => 'Semestral',
             'anual'      => 'Anual',
+            'pre-use-visit' => 'Diaria Pre-Uso Vehicular',
         ];
 
         $formatFecha = function ($fecha) {

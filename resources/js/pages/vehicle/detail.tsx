@@ -23,6 +23,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { all } from 'axios';
 
 // Generar datos de kilometraje diario y acumulado del último mes (acumulado inicia en 0)
 function generateMileageChartData() {
@@ -148,6 +149,7 @@ export default function VehicleDetail() {
         'trimestral': 'Trimestral',
         'semestral': 'Semestral',
         'anual': 'Anual',
+        'pre-use-visit' : 'Visita Diaria Pre-Uso',
     };
     const inspectionsFull = tipos.map(tipo => {
         const data = vehicleInspection?.[tipo] || {};
@@ -172,6 +174,8 @@ export default function VehicleDetail() {
     const allInspections = Array.isArray(allInspectionsHistory)
         ? allInspectionsHistory
         : (allInspectionsHistory?.data || []);
+
+    console.log('Vehicle Detail:', allInspections);
 
     return (
         <>
