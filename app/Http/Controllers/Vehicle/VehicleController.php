@@ -29,7 +29,7 @@ class VehicleController extends Controller
                 $query->where('company_id', $this->company_id);
             })
             ->get();
-        
+
         $company = $this->user->company ?? null;
 
         return Inertia::render('vehicle/index', [
@@ -189,12 +189,50 @@ class VehicleController extends Controller
         try {
             $vehicle = Vehicle::findOrFail($id);
             $vehicleInspection = $vehicle->getCompanyInspections();
+            $company = $vehicle->getLastActiveCompany();
+            $lastCompanyLink = $vehicle->getLastCompanyLink();
+            $allInspectionsHistory = $vehicle->getAllInspectionsHistory();
             return Inertia::render('vehicle/detail', [
                 'vehicle' => $vehicle,
+                'company' => $company,
+                'lastCompanyLink' => $lastCompanyLink,
                 'vehicleInspection' => $vehicleInspection,
+                'allInspectionsHistory' => $allInspectionsHistory,
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['error' => 'Ocurrió un error al mostrar el vehículo: ' . $e->getMessage()]);
         }
+    }
+
+    public function qr(Request $request, $vehicle_id)
+    {
+        try {
+            $vehicle = Vehicle::findOrFail($vehicle_id);
+            $vehicleInspection = $vehicle->getCompanyInspections();
+            $company = $vehicle->getLastActiveCompany();
+            $lastCompanyLink = $vehicle->getLastCompanyLink();
+            return Inertia::render('vehicle/qr', [
+                'vehicle' => $vehicle,
+                'company' => $company,
+                'lastCompanyLink' => $lastCompanyLink,
+                'vehicleInspection' => $vehicleInspection,
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'Ocurrió un error al generar el código QR: ' . $e->getMessage()]);
+        }
+    }
+
+    public function showAll()
+    {
+        // Obtener todos los vehículos
+        $vehicles = Vehicle::with(['vehicleCompanies.company' => function($query) {
+            $query->orderByDesc('updated_at');
+        }])->get();
+
+    
+
+        return Inertia::render('vehicleall/index', [
+            'vehicles' => $vehicles,
+        ]);
     }
 }

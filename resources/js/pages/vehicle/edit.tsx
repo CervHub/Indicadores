@@ -40,11 +40,8 @@ const TIRE_COUNT_OPTIONS = [
     { value: "4", label: "4", img: "/images/neumaticos/01.png" },
     { value: "6", label: "6", img: "/images/neumaticos/02.png" },
     { value: "10", label: "10", img: "/images/neumaticos/03.png" },
-    // { value: "12-I", label: "12-I", img: "/images/neumaticos/04.png" },
-    // { value: "12-II", label: "12-II", img: "/images/neumaticos/05.png" },
-    // { value: "10-II", label: "10-II", img: "/images/neumaticos/06.png" },
-    // { value: "14-I", label: "14-I", img: "/images/neumaticos/07.png" },
-    // { value: "14-II", label: "14-II", img: "/images/neumaticos/08.png" },
+    { value: "12", label: "12", img: "/images/neumaticos/04.png" },
+    { value: "14", label: "14", img: "/images/neumaticos/05.png" },
 ];
 
 const FormField = ({
@@ -104,8 +101,8 @@ const FormField = ({
                     {companyCode
                         ? `${companyCode}${value ? value.toString().padStart(3, "0") : "___"}`
                         : value
-                        ? `COD${value.toString().padStart(3, "0")}`
-                        : "COD___"}
+                            ? `COD${value.toString().padStart(3, "0")}`
+                            : "COD___"}
                 </span>
             </div>
         ) : options ? (
@@ -246,7 +243,7 @@ export default function EditVehicle({ isDialogOpen, setIsDialogOpen, vehicle, co
         { id: 'seating_capacity', label: 'N° Asientos s/Cond.', required: true, type: 'number' },
         { id: 'mileage', label: 'Kilometraje', required: true, type: 'number' },
         { id: 'tire_count', label: 'N° Neumáticos', custom: true, required: true, companyCode },
-        { id: 'spare_tire_count', label: 'N° Repuesto', required: true, type: 'number' },
+        { id: 'spare_tire_count', label: 'N° Neumáticos de repuesto', required: true, type: 'number' },
     ];
 
     return (

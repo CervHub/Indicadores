@@ -13,8 +13,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/{vehicle}', [VehicleController::class, 'show'])->name('vehicle.show');
         Route::put('/{vehicle}', [VehicleController::class, 'update'])->name('vehicle.update');
         Route::delete('/{vehicle}', [VehicleController::class, 'delete'])->name('vehicle.destroy');
+        Route::get('/history/{vehicle}', [VehicleController::class, 'history'])->name('vehicle.history');
+        Route::get('/show/all', [VehicleController::class, 'showAll'])->name('vehicle.showAll');
     });
 });
+
+Route::get('vehicle/qr/{vehicle_id}', [VehicleController::class, 'qr'])->name('vehicle.qr');
 
 Route::middleware('auth')->group(function () {
     Route::prefix('format')->group(function () {
@@ -28,6 +32,7 @@ Route::middleware('auth')->group(function () {
 
         // Routes for vehicle inspections
         Route::get('/daily-vehicle-inspection', [FormatController::class, 'dailyVehicleInspection'])->name('format.dailyVehicleInspection');
+        Route::get('/daily-vehicle-inspection-visitor', [FormatController::class, 'dailyVehicleInspectionVisitor'])->name('format.dailyVehicleInspectionVisit');
         Route::get('/quarterly-vehicle-inspection', [FormatController::class, 'quarterlyVehicleInspection'])->name('format.quarterlyVehicleInspection');
         Route::get('/semiannual-vehicle-inspection', [FormatController::class, 'semiannualVehicleInspection'])->name('format.semiannualVehicleInspection');
         Route::get('/annual-vehicle-shutdown-inspection', [FormatController::class, 'annualVehicleShutdownInspection'])->name('format.annualVehicleShutdownInspection');

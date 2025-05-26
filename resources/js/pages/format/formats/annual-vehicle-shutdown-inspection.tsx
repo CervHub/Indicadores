@@ -11,7 +11,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/format',
     },
     {
-        title: 'Inspección Vehicular Parada Anual',
+        title: 'Inspección Vehicular Parada de Planta',
         href: '/annual-vehicle-shutdown-inspection',
     },
 ];
@@ -67,7 +67,7 @@ export default function AnnualVehicleShutdownInspection() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Inspección Vehicular Parada Anual" />
+            <Head title="Inspección Vehicular Parada de Planta" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <InspectionVehicle causas={filteredCausas} type={TYPE} userId={userId} companyId={companyId} userName={userName} company={company} area={area} />
             </div>

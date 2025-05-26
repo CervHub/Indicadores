@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { CONST_UNIDAD_DE_MEDIDA } from '@/lib/utils';
+
 
 type OptionalConfigType = 'fecha' | 'entero' | 'texto' | 'conforme';
 type AttributeType = 'fecha' | 'entero' | 'texto' | 'conforme';
@@ -16,6 +18,9 @@ type AttributeType = 'fecha' | 'entero' | 'texto' | 'conforme';
 type OptionalConfig = {
     nombre: string;
     tipo: OptionalConfigType;
+    unidad?: string; // Nueva unidad de medida
+    min?: number; // Nuevo campo opcional para mínimo
+    withMin?: boolean; // Indica si este atributo tiene mínimo
 };
 
 type CategoryCompanyForm = {
@@ -41,6 +46,8 @@ interface CreateCategoryCompanyProps {
     isCategorized: string | null;
     groups: any[];
 }
+
+
 
 export default function CreateCategoryCompany({
     categoryId,
@@ -131,11 +138,26 @@ export default function CreateCategoryCompany({
 
     // Funciones para manejar configuraciones opcionales
     const handleAddOptionalConfig = () => {
-        setOptionalConfigs([...optionalConfigs, { nombre: '', tipo: '' as OptionalConfigType }]);
+        setOptionalConfigs([...optionalConfigs, { nombre: '', tipo: '' as OptionalConfigType, unidad: '' }]);
     };
 
-    const handleChangeOptionalConfig = (idx: number, field: keyof OptionalConfig, value: string) => {
-        const updated = optionalConfigs.map((cfg, i) => (i === idx ? { ...cfg, [field]: value as OptionalConfigType } : cfg));
+    // Nuevo: agregar atributo con mínimo
+    const handleAddOptionalConfigWithMin = () => {
+        setOptionalConfigs([
+            ...optionalConfigs,
+            { nombre: '', tipo: '' as OptionalConfigType, unidad: '', min: undefined, withMin: true }
+        ]);
+    };
+
+    const handleChangeOptionalConfig = (idx: number, field: keyof OptionalConfig, value: any) => {
+        const updated = optionalConfigs.map((cfg, i) =>
+            i === idx
+                ? {
+                    ...cfg,
+                    [field]: field === 'min' ? (value === '' ? undefined : parseInt(value)) : value,
+                }
+                : cfg
+        );
         setOptionalConfigs(updated);
     };
 
@@ -146,7 +168,8 @@ export default function CreateCategoryCompany({
     return (
         <div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+                <DialogContent className="sm:max-w-[700px] max-h-[95vh] overflow-y-auto">
+                    {/* ↑↑↑ Cambiado el ancho y alto del modal */}
                     <DialogHeader>
                         <DialogTitle>Crear {title}</DialogTitle>
                         <DialogDescription>Complete los campos para crear una nueva categoría de empresa.</DialogDescription>
@@ -310,6 +333,34 @@ export default function CreateCategoryCompany({
                                                 <SelectItem value="texto">Texto</SelectItem>
                                             </SelectContent>
                                         </Select>
+                                        {/* Unidad de medida con opciones conocidas */}
+                                        <Select
+                                            value={cfg.unidad ?? undefined}
+                                            onValueChange={(value) => handleChangeOptionalConfig(idx, 'unidad', value)}
+                                            disabled={processing}
+                                        >
+                                            <SelectTrigger className="min-w-[120px] max-w-[200px]">
+                                                <SelectValue placeholder="Seleccione una unidad" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {CONST_UNIDAD_DE_MEDIDA.map((unidad) => (
+                                                    <SelectItem key={unidad.value} value={unidad.value}>
+                                                        {unidad.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {cfg.withMin && (
+                                            <Input
+                                                type="number"
+                                                placeholder="Mínimo"
+                                                value={cfg.min ?? ''}
+                                                min={1}
+                                                onChange={(e) => handleChangeOptionalConfig(idx, 'min', e.target.value)}
+                                                disabled={processing}
+                                                style={{ minWidth: 80, width: 90 }}
+                                            />
+                                        )}
                                         <Button
                                             type="button"
                                             variant="destructive"
@@ -321,16 +372,26 @@ export default function CreateCategoryCompany({
                                         </Button>
                                     </div>
                                 ))}
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="mt-1"
-                                    onClick={handleAddOptionalConfig}
-                                    disabled={processing}
-                                >
-                                    <Plus className="mr-1 h-4 w-4" /> Agregar atributo
-                                </Button>
+                                <div className="flex gap-2 mt-1">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleAddOptionalConfig}
+                                        disabled={processing}
+                                    >
+                                        <Plus className="mr-1 h-4 w-4" /> Atributo
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleAddOptionalConfigWithMin}
+                                        disabled={processing}
+                                    >
+                                        <Plus className="mr-1 h-4 w-4" /> Atributo con mínimo
+                                    </Button>
+                                </div>
                             </div>
                         )}
                         <Button type="submit" className="mt-2 w-auto" disabled={processing}>

@@ -76,7 +76,7 @@ function Clock() {
     return (
         <span
             className="font-mono text-sm font-bold"
-            style={{ color: '#fff' }}
+            style={{ color: '#000' }}
         >
             {now.toLocaleDateString()} {now.toLocaleTimeString()}
         </span>
@@ -90,11 +90,23 @@ function getVehicleShowUrl(vehicleId: number) {
 }
 
 export default function VehicleDetail() {
-    const { vehicle, vehicleInspection } = usePage().props;
-    console.log(vehicle);
+    const { vehicle, vehicleInspection, lastCompanyLink, company, allInspectionsHistory } = usePage().props;
+
+    // Concatenar el código de la empresa y el code del VehicleCompany si ambos existen, sin guiones
+    let vehicleCode = vehicle.code;
+    let companyCode = "";
+    let companyName = "";
+    if (company && company.code && lastCompanyLink && lastCompanyLink.code) {
+        companyCode = company.code;
+        vehicleCode = `${company.code}${lastCompanyLink.code}`;
+        companyName = company.nombre || "";
+    }
+
+    // Placa sin guiones
+    const licensePlate = (vehicle.license_plate || "").replace(/-/g, "");
 
     // Inspecciones desde backend (garantiza 4 tipos, aunque estén vacíos)
-    const inspections = [
+    const inspectionsData = [
         vehicleInspection?.['pre-use'] && {
             tipo: vehicleInspection['pre-use'].tipo_inspeccion,
             realizado_por: vehicleInspection['pre-use'].realizado_por,
@@ -129,81 +141,105 @@ export default function VehicleDetail() {
         },
     ].filter(Boolean);
 
+    // Asegurar que siempre haya 4 inspecciones (una de cada tipo), aunque estén vacías
+    const tipos = ['pre-use', 'trimestral', 'semestral', 'anual'];
+    const tiposLabel = {
+        'pre-use': 'Diaria Pre-Uso',
+        'trimestral': 'Trimestral',
+        'semestral': 'Semestral',
+        'anual': 'Anual',
+    };
+    const inspectionsFull = tipos.map(tipo => {
+        const data = vehicleInspection?.[tipo] || {};
+        return {
+            tipo: data.tipo_inspeccion || tiposLabel[tipo],
+            realizado_por: data.realizado_por || "",
+            fecha: data.created_at || "",
+            vencimiento: data.vencimiento || "",
+            estado: data.estado || "",
+            observaciones: data.observaciones || "",
+        };
+    });
+
+    // Estado general: si alguna inspección está vacía o no tiene estado o no es "Aprobado", es "Desaprobado"
+    const hasDisapproved = inspectionsFull.some(
+        (insp) => !insp.estado || insp.estado.toLowerCase() !== "aprobado"
+    );
+    const statusText = hasDisapproved ? "Desaprobado" : "Aprobado";
+    const statusColor = hasDisapproved ? "bg-red-600 text-white" : "bg-green-600 text-white";
+
+    // Historial completo de inspecciones (getAllInspectionsHistory)
+    const allInspections = Array.isArray(allInspectionsHistory)
+        ? allInspectionsHistory
+        : (allInspectionsHistory?.data || []);
+
     return (
         <>
-            <Head title={`Hoja de Vida: ${vehicle.license_plate}`} />
+            <Head title={`Hoja de Vida: ${licensePlate}`} />
             <div className="min-h-screen bg-white flex flex-col items-center justify-center py-8 px-2">
-                <div className="w-full max-w-4xl bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden print:shadow-none print:rounded-none print:bg-white">
-                    {/* Barra superior: título y reloj */}
-                    <div className="flex flex-col md:flex-row items-center justify-between border-b px-8 py-4" style={{ backgroundColor: '#d7282f' }}>
-                        <div className="flex flex-col md:flex-row md:items-center gap-2 w-full">
-                            <div>
+                <div className="w-full max-w-3xl bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden print:shadow-none print:rounded-none print:bg-white">
+                    {/* Barra superior: estado y fecha */}
+                    <div className="flex flex-col md:flex-row items-center justify-between border-b px-8 py-4 bg-gray-100">
+                        <div className="flex flex-col md:flex-row md:items-center gap-4 w-full">
+                            <div className={`px-5 py-2 rounded-full font-bold text-base ${statusColor}`}>
+                                {statusText}
+                            </div>
+                            <div className="ml-auto text-gray-600 text-sm">
                                 <Clock />
                             </div>
                         </div>
                     </div>
-                    {/* Encabezado con QR y datos principales */}
-                    <div className="flex flex-col md:flex-row items-center justify-between border-b px-8 py-8 bg-white print:bg-white">
-                        <div className="flex-1 flex flex-col items-center md:items-start w-full">
-                            <div className="grid grid-cols-4 gap-4 w-full mb-2">
-                                <div className="rounded-lg p-3 flex flex-col items-center shadow-sm col-span-2" style={{ backgroundColor: '#d7282f' }}>
-                                    <span className="text-xs font-semibold" style={{ color: '#fff' }}>Placa Única Nacional de Rodaje</span>
-                                    <span className="text-base font-bold" style={{ color: '#fff' }}>{vehicle.license_plate}</span>
-                                </div>
-                                <div className="rounded-lg p-3 flex flex-col items-center shadow-sm col-span-2" style={{ backgroundColor: '#d7282f' }}>
-                                    <span className="text-xs font-semibold" style={{ color: '#fff' }}>Marca</span>
-                                    <span className="text-base font-bold" style={{ color: '#fff' }}>{vehicle.brand}</span>
-                                </div>
-                                <div className="bg-gray-50 rounded-lg p-3 flex flex-col items-center shadow-sm col-span-2">
-                                    <span className="text-xs text-gray-600 font-semibold">Modelo</span>
-                                    <span className="text-base font-bold text-gray-900">{vehicle.model}</span>
-                                </div>
-                                <div className="bg-gray-50 rounded-lg p-3 flex flex-col items-center shadow-sm col-span-2">
-                                    <span className="text-xs text-gray-600 font-semibold">Año de Fabricación</span>
-                                    <span className="text-base font-bold text-gray-900">{vehicle.year}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex flex-col items-center mt-8 md:mt-0 md:ml-8">
-                            <div className="bg-white p-4 shadow border rounded-lg flex items-center justify-center" style={{ minWidth: 170, minHeight: 170 }}>
-                                <QRCode value={getVehicleShowUrl(vehicle.id)} size={150} bgColor="#fff" />
-                            </div>
-                            <span className="text-xs text-gray-400 mt-2">QR Hoja de Vida</span>
-                        </div>
-                    </div>
-                    {/* Datos del vehículo en formato tarjetas compactas */}
+                    {/* Datos principales: placa y código de llamada en una fila, empresa en otra */}
                     <div className="px-8 py-6">
-                        <h3 className="text-lg font-bold mb-4" style={{ color: '#d7282f' }}>Datos del Vehículo</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm" style={{ backgroundColor: '#d7282f' }}>
-                                <span className="text-xs font-semibold" style={{ color: '#fff' }}>Código de Llamada</span>
-                                <span className="text-base font-bold" style={{ color: '#fff' }}>{vehicle.code}</span>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                            {companyName && (
+                                <div className="rounded-lg p-3 flex flex-col items-center shadow-sm bg-gray-50 md:col-span-2">
+                                    <span className="text-xs text-gray-600 font-semibold">Empresa</span>
+                                    <span className="text-base font-bold text-gray-900">{companyName} <span className="text-xs text-gray-500 ml-2">({companyCode})</span></span>
+                                </div>
+                            )}
+                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm bg-gray-50">
+                                <span className="text-xs text-gray-600 font-semibold">Placa</span>
+                                <span className="text-2xl font-extrabold tracking-widest text-gray-800">{licensePlate}</span>
                             </div>
-                            <div className="bg-gray-50 rounded-lg p-3 flex flex-col items-center shadow-sm">
+                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm bg-gray-50">
+                                <span className="text-xs text-gray-600 font-semibold">Código de Llamada</span>
+                                <span className="text-2xl font-extrabold tracking-widest text-gray-800">{vehicleCode}</span>
+                            </div>
+                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm bg-gray-50">
+                                <span className="text-xs text-gray-600 font-semibold">Marca</span>
+                                <span className="text-base font-bold text-gray-900">{vehicle.brand}</span>
+                            </div>
+                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm bg-gray-50">
+                                <span className="text-xs text-gray-600 font-semibold">Modelo</span>
+                                <span className="text-base font-bold text-gray-900">{vehicle.model}</span>
+                            </div>
+                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm bg-gray-50">
+                                <span className="text-xs text-gray-600 font-semibold">Año de Fabricación</span>
+                                <span className="text-base font-bold text-gray-900">{vehicle.year}</span>
+                            </div>
+                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm bg-gray-50">
                                 <span className="text-xs text-gray-600 font-semibold">Clase Vehicular</span>
                                 <span className="text-base font-bold text-gray-900">{vehicle.type}</span>
                             </div>
-                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm" style={{ backgroundColor: '#d7282f' }}>
-                                <span className="text-xs font-semibold" style={{ color: '#fff' }}>Color</span>
-                                <span className="text-base font-bold" style={{ color: '#fff' }}>{vehicle.color}</span>
+                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm bg-gray-50">
+                                <span className="text-xs text-gray-600 font-semibold">Color</span>
+                                <span className="text-base font-bold text-gray-900">{vehicle.color}</span>
                             </div>
-                            <div className="bg-gray-50 rounded-lg p-3 flex flex-col items-center shadow-sm">
+                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm bg-gray-50">
                                 <span className="text-xs text-gray-600 font-semibold">Capacidad de Pasajeros</span>
                                 <span className="text-base font-bold text-gray-900">{vehicle.seating_capacity}</span>
                             </div>
-                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm" style={{ backgroundColor: '#d7282f' }}>
-                                <span className="text-xs font-semibold" style={{ color: '#fff' }}>Tipo de Combustible</span>
-                                <span className="text-base font-bold" style={{ color: '#fff' }}>{vehicle.fuel_type}</span>
-                            </div>
-                            <div className="bg-gray-50 rounded-lg p-3 flex flex-col items-center shadow-sm">
+                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm bg-gray-50">
                                 <span className="text-xs text-gray-600 font-semibold">Kilometraje</span>
                                 <span className="text-base font-bold text-gray-900">{vehicle.mileage}</span>
                             </div>
-                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm" style={{ backgroundColor: '#d7282f' }}>
-                                <span className="text-xs font-semibold" style={{ color: '#fff' }}>Número de Serie (VIN)</span>
-                                <span className="text-base font-bold" style={{ color: '#fff' }}>{vehicle.chassis_number}</span>
+                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm bg-gray-50">
+                                <span className="text-xs text-gray-600 font-semibold">Número de Serie (VIN)</span>
+                                <span className="text-base font-bold text-gray-900">{vehicle.chassis_number}</span>
                             </div>
-                            <div className="bg-gray-50 rounded-lg p-3 flex flex-col items-center shadow-sm">
+                            <div className="rounded-lg p-3 flex flex-col items-center shadow-sm bg-gray-50">
                                 <span className="text-xs text-gray-600 font-semibold">Número de Motor</span>
                                 <span className="text-base font-bold text-gray-900">{vehicle.engine_number}</span>
                             </div>
@@ -214,51 +250,81 @@ export default function VehicleDetail() {
                     <div className="px-8 pb-10">
                         <h3 className="text-lg font-bold mb-4 mt-2" style={{ color: '#d7282f' }}>Historial de Inspecciones</h3>
                         <TooltipProvider>
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full bg-white border border-gray-200 rounded-lg overflow-hidden text-xs">
-                                <thead>
-                                    <tr style={{ backgroundColor: '#d7282f' }}>
-                                        <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Tipo</th>
-                                        <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Realizado por</th>
-                                        <th className="px-2 py-1 text-left font-bold" style={{ color: '#fff' }}>Fecha</th>
-                                        <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Vencimiento</th>
-                                        <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Estado</th>
-                                        <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Observaciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {inspections.map((insp, idx) => {
-                                        const obs = insp.observaciones || "";
-                                        const isLong = obs.length > 25;
-                                        return (
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full bg-white border border-gray-200 rounded-lg overflow-hidden text-xs">
+                                    <thead>
+                                        <tr style={{ backgroundColor: '#d7282f' }}>
+                                            <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Tipo</th>
+                                            <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Realizado por</th>
+                                            <th className="px-2 py-1 text-left font-bold" style={{ color: '#fff' }}>Fecha</th>
+                                            <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Vencimiento</th>
+                                            <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Estado</th>
+                                            <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Observaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {inspectionsFull.map((insp, idx) => {
+                                            const obs = insp.observaciones || "";
+                                            const isLong = obs.length > 25;
+                                            return (
+                                                <tr key={idx} className="hover:bg-red-50 border-t border-gray-200 text-xs">
+                                                    <td className="px-2 py-1">{insp.tipo}</td>
+                                                    <td className="px-2 py-1">{insp.realizado_por}</td>
+                                                    <td className="px-2 py-1">{insp.fecha}</td>
+                                                    <td className="px-2 py-1">{insp.vencimiento}</td>
+                                                    <td className="px-2 py-1">{insp.estado}</td>
+                                                    <td className="px-2 py-1 max-w-[120px] truncate">
+                                                        {isLong ? (
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <span className="cursor-pointer">
+                                                                        {obs.slice(0, 25) + '...'}
+                                                                    </span>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <span className="whitespace-pre-line">{obs}</span>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        ) : (
+                                                            obs
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </TooltipProvider>
+                    </div>
+                    {/* Tabla historial completo de inspecciones */}
+                    <div className="px-8 pb-10">
+                        <h3 className="text-base font-bold mb-4 mt-2" style={{ color: '#d7282f' }}>Historial Completo de Inspecciones</h3>
+                        <TooltipProvider>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full bg-white border border-gray-200 rounded-lg overflow-hidden text-xs">
+                                    <thead>
+                                        <tr style={{ backgroundColor: '#d7282f' }}>
+                                            <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Tipo</th>
+                                            <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Realizado por</th>
+                                            <th className="px-2 py-1 text-left font-bold" style={{ color: '#fff' }}>Fecha</th>
+                                            <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Estado</th>
+                                            <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Empresa</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {allInspections.map((insp, idx) => (
                                             <tr key={idx} className="hover:bg-red-50 border-t border-gray-200 text-xs">
-                                                <td className="px-2 py-1">{insp.tipo}</td>
+                                                <td className="px-2 py-1">{insp.tipo_inspeccion}</td>
                                                 <td className="px-2 py-1">{insp.realizado_por}</td>
-                                                <td className="px-2 py-1">{insp.fecha}</td>
-                                                <td className="px-2 py-1">{insp.vencimiento}</td>
+                                                <td className="px-2 py-1">{insp.created_at}</td>
                                                 <td className="px-2 py-1">{insp.estado}</td>
-                                                <td className="px-2 py-1 max-w-[120px] truncate">
-                                                    {isLong ? (
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <span className="cursor-pointer">
-                                                                    {obs.slice(0, 25) + '...'}
-                                                                </span>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <span className="whitespace-pre-line">{obs}</span>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    ) : (
-                                                        obs
-                                                    )}
-                                                </td>
+                                                <td className="px-2 py-1">{insp.empresa}</td>
                                             </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </TooltipProvider>
                     </div>
                     {/* Gráfico de kilometraje diario */}

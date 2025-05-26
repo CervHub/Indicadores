@@ -56,6 +56,22 @@ class FormatController extends Controller
             ]
         );
     }
+
+    public function dailyVehicleInspectionVisitor(Request $request)
+    {
+        $category = Category::where('code', 'IVDPU')->first();
+        $causas = [];
+        if ($category) {
+            $causas = $category->categoryCompanies()->get();
+        }
+        return Inertia::render(
+            'format/formats/daily-vehicle-inspection-visit',
+            [
+                'causas' => $causas,
+            ]
+        );
+    }
+
     public function quarterlyVehicleInspection(Request $request)
     {
         $categoryIds = Category::where('code', 'IVT')->pluck('id');

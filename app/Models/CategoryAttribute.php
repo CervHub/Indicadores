@@ -12,5 +12,7 @@ class CategoryAttribute extends Model
         'category_id',
         'name',
         'attribute_type',
+        'min_value',
+        'unit'
     ];
 }

@@ -80,6 +80,7 @@ class CategoryController extends Controller
 
     public function storeCompany(Request $request, $category_id)
     {
+        dd($request->all());
         try {
             $company_id = 1;
             $nombre = trim($request->input('nombre'));
@@ -239,6 +240,8 @@ class CategoryController extends Controller
                     ],
                     [
                         'attribute_type' => $attr['tipo'],
+                        'min_value' => isset($attr['min']) ? $attr['min'] : null,
+                        'unit' => isset($attr['unidad']) ? $attr['unidad'] : null,
                     ]
                 );
             }

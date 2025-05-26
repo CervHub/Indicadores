@@ -171,4 +171,107 @@ class Vehicle extends Model
     {
         return $this->hasMany(VehicleCompany::class, 'vehicle_id', 'id');
     }
+
+    /**
+     * Obtiene la última empresa vinculada activa del vehículo (como objeto company o null) usando DB.
+     */
+    public function getLastActiveCompany()
+    {
+        $lastCompany = DB::table('vehicle_companies')
+            ->where('vehicle_id', $this->id)
+            ->where('is_linked', true)
+            ->orderByDesc('id')
+            ->first();
+
+        if ($lastCompany) {
+            return DB::table('companies')->where('id', $lastCompany->company_id)->first();
+        }
+        return null;
+    }
+
+    /**
+     * Obtiene el último registro de vehicle_companies vinculado (como objeto o null) usando DB.
+     */
+    public function getLastCompanyLink()
+    {
+        return DB::table('vehicle_companies')
+            ->where('vehicle_id', $this->id)
+            ->where('is_linked', true)
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    /**
+     * Retorna el historial completo de inspecciones realizadas por el vehículo,
+     * ordenadas por fecha descendente, incluyendo información de la empresa asociada.
+     */
+    public function getAllInspectionsHistory()
+    {
+        // Trae todos los módulos (inspecciones) de este vehículo
+        $modules = DB::table('modules')
+            ->where('vehicle_plate', $this->license_plate)
+            ->orderByDesc('created_at')
+            ->get();
+
+        // Obtiene los user_ids y company_ids únicos
+        $userIds = $modules->pluck('user_id')->filter()->unique()->all();
+        $companyIds = $modules->pluck('company_id')->filter()->unique()->all();
+
+        $users = [];
+        if (!empty($userIds)) {
+            $users = User::whereIn('id', $userIds)
+                ->get()
+                ->keyBy('id');
+        }
+
+        $companies = [];
+        if (!empty($companyIds)) {
+            $companies = DB::table('companies')
+                ->whereIn('id', $companyIds)
+                ->get()
+                ->keyBy('id');
+        }
+
+        $tipoMap = [
+            'pre-use'    => 'Diaria Pre-Uso',
+            'trimestral' => 'Trimestral',
+            'semestral'  => 'Semestral',
+            'anual'      => 'Anual',
+        ];
+
+        $formatFecha = function ($fecha) {
+            if (!$fecha) return null;
+            return \Carbon\Carbon::parse($fecha)
+                ->setTimezone('America/Lima')
+                ->format('d/m/Y H:i');
+        };
+
+        $result = [];
+
+        foreach ($modules as $module) {
+            $details = [];
+            if (!empty($module->details)) {
+                $details = json_decode($module->details, true) ?? [];
+            }
+            $observaciones = $details['observation'] ?? $module->observaciones ?? ($module->comentario ?? null);
+            $user = isset($users[$module->user_id]) ? $users[$module->user_id] : null;
+            $realizado_por = $user ? trim(($user->nombres ?? '') . ' ' . ($user->apellidos ?? '')) : null;
+            $company = isset($companies[$module->company_id]) ? $companies[$module->company_id] : null;
+            $empresa = $company ? ($company->nombre ?? $company->razon_social ?? null) : null;
+
+            $result[] = [
+                'id' => $module->id,
+                'vehicle_status' => $module->vehicle_status ?? null,
+                'tipo_inspeccion' => $tipoMap[$module->tipo_inspeccion] ?? ucfirst($module->tipo_inspeccion),
+                'estado' => $module->estado ?? null,
+                'created_at' => $formatFecha($module->created_at),
+                'updated_at' => $formatFecha($module->updated_at),
+                'realizado_por' => $realizado_por,
+                'observaciones' => $observaciones,
+                'empresa' => $empresa,
+            ];
+        }
+
+        return collect($result);
+    }
 }

@@ -61,6 +61,15 @@ const staticReports = [
     },
     {
         title: 'Inspección',
+        subtitle: 'Vehicular diaria (Visita)',
+        description: 'Inspección diaria de vehículos para garantizar su operatividad.',
+        image: '/reports/IMG-01.png',
+        background: '/reports/FONDO%20AMARILLO.svg',
+        route: route('format.dailyVehicleInspectionVisit'),
+        permissions: ['CA', 'IS', 'RU'],
+    },
+    {
+        title: 'Inspección',
         subtitle: 'Vehicular trimestral',
         description: 'Inspección trimestral de vehículos para mantenimiento preventivo.',
         image: '/reports/IMG-01.png',
@@ -79,7 +88,7 @@ const staticReports = [
     },
     {
         title: 'Inspección',
-        subtitle: 'Vehicular parada anual',
+        subtitle: 'Vehicular parada de planta',
         description: 'Inspección anual de vehículos durante la parada programada.',
         image: '/reports/IMG-01.png',
         background: '/reports/FONDO%20VERDE.svg',
@@ -118,7 +127,7 @@ export default function Format() {
             <Head title="Formatos" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-3">
-                    {filteredReports.map((report, index) => (
+                    {staticReports.map((report, index) => (
                         <Link
                             key={index}
                             href={report.route}

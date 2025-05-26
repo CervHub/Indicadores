@@ -35,6 +35,7 @@ class InspectionVehicleController extends Controller
                 c.nombre AS nombre_empresa,
                 CASE
                     WHEN m.tipo_inspeccion = 'pre-use' THEN 'Inspección Diaria Pre-Uso'
+                    WHEN m.tipo_inspeccion = 'pre-use-visit' THEN 'Inspección Vehicular por Visita'
                     WHEN m.tipo_inspeccion = 'trimestral' THEN 'Inspección Trimestral'
                     WHEN m.tipo_inspeccion = 'anual' THEN 'Inspección Anual'
                     WHEN m.tipo_inspeccion = 'semestral' THEN 'Inspección Semestral'
@@ -67,7 +68,6 @@ class InspectionVehicleController extends Controller
         $companyNombre = Company::find($reportability->company_id)->nombre ?? 'Empresa no encontrada';
 
         if ($isSecurityEngineer && $this->companyId === '1') {
-            $reportability->vehicle_status = 'Revisado';
             $reportability->estado = 'Revisado';
             $reportability->save();
         }
@@ -191,11 +191,12 @@ class InspectionVehicleController extends Controller
 
         // Tipo de inspección legible
         $tipo_inspeccion_descripcion = match ($module->tipo_inspeccion) {
-            'pre-use'    => 'Inspección Diaria Pre-Uso',
-            'trimestral' => 'Inspección Trimestral',
-            'anual'      => 'Inspección Anual',
-            'semestral'  => 'Inspección Semestral',
-            default      => 'Tipo no definido',
+            'pre-use'        => 'Inspección Diaria Pre-Uso',
+            'pre-use-visit'  => 'Inspección Vehicular por Visita',
+            'trimestral'     => 'Inspección Trimestral',
+            'anual'          => 'Inspección Anual',
+            'semestral'      => 'Inspección Semestral',
+            default          => 'Tipo no definido',
         };
 
         return [
@@ -216,10 +217,10 @@ class InspectionVehicleController extends Controller
      */
     protected function streamInspectionPdf($data)
     {
-        if ($data['tipo_inspeccion'] !== 'pre-use') {
-            $view = 'reports.vehicular';
+        if ($data['tipo_inspeccion'] === 'pre-use' || $data['tipo_inspeccion'] === 'pre-use-visit') {
+            $view = 'reports.pre-use';
         } else {
-            $view = 'reports.pre-use'; // Cambiar según el tipo de inspección
+            $view = 'reports.vehicular';
         }
 
         $pdf = PDF::loadView($view, $data)->setPaper('a4');

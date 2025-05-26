@@ -17,9 +17,18 @@ import { Link } from '@inertiajs/react';
 function getVehicleShowUrl(vehicleId: number) {
     // Si tienes Ziggy, puedes usar route('vehicle.show', vehicleId)
     // Si no, usa window.location.origin + `/vehicle/${vehicleId}`
-    return (window as any).route
+    const url = (window as any).route
         ? (window as any).route('vehicle.show', vehicleId)
         : `${window.location.origin}/vehicle/${vehicleId}`;
+    console.log(`[Vehicle URL]: ${url}`);
+    return url;
+}
+
+// Nueva utilidad para obtener la URL absoluta de la ruta vehicle.qr
+function getVehicleQRUrl(vehicleId: number) {
+    return (window as any).route
+        ? (window as any).route('vehicle.qr', vehicleId)
+        : `${window.location.origin}/vehicle/qr/${vehicleId}`;
 }
 
 interface VehicleData {
@@ -52,17 +61,31 @@ const ITEMS_PER_PAGE = 15;
 
 // Utilidad para descargar QR como PNG en formato rectangular de dos columnas bordeado
 function downloadQRCodeCanvas(vehicle: VehicleData, filename: string) {
-    const width = 420;
-    const height = 220;
+    // Configuración editable para QR (solo afecta a esta función)
+    const QR_TITLE = "VEHÍCULO CONTRATISTA - SEGURIDAD CUAJONE";
+    const QR_FOOTER = "GERENCIA DEL PROGRAMA DE SEGURIDAD CUAJONE";
+    const QR_TITLE_FONT_SIZE = "1.2rem";
+    const QR_FOOTER_FONT_SIZE = "0.82rem";
+
+    // HD scale factor
+    const SCALE = 2;
+
+    // Dimensiones base
+    const width = 500;
+    const height = 260;
     const qrSize = 180;
     const borderRadius = 28;
     const padding = 24;
 
+    // Canvas HD
     const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = width * SCALE;
+    canvas.height = height * SCALE;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    ctx.scale(SCALE, SCALE);
 
     // Dibuja fondo blanco con borde redondeado
     ctx.save();
@@ -82,9 +105,9 @@ function downloadQRCodeCanvas(vehicle: VehicleData, filename: string) {
     ctx.fillRect(0, 0, width, height);
     ctx.restore();
 
-    // Borde exterior
+    // Borde exterior negro puro y redondeado
     ctx.save();
-    ctx.strokeStyle = "#d1d5db";
+    ctx.strokeStyle = "#000";
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.moveTo(borderRadius, 2);
@@ -100,81 +123,124 @@ function downloadQRCodeCanvas(vehicle: VehicleData, filename: string) {
     ctx.stroke();
     ctx.restore();
 
-    // Columna 1: QR centrado verticalmente
+    // Título centrado arriba (mayúsculas, tildes)
+    ctx.save();
+    ctx.font = `bold ${QR_TITLE_FONT_SIZE} Arial`;
+    ctx.fillStyle = "#222";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText(QR_TITLE, width / 2, 12);
+    ctx.restore();
+
     import('qrcode').then(QRCodeLib => {
         const qrCanvas = document.createElement('canvas');
-        qrCanvas.width = qrSize;
-        qrCanvas.height = qrSize;
-        QRCodeLib.toCanvas(qrCanvas, getVehicleShowUrl(vehicle.id), { width: qrSize, margin: 1 }, function (error: any) {
-            if (error) {
-                alert('No se pudo generar el QR para descargar.');
-                return;
+        qrCanvas.width = qrSize * SCALE;
+        qrCanvas.height = qrSize * SCALE;
+        QRCodeLib.toCanvas(
+            qrCanvas,
+            getVehicleQRUrl(vehicle.id),
+            { width: qrSize * SCALE, margin: SCALE },
+            function (error: any) {
+                if (error) {
+                    alert('No se pudo generar el QR para descargar.');
+                    return;
+                }
+                // QR centrado en la primera columna (ajustar Y para dejar espacio al título y footer)
+                const qrY = 44;
+                ctx.drawImage(
+                    qrCanvas,
+                    0, 0, qrCanvas.width, qrCanvas.height,
+                    padding, qrY, qrSize, qrSize
+                );
+
+                // === PLACA DINÁMICA CENTRADA EN LA SEGUNDA COLUMNA ===
+                const placaText = (vehicle.license_plate ?? "").toUpperCase();
+                ctx.font = "bold 2.1rem Arial";
+                const textMetrics = ctx.measureText(placaText);
+                const placaTextWidth = textMetrics.width;
+                const placaPaddingX = 32;
+                const placaBoxW = placaTextWidth + placaPaddingX * 2;
+                const placaBoxH = 54;
+                const placaRadius = 18;
+
+                // Segunda columna: inicia en
+                const col2X = padding + qrSize + 32;
+                const col2W = width - col2X - padding;
+
+                // Centrar la placa respecto a la segunda columna
+                const placaBoxX = col2X + (col2W - placaBoxW) / 2;
+                const placaBoxY = padding + 20;
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(placaBoxX + placaRadius, placaBoxY);
+                ctx.lineTo(placaBoxX + placaBoxW - placaRadius, placaBoxY);
+                ctx.quadraticCurveTo(placaBoxX + placaBoxW, placaBoxY, placaBoxX + placaBoxW, placaBoxY + placaRadius);
+                ctx.lineTo(placaBoxX + placaBoxW, placaBoxY + placaBoxH - placaRadius);
+                ctx.quadraticCurveTo(placaBoxX + placaBoxW, placaBoxY + placaBoxH, placaBoxX + placaBoxW - placaRadius, placaBoxY + placaBoxH);
+                ctx.lineTo(placaBoxX + placaRadius, placaBoxY + placaBoxH);
+                ctx.quadraticCurveTo(placaBoxX, placaBoxY + placaBoxH, placaBoxX, placaBoxY + placaBoxH - placaRadius);
+                ctx.lineTo(placaBoxX, placaBoxY + placaRadius);
+                ctx.quadraticCurveTo(placaBoxX, placaBoxY, placaBoxX + placaRadius, placaBoxY);
+                ctx.closePath();
+                ctx.fillStyle = "#e5e7eb"; // plomo claro (tailwind gray-200)
+                ctx.fill();
+
+                ctx.font = "bold 2.1rem Arial";
+                ctx.fillStyle = "#111"; // negro para el texto
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(
+                    placaText,
+                    placaBoxX + placaBoxW / 2,
+                    placaBoxY + placaBoxH / 2 + 2
+                );
+
+                // Datos: primero marca, luego modelo, luego año, luego color (centrados respecto a la segunda columna)
+                ctx.font = "bold 1.1rem Arial";
+                ctx.fillStyle = "#222";
+                ctx.textAlign = "left";
+                ctx.textBaseline = "top";
+                let infoY = placaBoxY + placaBoxH + 18;
+                const infoX = col2X + (col2W - 220) / 2; // 220 es el ancho aprox. de los datos
+
+                ctx.fillText(`Marca:`, infoX, infoY);
+                ctx.font = "1.1rem Arial";
+                ctx.fillText((vehicle.brand ?? "").toUpperCase(), infoX + 90, infoY);
+
+                ctx.font = "bold 1.1rem Arial";
+                ctx.fillText(`Modelo:`, infoX, infoY + 28);
+                ctx.font = "1.1rem Arial";
+                ctx.fillText((vehicle.model ?? "").toUpperCase(), infoX + 90, infoY + 28);
+
+                ctx.font = "bold 1.1rem Arial";
+                ctx.fillText(`Año:`, infoX, infoY + 56);
+                ctx.font = "1.1rem Arial";
+                ctx.fillText((vehicle.year ?? "").toUpperCase(), infoX + 90, infoY + 56);
+
+                ctx.font = "bold 1.1rem Arial";
+                ctx.fillText(`Color:`, infoX, infoY + 84);
+                ctx.font = "1.1rem Arial";
+                ctx.fillText((vehicle.color ?? '').toUpperCase(), infoX + 90, infoY + 84);
+
+                ctx.restore();
+
+                // Footer pequeño centrado abajo (mayúsculas, tildes, tamaño configurable)
+                ctx.save();
+                ctx.font = `${QR_FOOTER_FONT_SIZE} Arial`;
+                ctx.fillStyle = "#666";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "bottom";
+                ctx.fillText(QR_FOOTER, width / 2, height - 12);
+                ctx.restore();
+
+                // Descargar
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
             }
-            // QR centrado en la primera columna
-            ctx.drawImage(qrCanvas, padding, (height - qrSize) / 2, qrSize, qrSize);
-
-            // Columna 2: Placa en recuadro rojo redondeado
-            const placaBoxX = padding + qrSize + 32;
-            const placaBoxY = padding;
-            const placaBoxW = width - placaBoxX - padding;
-            const placaBoxH = 54;
-            const placaRadius = 18;
-
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(placaBoxX + placaRadius, placaBoxY);
-            ctx.lineTo(placaBoxX + placaBoxW - placaRadius, placaBoxY);
-            ctx.quadraticCurveTo(placaBoxX + placaBoxW, placaBoxY, placaBoxX + placaBoxW, placaBoxY + placaRadius);
-            ctx.lineTo(placaBoxX + placaBoxW, placaBoxY + placaBoxH - placaRadius);
-            ctx.quadraticCurveTo(placaBoxX + placaBoxW, placaBoxY + placaBoxH, placaBoxX + placaBoxW - placaRadius, placaBoxY + placaBoxH);
-            ctx.lineTo(placaBoxX + placaRadius, placaBoxY + placaBoxH);
-            ctx.quadraticCurveTo(placaBoxX, placaBoxY + placaBoxH, placaBoxX, placaBoxY + placaBoxH - placaRadius);
-            ctx.lineTo(placaBoxX, placaBoxY + placaRadius);
-            ctx.quadraticCurveTo(placaBoxX, placaBoxY, placaBoxX + placaRadius, placaBoxY);
-            ctx.closePath();
-            ctx.fillStyle = "#d7282f";
-            ctx.fill();
-
-            // Placa texto centrado
-            ctx.font = "bold 2.1rem Arial";
-            ctx.fillStyle = "#fff";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(vehicle.license_plate, placaBoxX + placaBoxW / 2, placaBoxY + placaBoxH / 2);
-
-            // Datos: modelo, marca, año, color
-            ctx.font = "bold 1.1rem Arial";
-            ctx.fillStyle = "#222";
-            ctx.textAlign = "left";
-            ctx.textBaseline = "top";
-            let infoY = placaBoxY + placaBoxH + 18;
-            const infoX = placaBoxX;
-
-            ctx.fillText(`Modelo:`, infoX, infoY);
-            ctx.font = "1.1rem Arial";
-            ctx.fillText(vehicle.model, infoX + 90, infoY);
-
-            ctx.font = "bold 1.1rem Arial";
-            ctx.fillText(`Marca:`, infoX, infoY + 28);
-            ctx.font = "1.1rem Arial";
-            ctx.fillText(vehicle.brand, infoX + 90, infoY + 28);
-
-            ctx.font = "bold 1.1rem Arial";
-            ctx.fillText(`Año:`, infoX, infoY + 56);
-            ctx.font = "1.1rem Arial";
-            ctx.fillText(vehicle.year, infoX + 90, infoY + 56);
-
-            ctx.font = "bold 1.1rem Arial";
-            ctx.fillText(`Color:`, infoX, infoY + 84);
-            ctx.font = "1.1rem Arial";
-            ctx.fillText(vehicle.color ?? '', infoX + 90, infoY + 84);
-
-            // Descargar
-            const link = document.createElement('a');
-            link.download = filename;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        });
+        );
     });
 }
 
@@ -247,7 +313,11 @@ const TableCard: React.FC<TableCardProps> = ({ data, onAction }) => {
                             >
                                 <Card
                                     className={`relative w-full rounded-lg border-2 cursor-pointer ${isLinked ? 'border-green-500' : 'border-gray-300'}`}
-                                    // Elimina onClick del Card
+                                    onClick={e => {
+                                        // Imprime la URL del vehículo al hacer click en el Card
+                                        e.preventDefault();
+                                        console.log(getVehicleShowUrl(vehicle.id));
+                                    }}
                                 >
                                     <CardHeader onClick={e => e.stopPropagation()}>
                                         <div className="flex items-start">
@@ -337,7 +407,7 @@ const TableCard: React.FC<TableCardProps> = ({ data, onAction }) => {
                                         </p>
                                         {/* QR en la esquina inferior derecha */}
                                         <div className="absolute bottom-2 right-2 bg-white p-1 rounded-full shadow" id={`qr-${vehicle.id}`}>
-                                            <QRCode value={getVehicleShowUrl(vehicle.id)} size={100} bgColor="#fff" />
+                                            <QRCode value={getVehicleQRUrl(vehicle.id)} size={100} bgColor="#fff" />
                                         </div>
                                     </CardContent>
                                 </Card>

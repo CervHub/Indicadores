@@ -35,3 +35,4 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
 require __DIR__ . '/apimobile.php';
 require __DIR__ . '/apiweb.php';
+   

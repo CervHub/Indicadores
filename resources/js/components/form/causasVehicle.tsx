@@ -68,6 +68,15 @@ export function useCausasState(causas: Causa[]) {
     };
 }
 
+// Opciones de neumáticos con imagen de referencia
+const TIRE_COUNT_OPTIONS = [
+    { value: "4", label: "4", img: "/images/neumaticos/01.png" },
+    { value: "6", label: "6", img: "/images/neumaticos/02.png" },
+    { value: "10", label: "10", img: "/images/neumaticos/03.png" },
+    { value: "12", label: "12", img: "/images/neumaticos/04.png" },
+    { value: "14", label: "14", img: "/images/neumaticos/05.png" },
+];
+
 // Formulario extra (modal)
 function ModalExtraForm({
     attributes,
@@ -93,9 +102,21 @@ function ModalExtraForm({
             },
         }));
     };
+
+    // Extrae el número de neumáticos si el título es "Neumáticos X"
+    let tireImg: string | undefined;
+    if (causaState?.name) {
+        const match = causaState.name.match(/^Neum[aá]ticos\s+(\d+)/i);
+        console.log("Causa State Name:", causaState.name, "Match:", match);
+        if (match) {
+            const tireCount = match[1];
+            const found = TIRE_COUNT_OPTIONS.find(opt => opt.value === tireCount);
+            tireImg = found?.img;
+        }
+    }
+
     return (
         <div className="w-full">
-
             <form
                 className="
                     grid grid-cols-1 gap-4
@@ -132,7 +153,12 @@ function ModalExtraForm({
                     </div>
                 ))}
             </form>
-            {/* ...no mostrar id de la causa aquí... */}
+            {tireImg && (
+                <div className="w-full flex flex-col items-center mt-4">
+                    <span className="text-sm text-muted-foreground mb-2">Referencia de neumáticos</span>
+                    <img src={tireImg} alt="Referencia neumáticos" className="max-w-xs max-h-92 " />
+                </div>
+            )}
         </div>
     );
 }
@@ -224,6 +250,60 @@ export function CausasTableWithModal({
         const formState = extraFormData[causa.id] || {};
         return causa.category_attributes.every(attr => !!formState[attr.id]);
     };
+
+    // Efecto para autoevaluar el estado de causas con atributos tipo fecha y min_value
+    React.useEffect(() => {
+        setCausaStates(prevStates => {
+            return prevStates.map(causaState => {
+                const causa = causas.find(c => c.id === causaState.id);
+                if (!causa || !causa.has_attributes || !causa.category_attributes) return causaState;
+
+                // Solo aplica si hay al menos un atributo tipo fecha con min_value no nulo
+                const fechaAttrs = causa.category_attributes.filter(attr => attr.attribute_type === 'fecha' && attr.min_value !== null);
+                if (fechaAttrs.length === 0) return causaState;
+
+                const formState = extraFormData[causa.id] || {};
+                let allFechaOk = true;
+                let allOtherOk = true;
+
+                for (const attr of causa.category_attributes) {
+                    const value = formState[attr.id];
+                    if (attr.attribute_type === 'fecha' && attr.min_value !== null) {
+                        // min_value "0" significa debe ser mayor o igual a hoy
+                        if (!value) {
+                            allFechaOk = false;
+                        } else if (attr.min_value === "0") {
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const inputDate = new Date(value);
+                            inputDate.setHours(0, 0, 0, 0);
+                            if (inputDate < today) {
+                                allFechaOk = false;
+                            }
+                        }
+                        // Si hay otros min_value, puedes agregar más lógica aquí
+                    } else {
+                        // Otros campos: solo verifica que estén llenos
+                        if (!value) {
+                            allOtherOk = false;
+                        }
+                    }
+                }
+
+                // Si todos los campos cumplen, auto-set estado
+                if (allFechaOk && allOtherOk) {
+                    if (causaState.state !== 'Conforme') {
+                        return { ...causaState, state: 'Conforme' };
+                    }
+                } else {
+                    if (causaState.state !== 'No Conforme') {
+                        return { ...causaState, state: 'No Conforme' };
+                    }
+                }
+                return causaState;
+            });
+        });
+    }, [extraFormData, causas, setCausaStates]);
 
     return (
         <>

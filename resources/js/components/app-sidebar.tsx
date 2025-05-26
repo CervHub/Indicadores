@@ -61,6 +61,7 @@ const rolesByApp: Record<string, Record<string, string[]>> = {
         Gerencias: ['SA'],
         'Gestión de SSO': ['SA'],
         Vehículos: ['CA', 'SA'],
+        'Administración de Vehículos': ['CA', 'SA'], // Nuevo elemento
         Indicadores: [],
         Consolidados: [],
         Reporte: [],
@@ -87,6 +88,7 @@ const groupedNavItems = [
             { title: 'Gerencias', url: '/admin/management', icon: Users },
             { title: 'Gestión de SSO', url: '/admin/category', icon: ShieldAlert },
             { title: 'Vehículos', url: '/vehicle', icon: Truck },
+            { title: 'Administración de Vehículos', url: '/vehicle/show/all', icon: Truck }, // Nuevo elemento solo para CuajoneSST
         ],
     },
     {
@@ -122,7 +124,7 @@ export function AppSidebar() {
     const userRoleCodes = userRoleCode ? [userRoleCode] : [];
 
     const currentPath = window.location.pathname;
-    const restrictedItems = ['Roles','Consolidados']; // Add more restricted items if needed
+    const restrictedItems = ['Consolidados']; // Add more restricted items if needed
 
     const filteredNavGroups = groupedNavItems
         .map((group) => ({

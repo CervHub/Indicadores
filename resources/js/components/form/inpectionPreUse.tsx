@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Search } from 'lucide-react';
 import React, { useState } from 'react';
+import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import ImageDropZone from './image';
 function getLimaDateTimeString() {
@@ -31,13 +32,15 @@ export default function InspectionVehiclePreUse({
     companyId,
     userId,
     userName,
-    area
+    area,
+    isVisita = false
 }: {
     causas: { id: string; name: string }[];
     companyId: string;
     userId: string;
     userName: string;
     area: string;
+    isVisita?: boolean;
 }) {
     const [data, setData] = useState({
         plate: '',
@@ -54,7 +57,7 @@ export default function InspectionVehiclePreUse({
         userId,
         userName,
         type_report: 'vehicular',
-        type_inspection: 'pre-use',
+        type_inspection: isVisita ? 'pre-use-visit' : 'pre-use',
         status: '',
         area: area, // <-- inicializa con prop
     });
@@ -66,6 +69,14 @@ export default function InspectionVehiclePreUse({
             area: area,
         }));
     }, [area]);
+
+    // Si isVisita cambia, actualiza type_inspection en data
+    React.useEffect(() => {
+        setData(prev => ({
+            ...prev,
+            type_inspection: isVisita ? 'pre-use-visit' : 'pre-use',
+        }));
+    }, [isVisita]);
 
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -112,7 +123,7 @@ export default function InspectionVehiclePreUse({
             if (response.ok && responseData.status === 'success' && responseData.data) {
                 setData((prevData) => ({
                     ...prevData,
-                    vehicleCode: responseData.data.code || '',
+                    vehicleCode: (responseData.company.code + responseData.data.code) || '',
                     department: responseData.company.nombre || '',
                 }));
                 toast.success('Información del vehículo cargada con éxito.');
@@ -208,6 +219,8 @@ export default function InspectionVehiclePreUse({
 
             const responseData = await response.json();
             toast.success(responseData.message || 'Reporte generado con éxito.');
+            router.visit(route('admin.reportability'));
+
             setData((prevData) => ({
                 ...prevData,
                 plate: '',

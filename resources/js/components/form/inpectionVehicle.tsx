@@ -73,6 +73,7 @@ export default function InspectionVehicle({
         c => c.name?.toLowerCase().includes('banderín') || c.name?.toLowerCase().includes('banderin')
     );
 
+    console.log('Causas filtradas base:', causasFiltradasBase);
     const [causasFiltradas, setCausasFiltradas] = React.useState<Causa[]>(() => {
         // Inicialmente base + banderín según área
         let base = [...causasFiltradasBase];
@@ -238,7 +239,7 @@ export default function InspectionVehicle({
             if (response.ok && responseData.status === 'success' && responseData.data) {
                 setData((prevData) => ({
                     ...prevData,
-                    vehicleCode: responseData.data.code || '',
+                    vehicleCode: (responseData.company.code + responseData.data.code) || '',
                     type: responseData.data.type || '',
                     brand: responseData.data.brand || '',
                     model: responseData.data.model || '',
