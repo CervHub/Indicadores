@@ -11,20 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('detail_users', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-            $table->foreignId('user_id')->references('id')->on('users');
-            $table->string('licencia')->nullable();
-            $table->string('numero_licencia')->nullable();
-            $table->string('categoria_conducir')->nullable();
-            $table->string('numero_colegiatura')->nullable();
-            $table->string('estado_colegiatura')->nullable();
-            $table->string('correo_empresa')->nullable();
-            $table->string('correo_personal')->nullable();
-            $table->string('numero_fijo')->nullable();
-            $table->string('numero_celular')->nullable();
-        });
+        if (!Schema::hasTable('detail_users')) {
+            Schema::create('detail_users', function (Blueprint $table) {
+                $table->id();
+                $table->timestamps();
+                $table->foreignId('user_id')->references('id')->on('users');
+                $table->string('licencia')->nullable();
+                $table->string('numero_licencia')->nullable();
+                $table->string('categoria_conducir')->nullable();
+                $table->string('numero_colegiatura')->nullable();
+                $table->string('estado_colegiatura')->nullable();
+                $table->string('correo_empresa')->nullable();
+                $table->string('correo_personal')->nullable();
+                $table->string('numero_fijo')->nullable();
+                $table->string('numero_celular')->nullable();
+            });
+        }
     }
 
     /**

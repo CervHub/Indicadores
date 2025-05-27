@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('modules', function (Blueprint $table) {
-            // Campos para la inspección vehicular
-            $table->string('vehicle_plate')->nullable()->after('id'); // Placa vehicular
-            $table->string('vehicle_status')->nullable()->after('plate'); // Estado de vehículo
-        });
+        if (!Schema::hasColumn('modules', 'vehicle_plate') && !Schema::hasColumn('modules', 'vehicle_status')) {
+            Schema::table('modules', function (Blueprint $table) {
+                // Campos para la inspección vehicular
+                $table->string('vehicle_plate')->nullable()->after('id'); // Placa vehicular
+                $table->string('vehicle_status')->nullable()->after('plate'); // Estado de vehículo
+            });
+        }
     }
 
     /**

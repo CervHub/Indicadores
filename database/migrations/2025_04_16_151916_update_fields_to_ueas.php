@@ -13,9 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         // Actualizar los registros específicos
-        DB::table('ueas')->where('name', 'SPCC - CONCENTRADORA TOQUEPALA')->update(['code' => 'SPCCT']);
-        DB::table('ueas')->where('name', 'SPCC - ACUMULACION TOQUEPALA 1')->update(['code' => 'SPCAT']);
-        DB::table('ueas')->where('name', 'SPCC - PLANTA LIXIVIAXION SX/EW TOQUEPALA')->update(['code' => 'SPCLX']);
+        DB::table('ueas')->where('name', 'Concentradora Botiflaca')->update(['code' => 'SPCCT']);
+        DB::table('ueas')->where('name', 'Acumulación Cuajone')->update(['code' => 'SPCAT']);
+        DB::table('ueas')->where('name', 'Lixiviación Cuajone')->update(['code' => 'SPCLX']);
     }
 
     /**
@@ -24,8 +24,8 @@ return new class extends Migration
     public function down(): void
     {
         // Revertir los cambios realizados en la función up
-        DB::table('ueas')->where('name', 'SPCC - CONCENTRADORA TOQUEPALA')->update(['code' => null]);
-        DB::table('ueas')->where('name', 'SPCC - ACUMULACION TOQUEPALA 1')->update(['code' => null]);
-        DB::table('ueas')->where('name', 'SPCC - PLANTA LIXIVIAXION SX/EW TOQUEPALA')->update(['code' => null]);
+        DB::table('ueas')->where('name', 'Concentradora Botiflaca')->update(['code' => null]);
+        DB::table('ueas')->where('name', 'Acumulación Cuajone')->update(['code' => null]);
+        DB::table('ueas')->where('name', 'Lixiviación Cuajone')->update(['code' => null]);
     }
 };

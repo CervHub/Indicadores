@@ -20,14 +20,22 @@ return new class extends Migration
         DB::statement("IF OBJECT_ID('users_system_role_id_foreign', 'F') IS NOT NULL ALTER TABLE users DROP CONSTRAINT users_system_role_id_foreign");
 
         Schema::table('users', function (Blueprint $table) {
-            // Drop columns
-            $table->dropColumn([
-                'entity_id',
-                'permisos',
-                'system_role_id',
-                'contrata',
-                'text_password',
-            ]);
+            // Drop columns only if they exist
+            if (Schema::hasColumn('users', 'entity_id')) {
+                $table->dropColumn('entity_id');
+            }
+            if (Schema::hasColumn('users', 'permisos')) {
+                $table->dropColumn('permisos');
+            }
+            if (Schema::hasColumn('users', 'system_role_id')) {
+                $table->dropColumn('system_role_id');
+            }
+            if (Schema::hasColumn('users', 'contrata')) {
+                $table->dropColumn('contrata');
+            }
+            if (Schema::hasColumn('users', 'text_password')) {
+                $table->dropColumn('text_password');
+            }
         });
     }
 
@@ -37,11 +45,22 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->unsignedBigInteger('entity_id')->nullable();
-            $table->text('permisos')->nullable();
-            $table->unsignedBigInteger('system_role_id')->nullable();
-            $table->string('contrata')->nullable();
-            $table->string('text_password')->nullable();
+            // Add columns only if they do not exist
+            if (!Schema::hasColumn('users', 'entity_id')) {
+                $table->unsignedBigInteger('entity_id')->nullable();
+            }
+            if (!Schema::hasColumn('users', 'permisos')) {
+                $table->text('permisos')->nullable();
+            }
+            if (!Schema::hasColumn('users', 'system_role_id')) {
+                $table->unsignedBigInteger('system_role_id')->nullable();
+            }
+            if (!Schema::hasColumn('users', 'contrata')) {
+                $table->string('contrata')->nullable();
+            }
+            if (!Schema::hasColumn('users', 'text_password')) {
+                $table->string('text_password')->nullable();
+            }
         });
     }
 };

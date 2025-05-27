@@ -171,7 +171,7 @@ export default function EditContractor({
     return (
         <div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-[500px]">
+                <DialogContent className="sm:max-w-[700px]">
                     <DialogHeader>
                         <DialogTitle>Editar Empresa</DialogTitle>
                         <DialogDescription>Complete los campos para editar la empresa.</DialogDescription>

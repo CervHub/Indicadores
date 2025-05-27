@@ -28,60 +28,62 @@ class ContrataController extends Controller
 
     public function store(Request $request)
     {
+        DB::beginTransaction();
         try {
-            DB::transaction(function () use ($request) {
-                // Verificar si ya existe una empresa con el mismo nombre, correo, RUC o code
-                $existingCompany = Company::where('ruc', $request->ruc)
-                    ->orWhere('email', $request->email)
-                    ->orWhere('nombre', $request->nombre)
-                    ->orWhere('code', $request->code)
-                    ->first();
+            // Verificar si ya existe una empresa con el mismo nombre, correo, RUC o code
+            $existingCompany = Company::where('ruc', $request->ruc)
+                ->orWhere('email', $request->email)
+                ->orWhere('nombre', $request->nombre)
+                ->orWhere('code', $request->code)
+                ->first();
 
-                if ($existingCompany) {
-                    throw new \Exception('Ya existe una empresa con el mismo nombre, correo electrónico, RUC o código.');
-                }
+            if ($existingCompany) {
+                throw new \Exception('Ya existe una empresa con el mismo nombre, correo electrónico, RUC o código.');
+            }
 
-                // Crear la empresa si no existe
-                $company = Company::firstOrCreate(
-                    ['ruc' => $request->ruc],
-                    [
-                        'nombre' => $request->nombre,
-                        'descripcion' => $request->descripcion,
-                        'email' => $request->email,
-                        'code' => $request->code,
-                    ]
-                );
-
-                // Buscar un usuario con el correo electrónico o DOI dado
-                $user = User::where('email', $request->email)
-                    ->orWhere('doi', $request->ruc)
-                    ->first();
-
-                // Si el usuario existe, lanzar una excepción
-                if ($user) {
-                    throw new \Exception('Ya existe un usuario con ese correo electrónico o DOI.');
-                }
-
-                // Crear un usuario para la empresa si no existe
-                User::create([
-                    'doi' => $request->ruc,
-                    'nombres' => $request->nombre,
-                    'apellidos' => '',
-                    'password' => bcrypt($request->ruc),
-                    // 'text_password' => $request->ruc,
-                    'telefono' => null,
+            // Crear la empresa si no existe
+            $company = Company::firstOrCreate(
+                ['ruc' => $request->ruc],
+                [
+                    'nombre' => $request->nombre,
+                    'descripcion' => $request->descripcion,
                     'email' => $request->email,
-                    'codigo' => null,
-                    'cargo' => 'Cuenta administrativa',
-                    'company_id' => $company->id,
-                    'role_id' => Role::where('nombre', 'Company Admin')->first()->id,
-                    'empresa' => $company->nombre,
-                ]);
+                    'code' => $request->code,
+                ]
+            );
 
-                // Agregar la ueaCompany
-                $ueaCompanyTypes = $request->ueaCompanyTypes;
-                if ($ueaCompanyTypes) {
-                    foreach ($ueaCompanyTypes as $ueaCompanyType) {
+            // Buscar un usuario con el correo electrónico o DOI dado
+            $user = User::where('email', $request->email)
+                ->orWhere('doi', $request->ruc)
+                ->first();
+
+            // Si el usuario existe, lanzar una excepción
+            if ($user) {
+                throw new \Exception('Ya existe un usuario con ese correo electrónico o DOI.');
+            }
+
+            // Crear un usuario para la empresa si no existe
+            User::create([
+                'doi' => $request->ruc,
+                'nombres' => $request->nombre,
+                'apellidos' => '',
+                'password' => bcrypt($request->ruc),
+                // 'text_password' => $request->ruc,
+                'telefono' => null,
+                'email' => $request->email,
+                'codigo' => null,
+                'cargo' => 'Cuenta administrativa',
+                'company_id' => $company->id,
+                'role_id' => Role::where('code', 'CA')->first()->id, // Cambiado a buscar por code 'CA'
+                'empresa' => $company->nombre,
+            ]);
+
+            // Agregar la ueaCompany
+            $ueaCompanyTypes = $request->ueaCompanyTypes;
+            if ($ueaCompanyTypes) {
+                foreach ($ueaCompanyTypes as $ueaCompanyType) {
+                    // Validar que ueaId y companyTypeId no sean vacíos o nulos
+                    if (!empty($ueaCompanyType['ueaId']) && !empty($ueaCompanyType['companyTypeId'])) {
                         UeaCompany::create([
                             'company_id' => $company->id,
                             'uea_id' => $ueaCompanyType['ueaId'],
@@ -89,10 +91,11 @@ class ContrataController extends Controller
                         ]);
                     }
                 }
-            });
-
+            }
+            DB::commit();
             return back()->with('success', 'Creada correctamente.');
         } catch (\Exception $e) {
+            DB::rollBack();
             return back()->with('error', 'Hubo un problema: ' . $e->getMessage());
         }
     }
@@ -126,7 +129,7 @@ class ContrataController extends Controller
 
                 // Actualizar el usuario de la empresa
                 $user_company = User::where('doi', $company->ruc)
-                    ->where('role_id', Role::where('nombre', 'Company Admin')->first()->id)
+                    ->where('role_id', Role::where('code', 'CA')->first()->id) // Cambiado a buscar por code 'CA'
                     ->first();
 
                 // Actualizar la empresa
@@ -155,11 +158,14 @@ class ContrataController extends Controller
                 $ueaCompanyTypes = $request->ueaCompanyTypes;
                 if ($ueaCompanyTypes) {
                     foreach ($ueaCompanyTypes as $ueaCompanyType) {
-                        UeaCompany::create([
-                            'company_id' => $company->id,
-                            'uea_id' => $ueaCompanyType['ueaId'],
-                            'activity_id' => $ueaCompanyType['companyTypeId'],
-                        ]);
+                        // Validar que ueaId y companyTypeId no sean vacíos o nulos
+                        if (!empty($ueaCompanyType['ueaId']) && !empty($ueaCompanyType['companyTypeId'])) {
+                            UeaCompany::create([
+                                'company_id' => $company->id,
+                                'uea_id' => $ueaCompanyType['ueaId'],
+                                'activity_id' => $ueaCompanyType['companyTypeId'],
+                            ]);
+                        }
                     }
                 }
             });
@@ -208,7 +214,7 @@ class ContrataController extends Controller
         try {
             $contractor = Company::findOrFail($id);
             $user = User::where('company_id', $contractor->id)
-                ->where('role_id', Role::where('nombre', 'Company Admin')->first()->id)
+                ->where('role_id', Role::where('code', 'CA')->first()->id) // Cambiado a buscar por code 'CA'
                 ->first();
 
             if ($user) {
@@ -226,7 +232,7 @@ class ContrataController extends Controller
         try {
             $contractor = Company::findOrFail($id);
             $user = User::where('company_id', $contractor->id)
-                ->where('role_id', Role::where('nombre', 'Company Admin')->first()->id)
+                ->where('role_id', Role::where('code', 'CA')->first()->id) // Cambiado a buscar por code 'CA'
                 ->first();
 
             if ($user) {

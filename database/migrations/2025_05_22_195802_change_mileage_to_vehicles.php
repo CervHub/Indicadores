@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('vehicles', function (Blueprint $table) {
-            $table->bigInteger('mileage')->change();
-        });
+        if (Schema::hasTable('vehicles') && Schema::hasColumn('vehicles', 'mileage')) {
+            Schema::table('vehicles', function (Blueprint $table) {
+                $table->bigInteger('mileage')->change();
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('vehicles', function (Blueprint $table) {
-            $table->string('mileage')->change();
-        });
+        if (Schema::hasTable('vehicles') && Schema::hasColumn('vehicles', 'mileage')) {
+            Schema::table('vehicles', function (Blueprint $table) {
+                $table->string('mileage')->change();
+            });
+        }
     }
 };

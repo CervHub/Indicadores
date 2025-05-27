@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('company_consolidateds', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('company_id')->constrained();
-            $table->foreignId('consolidated_id')->constrained();
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        if (!Schema::hasTable('company_consolidateds')) {
+            Schema::create('company_consolidateds', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('company_id')->constrained();
+                $table->foreignId('consolidated_id')->constrained();
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
     }
 
     /**

@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('category_companies', function (Blueprint $table) {
-            $table->boolean('is_required')->default(false)->after('category_id');
-            $table->boolean('is_active')->default(true)->after('is_required');
-        });
+        if (!Schema::hasColumn('category_companies', 'is_required') && !Schema::hasColumn('category_companies', 'is_active')) {
+            Schema::table('category_companies', function (Blueprint $table) {
+                $table->boolean('is_required')->default(false)->after('category_id');
+                $table->boolean('is_active')->default(true)->after('is_required');
+            });
+        }
     }
 
     /**

@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('categories', function (Blueprint $table) {
-            $table->boolean('is_categorized')->default(false)->nullable(); // Campo opcional, por defecto false
-            $table->boolean('is_risk')->default(false)->nullable(); // Campo opcional, por defecto false
+            if (!Schema::hasColumn('categories', 'is_categorized')) {
+                $table->boolean('is_categorized')->default(false)->nullable(); // Campo opcional, por defecto false
+            }
+            if (!Schema::hasColumn('categories', 'is_risk')) {
+                $table->boolean('is_risk')->default(false)->nullable(); // Campo opcional, por defecto false
+            }
         });
     }
 
@@ -23,8 +27,12 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('categories', function (Blueprint $table) {
-            $table->dropColumn('is_categorized'); // Elimina el campo is_categorized
-            $table->dropColumn('is_risk'); // Elimina el campo is_risk
+            if (Schema::hasColumn('categories', 'is_categorized')) {
+                $table->dropColumn('is_categorized'); // Elimina el campo is_categorized
+            }
+            if (Schema::hasColumn('categories', 'is_risk')) {
+                $table->dropColumn('is_risk'); // Elimina el campo is_risk
+            }
         });
     }
 };

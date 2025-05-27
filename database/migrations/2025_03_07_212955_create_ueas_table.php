@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ueas', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('code')->nullable();
-            $table->string('description')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        if (!Schema::hasTable('ueas')) {
+            Schema::create('ueas', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('code')->nullable();
+                $table->string('description')->nullable();
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
     }
 
     /**

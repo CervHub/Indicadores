@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('uea_companies', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('uea_id')->references('id')->on('ueas');
-            $table->foreignId('company_id')->references('id')->on('companies');
-            $table->foreignId('activity_id')->references('id')->on('contractor_company_types');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('uea_companies')) {
+            Schema::create('uea_companies', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('uea_id')->references('id')->on('ueas');
+                $table->foreignId('company_id')->references('id')->on('companies');
+                $table->foreignId('activity_id')->references('id')->on('contractor_company_types');
+                $table->timestamps();
+            });
+        }
     }
 
     /**

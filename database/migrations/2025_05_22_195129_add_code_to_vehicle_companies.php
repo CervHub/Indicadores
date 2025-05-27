@@ -11,10 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('vehicle_companies', function (Blueprint $table) {
-            // Add code to vehicle_companies table
-            $table->string('code')->nullable();
-        });
+        if (Schema::hasTable('vehicle_companies')) {
+            Schema::table('vehicle_companies', function (Blueprint $table) {
+                if (!Schema::hasColumn('vehicle_companies', 'code')) {
+                    // Add code to vehicle_companies table
+                    $table->string('code')->nullable();
+                }
+            });
+        }
     }
 
     /**
@@ -22,9 +26,13 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('vehicle_companies', function (Blueprint $table) {
-            // Remove code from vehicle_companies table
-            $table->dropColumn('code');
-        });
+        if (Schema::hasTable('vehicle_companies')) {
+            Schema::table('vehicle_companies', function (Blueprint $table) {
+                if (Schema::hasColumn('vehicle_companies', 'code')) {
+                    // Remove code from vehicle_companies table
+                    $table->dropColumn('code');
+                }
+            });
+        }
     }
 };

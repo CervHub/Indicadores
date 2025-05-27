@@ -12,13 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('contractor_company_types', function (Blueprint $table) {
-            $table->id();
-            $table->string('name'); // Nombre de la empresa contratista
-            $table->string('abbreviation'); // Abreviación de la empresa contratista
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        if (!Schema::hasTable('contractor_company_types')) {
+            Schema::create('contractor_company_types', function (Blueprint $table) {
+                $table->id();
+                $table->string('name'); // Nombre de la empresa contratista
+                $table->string('abbreviation'); // Abreviación de la empresa contratista
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
     }
 
     /**

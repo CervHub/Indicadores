@@ -12,12 +12,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('modules', function (Blueprint $table) {
-            $table->string('version')->default('1.0.0')->after('name');
-        });
+        if (!Schema::hasColumn('modules', 'version')) {
+            Schema::table('modules', function (Blueprint $table) {
+                $table->string('version')->default('1.0.0')->after('name');
+            });
 
-        // Update existing records to have the default version
-        DB::table('modules')->update(['version' => '1.0.0']);
+            // Update existing records to have the default version
+            \DB::table('modules')->update(['version' => '1.0.0']);
+        }
     }
 
     /**

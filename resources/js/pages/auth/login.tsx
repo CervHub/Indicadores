@@ -52,7 +52,7 @@ export default function Login({ status, canResetPassword, appname }: LoginProps)
         logo2 = '/auth/CRUZ-minimal-toquepala.png';
         logo3 = '/auth/logogrupomexico-mineria-02.png';
         bgImage = '/auth/img-toq.png';
-    } else if (appname === 'CuajoneSST') {
+    } else if (appname === 'InspeccionVehicularCuajone') {
         logo3 = '/auth/logogrupomexico-mineria-02.png';
         bgImage = '/auth/img-toq.png';
     }

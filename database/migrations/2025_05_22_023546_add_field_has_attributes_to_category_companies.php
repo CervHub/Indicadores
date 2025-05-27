@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('category_companies', function (Blueprint $table) {
-            $table->boolean('has_attributes')->default(false);
-            $table->string('attribute_type')->nullable(); // e.g. 'text', 'integer', 'date', 'checkbox'
-
-        });
+        if (!Schema::hasColumn('category_companies', 'has_attributes') && !Schema::hasColumn('category_companies', 'attribute_type')) {
+            Schema::table('category_companies', function (Blueprint $table) {
+                $table->boolean('has_attributes')->default(false);
+                $table->string('attribute_type')->nullable(); // e.g. 'text', 'integer', 'date', 'checkbox'
+            });
+        }
     }
 
     /**

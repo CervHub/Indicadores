@@ -14,41 +14,27 @@ class NewRolesSeeder extends Seeder
      */
     public function run(): void
     {
-        $newRoles = [
-            [
-                'nombre' => 'Sub Comité de Contratistas',
-                'descripcion' => 'Acceso a la herramienta de consolidado y reporte',
-            ],
-            [
-                'nombre' => 'Almacenes',
-                'descripcion' => 'Acceso a la herramienta de consolidado',
-            ],
-            [
-                'nombre' => 'Proyectos de Inversión',
-                'descripcion' => 'Acceso a la herramienta de consolidado',
-            ],
-            [
-                'nombre' => 'Contratos de Obras',
-                'descripcion' => 'Acceso a la herramienta de consolidado',
-            ],
-            [
-                'nombre' => 'Contratos y Servicios',
-                'descripcion' => 'Acceso a la herramienta de consolidado',
-            ],
-            [
-                'nombre' => 'Ingeniero de Seguridad',
-                'descripcion' => 'Acceso a herramientas de seguridad y reportes',
-            ],
+        $rolesWithCodes = [
+            'Super Admin' => ['code' => 'SA', 'descripcion' => 'Acceso total al sistema', 'nombre' => 'Super Administrador'],
+            'Regular User' => ['code' => 'RU', 'descripcion' => 'Usuario regular del sistema', 'nombre' => 'Usuario Regular'],
+            'Company Admin' => ['code' => 'CA', 'descripcion' => 'Administrador de empresa', 'nombre' => 'Administrador de Empresa'],
+            'Ingeniero de Seguridad' => ['code' => 'IS', 'descripcion' => 'Acceso a herramientas de seguridad y reportes', 'nombre' => 'Ingeniero de Seguridad'],
         ];
 
-        foreach ($newRoles as $role) {
+        foreach ($rolesWithCodes as $key => $data) {
             DB::beginTransaction();
             try {
-                Role::create($role);
+                Role::updateOrCreate(
+                    ['nombre' => $data['nombre']],
+                    [
+                        'code' => $data['code'],
+                        'descripcion' => $data['descripcion'],
+                    ]
+                );
                 DB::commit();
             } catch (Exception $e) {
                 DB::rollBack();
-                $this->command->error('Error al crear el rol: ' . $role['nombre'] . '. ' . $e->getMessage());
+                $this->command->error('Error al crear el rol: ' . $data['nombre'] . '. ' . $e->getMessage());
             }
         }
     }

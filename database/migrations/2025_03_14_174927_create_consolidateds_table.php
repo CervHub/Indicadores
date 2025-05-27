@@ -11,18 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('consolidateds', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->integer('year');
-            $table->integer('month');
-            $table->boolean('is_closed')->default(false);
-            $table->string('file_sx_ew');
-            $table->string('file_accumulation');
-            $table->string('file_concentrator');
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        if (!Schema::hasTable('consolidateds')) {
+            Schema::create('consolidateds', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+                $table->integer('year');
+                $table->integer('month');
+                $table->boolean('is_closed')->default(false);
+                $table->string('file_sx_ew');
+                $table->string('file_accumulation');
+                $table->string('file_concentrator');
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
     }
 
     /**

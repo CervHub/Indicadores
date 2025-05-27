@@ -20,8 +20,8 @@ class OwnerMiddleware
         $host = $request->getHost();
         $appname = match ($host) {
             'newgestionsst.cursso.digital' => 'GestionSST',
-            'cuajonesst.cursso.digital'    => 'CuajoneSST',
-            'localhost'                    => 'CuajoneSST',
+            'cuajonesst.cursso.digital'    => 'InspeccionVehicularCuajone',
+            'localhost'                    => 'InspeccionVehicularCuajone',
             '127.0.0.1'                    => 'GestionSST',
             default                        => 'DefaultApp',
         };

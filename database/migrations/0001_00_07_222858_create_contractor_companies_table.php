@@ -11,10 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('companies', function (Blueprint $table) {
-            $table->foreignId('contractor_company_type_id')->nullable()->constrained('contractor_company_types')->after('ruc_number'); // Tipo de cliente
-            $table->string('situation')->nullable()->after('contractor_company_type_id'); // Situación
-        });
+        if (!Schema::hasColumn('companies', 'contractor_company_type_id')) {
+            Schema::table('companies', function (Blueprint $table) {
+                $table->foreignId('contractor_company_type_id')->nullable()->constrained('contractor_company_types')->after('ruc_number'); // Tipo de cliente
+            });
+        }
+        if (!Schema::hasColumn('companies', 'situation')) {
+            Schema::table('companies', function (Blueprint $table) {
+                $table->string('situation')->nullable()->after('contractor_company_type_id'); // Situación
+            });
+        }
     }
 
     /**

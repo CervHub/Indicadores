@@ -14,15 +14,15 @@ class UeaSeeder extends Seeder
     public function run(): void
     {
         Uea::updateOrCreate(
-            ['name' => 'SPCC - CONCENTRADORA CUAJONE'],
+            ['name' => 'Concentradora Botiflaca'],
             ['created_at' => now(), 'updated_at' => now()]
         );
         Uea::updateOrCreate(
-            ['name' => 'SPCC - ACUMULACION CUAJONE'],
+            ['name' => 'Acumulación Cuajone'],
             ['created_at' => now(), 'updated_at' => now()]
         );
         Uea::updateOrCreate(
-            ['name' => 'SPCC - PLANTA LIXIVIAXION SX/EW CUAJONE'],
+            ['name' => 'Lixiviación Cuajone'],
             ['created_at' => now(), 'updated_at' => now()]
         );
     }

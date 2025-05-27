@@ -10,6 +10,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea'; // <-- Agrega esta línea
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
@@ -136,6 +137,17 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
         value: String(c.id), // Asegura que value sea string
     }));
 
+    // NUEVO: Opciones filtradas por fila para UEA
+    const getFilteredUeaOptions = (idx: number) => {
+        // Obtén los ueaId seleccionados en otras filas
+        const selectedUeaIds = ueaCompanyTypes
+            .filter((_, i) => i !== idx)
+            .map(item => item.ueaId)
+            .filter(Boolean);
+        // Filtra las opciones para que no aparezcan las ya seleccionadas en otras filas
+        return ueaOptions.filter(option => !selectedUeaIds.includes(option.value));
+    };
+
     return (
         <div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -144,7 +156,7 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
                         <Button className="inline-block px-4 py-2">Crear Empresa</Button>
                     </DialogTrigger>
                 </div>
-                <DialogContent className="sm:max-w-[500px]">
+                <DialogContent className="sm:max-w-[700px]">
                     <DialogHeader>
                         <DialogTitle>Crear Empresa</DialogTitle>
                         <DialogDescription>Complete los campos para crear una nueva empresa.</DialogDescription>
@@ -165,13 +177,13 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
                                 <InputError message={errors.ruc} />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="code">Código</Label>
+                                <Label htmlFor="code">Código de llamada</Label>
                                 <Input
                                     id="code"
                                     type="text"
                                     required
                                     value={data.code}
-                                    onChange={(e) => setData('code', e.target.value)}
+                                    onChange={(e) => setData('code', e.target.value.toUpperCase())}
                                     disabled={processing}
                                     placeholder="Código o correlativo"
                                 />
@@ -184,7 +196,7 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
                                     type="text"
                                     required
                                     value={data.nombre}
-                                    onChange={(e) => setData('nombre', e.target.value)}
+                                    onChange={(e) => setData('nombre', e.target.value.toUpperCase())}
                                     disabled={processing}
                                     placeholder="Nombre"
                                 />
@@ -192,14 +204,14 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="descripcion">Descripción</Label>
-                                <Input
+                                <Textarea
                                     id="descripcion"
-                                    type="text"
-                                    required
+                                    maxLength={150}
                                     value={data.descripcion}
                                     onChange={(e) => setData('descripcion', e.target.value)}
                                     disabled={processing}
-                                    placeholder="Descripción"
+                                    placeholder="Descripción (máx. 150 caracteres)"
+                                    required
                                 />
                                 <InputError message={errors.descripcion} />
                             </div>
@@ -225,7 +237,7 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
                                                     <SelectValue placeholder="Seleccione UEA..." />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {ueaOptions.map((option) => (
+                                                    {getFilteredUeaOptions(idx).map((option) => (
                                                         <SelectItem key={option.value} value={option.value}>
                                                             {option.label}
                                                         </SelectItem>

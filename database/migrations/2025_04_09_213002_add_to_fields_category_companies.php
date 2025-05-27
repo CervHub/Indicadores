@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('category_companies', function (Blueprint $table) {
-            $table->foreignId('group_id')->nullable()->constrained('groups')->onDelete('no action'); // Relación con la tabla groups
-        });
+        if (!Schema::hasColumn('category_companies', 'group_id')) {
+            Schema::table('category_companies', function (Blueprint $table) {
+                $table->foreignId('group_id')->nullable()->constrained('groups')->onDelete('no action'); // Relación con la tabla groups
+            });
+        }
     }
 
     /**

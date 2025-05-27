@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('modules', function (Blueprint $table) {
-            $table->text('device')->nullable(); // Agrega el campo 'device' como string opcional
-        });
+        if (!Schema::hasColumn('modules', 'device')) {
+            Schema::table('modules', function (Blueprint $table) {
+                $table->text('device')->nullable(); // Agrega el campo 'device' como string opcional
+            });
+        }
     }
 
     /**

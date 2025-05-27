@@ -11,11 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('category_attributes', function (Blueprint $table) {
-            // Add the fields min_value and unit
-            $table->string('min_value')->nullable();
-            $table->string('unit')->nullable();
-        });
+        if (Schema::hasTable('category_attributes')) {
+            Schema::table('category_attributes', function (Blueprint $table) {
+                if (!Schema::hasColumn('category_attributes', 'min_value')) {
+                    $table->string('min_value')->nullable();
+                }
+                if (!Schema::hasColumn('category_attributes', 'unit')) {
+                    $table->string('unit')->nullable();
+                }
+            });
+        }
     }
 
     /**
@@ -23,9 +28,15 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('category_attributes', function (Blueprint $table) {
-            // Drop the fields min_value and unit
-            $table->dropColumn(['min_value', 'unit']);
-        });
+        if (Schema::hasTable('category_attributes')) {
+            Schema::table('category_attributes', function (Blueprint $table) {
+                if (Schema::hasColumn('category_attributes', 'min_value')) {
+                    $table->dropColumn('min_value');
+                }
+                if (Schema::hasColumn('category_attributes', 'unit')) {
+                    $table->dropColumn('unit');
+                }
+            });
+        }
     }
 };

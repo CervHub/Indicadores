@@ -11,10 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('modules', function (Blueprint $table) {
-            $table->string('mileage')->nullable()->after('status');
-            $table->string('area')->nullable()->after('mileage');
-        });
+        if (Schema::hasTable('modules')) {
+            Schema::table('modules', function (Blueprint $table) {
+                if (!Schema::hasColumn('modules', 'mileage')) {
+                    $table->string('mileage')->nullable()->after('status');
+                }
+                if (!Schema::hasColumn('modules', 'area')) {
+                    $table->string('area')->nullable()->after('mileage');
+                }
+            });
+        }
     }
 
     /**
@@ -22,10 +28,16 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('modules', function (Blueprint $table) {
-            $table->dropColumn('mileage');
-            $table->dropColumn('area');
-            //
-        });
+        if (Schema::hasTable('modules')) {
+            Schema::table('modules', function (Blueprint $table) {
+                if (Schema::hasColumn('modules', 'mileage')) {
+                    $table->dropColumn('mileage');
+                }
+                if (Schema::hasColumn('modules', 'area')) {
+                    $table->dropColumn('area');
+                }
+                // ...
+            });
+        }
     }
 };

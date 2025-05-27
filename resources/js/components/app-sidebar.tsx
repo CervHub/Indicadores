@@ -55,7 +55,7 @@ const rolesByApp: Record<string, Record<string, string[]>> = {
         'Ingeniero de Seguridad': [],
         Roles: ['CA'],
     },
-    CuajoneSST: {
+    InspeccionVehicularCuajone: {
         Dashboard: ['SA', 'IS', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS', 'RU'],
         Empresas: ['SA'],
         Gerencias: ['SA'],
@@ -88,7 +88,7 @@ const groupedNavItems = [
             { title: 'Gerencias', url: '/admin/management', icon: Users },
             { title: 'Gestión de SSO', url: '/admin/category', icon: ShieldAlert },
             { title: 'Vehículos', url: '/vehicle', icon: Truck },
-            { title: 'Administración de Vehículos', url: '/vehicle/show/all', icon: Truck }, // Nuevo elemento solo para CuajoneSST
+            { title: 'Administración de Vehículos', url: '/vehicle/show/all', icon: Truck }, // Nuevo elemento solo para InspeccionVehicularCuajone
         ],
     },
     {

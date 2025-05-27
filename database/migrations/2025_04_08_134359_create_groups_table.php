@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('groups', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->nullable(); // Nombre del grupo
-            $table->foreignId('category_id')->constrained('categories')->onDelete('no action'); // Relación con la tabla categories
-            $table->timestamps();
-            $table->softDeletes(); // Campo para eliminar lógicamente el grupo
-        });
+        if (!Schema::hasTable('groups')) {
+            Schema::create('groups', function (Blueprint $table) {
+                $table->id();
+                $table->string('name')->nullable(); // Nombre del grupo
+                $table->foreignId('category_id')->constrained('categories')->onDelete('no action'); // Relación con la tabla categories
+                $table->timestamps();
+                $table->softDeletes(); // Campo para eliminar lógicamente el grupo
+            });
+        }
     }
 
     /**

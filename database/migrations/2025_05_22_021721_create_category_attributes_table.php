@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('category_attributes', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('category_id')->references('id')->on('category_companies');
-            $table->string('name');
-            $table->string('attribute_type'); // e.g. 'text', 'integer', 'date', 'checkbox'
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('category_attributes')) {
+            Schema::create('category_attributes', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('category_id')->references('id')->on('category_companies');
+                $table->string('name');
+                $table->string('attribute_type'); // e.g. 'text', 'integer', 'date', 'checkbox'
+                $table->timestamps();
+            });
+        }
     }
 
     /**

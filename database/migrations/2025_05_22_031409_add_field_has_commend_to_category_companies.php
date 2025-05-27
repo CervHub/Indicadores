@@ -11,12 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('category_companies', function (Blueprint $table) {
-            $table->string('instruction')->nullable();
-            $table->string('document_url')->nullable();
-            $table->string('document_name')->nullable();
-            $table->boolean('is_for_mine')->default(false); // Nuevo campo para mina
-        });
+        if (
+            !Schema::hasColumn('category_companies', 'instruction') &&
+            !Schema::hasColumn('category_companies', 'document_url') &&
+            !Schema::hasColumn('category_companies', 'document_name') &&
+            !Schema::hasColumn('category_companies', 'is_for_mine')
+        ) {
+            Schema::table('category_companies', function (Blueprint $table) {
+                $table->string('instruction')->nullable();
+                $table->string('document_url')->nullable();
+                $table->string('document_name')->nullable();
+                $table->boolean('is_for_mine')->default(false); // Nuevo campo para mina
+            });
+        }
     }
 
     /**

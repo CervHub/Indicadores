@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('vehicles', function (Blueprint $table) {
-            // Add number of tires
-            $table->string('tire_count')->nullable();
-            // Add number of spare tires
-            $table->integer('spare_tire_count')->nullable();
-        });
+        if (!Schema::hasColumn('vehicles', 'tire_count') && !Schema::hasColumn('vehicles', 'spare_tire_count')) {
+            Schema::table('vehicles', function (Blueprint $table) {
+                // Add number of tires
+                $table->string('tire_count')->nullable();
+                // Add number of spare tires
+                $table->integer('spare_tire_count')->nullable();
+            });
+        }
     }
 
     /**

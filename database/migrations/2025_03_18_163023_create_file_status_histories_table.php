@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('file_status_histories', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('file_status_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('file_path');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('file_status_histories')) {
+            Schema::create('file_status_histories', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('file_status_id')->constrained()->onDelete('cascade');
+                $table->foreignId('user_id')->constrained()->onDelete('cascade');
+                $table->string('file_path');
+                $table->timestamps();
+            });
+        }
     }
 
     /**

@@ -11,15 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('setting_globals', function (Blueprint $table) {
-            $table->id();
-            $table->string('web_version')->nullable(); // Versión de la web
-            $table->string('mobile_version')->nullable(); // Versión de la app móvil
-            $table->string('logo')->nullable(); // URL o ruta del logo principal
-            $table->string('mini_logo')->nullable(); // URL o ruta del logo mini
-            $table->text('general_notes')->nullable(); // Notas o consideraciones generales
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('setting_globals')) {
+            Schema::create('setting_globals', function (Blueprint $table) {
+                $table->id();
+                $table->string('web_version')->nullable(); // Versión de la web
+                $table->string('mobile_version')->nullable(); // Versión de la app móvil
+                $table->string('logo')->nullable(); // URL o ruta del logo principal
+                $table->string('mini_logo')->nullable(); // URL o ruta del logo mini
+                $table->text('general_notes')->nullable(); // Notas o consideraciones generales
+                $table->timestamps();
+            });
+        }
     }
 
     /**
