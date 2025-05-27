@@ -111,6 +111,12 @@ class User extends Authenticatable
         return $role && $role->code === 'IS';
     }
 
+    public function isSecurityEngineerSPCC(): bool
+    {
+        $role = $this->role()->first();
+        return $role && $role->code === 'IS' && $this->company_id == 1;
+    }
+
     public function getRoleCodeAttribute(): ?string
     {
         return $this->role()->first()?->code;

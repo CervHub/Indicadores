@@ -167,7 +167,7 @@ export default function VehicleDetail() {
     const hasDisapproved = inspectionsFull.some(
         (insp) => !insp.estado || insp.estado.toLowerCase() !== "aprobado"
     );
-    const statusText = hasDisapproved ? "Desaprobado" : "Aprobado";
+    const statusText = hasDisapproved ? "No Autorizado" : "Autorizado";
     const statusColor = hasDisapproved ? "bg-red-600 text-white" : "bg-green-600 text-white";
 
     // Historial completo de inspecciones (getAllInspectionsHistory)

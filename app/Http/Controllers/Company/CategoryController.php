@@ -113,6 +113,7 @@ class CategoryController extends Controller
                     'document_name' => $request->input('document_name'),
                     'document_url' => $documentPath,
                     'is_for_mine' => $request->input('is_for_mine', false),
+                    'is_not_for_mine' => $request->input('is_not_for_mine', false),
                 ]);
 
                 // Guardar atributos si aplica

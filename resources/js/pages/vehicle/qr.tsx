@@ -165,7 +165,7 @@ export default function VehicleDetail() {
     const hasDisapproved = inspectionsFull.some(
         (insp) => !insp.estado || insp.estado.toLowerCase() !== "aprobado"
     );
-    const statusText = hasDisapproved ? "Desaprobado" : "Aprobado";
+    const statusText = hasDisapproved ? "No Autorizado" : "Autorizado";
     const statusColor = hasDisapproved ? "bg-red-600 text-white" : "bg-green-600 text-white";
 
     return (
@@ -234,57 +234,7 @@ export default function VehicleDetail() {
                             </div>
                         </div>
                     </div>
-                    {/* Tabla de inspecciones */}
-                    <div className="px-8 pb-10">
-                        <h3 className="text-lg font-bold mb-4 mt-2" style={{ color: '#d7282f' }}>Historial de Inspecciones</h3>
-                        <TooltipProvider>
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full bg-white border border-gray-200 rounded-lg overflow-hidden text-xs">
-                                    <thead>
-                                        <tr style={{ backgroundColor: '#d7282f' }}>
-                                            <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Tipo</th>
-                                            <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Realizado por</th>
-                                            <th className="px-2 py-1 text-left font-bold" style={{ color: '#fff' }}>Fecha</th>
-                                            <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Vencimiento</th>
-                                            <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Estado</th>
-                                            <th className="px-2 py-1 text-left font-semibold" style={{ color: '#fff' }}>Observaciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {inspectionsFull.map((insp, idx) => {
-                                            const obs = insp.observaciones || "";
-                                            const isLong = obs.length > 25;
-                                            return (
-                                                <tr key={idx} className="hover:bg-red-50 border-t border-gray-200 text-xs">
-                                                    <td className="px-2 py-1">{insp.tipo}</td>
-                                                    <td className="px-2 py-1">{insp.realizado_por}</td>
-                                                    <td className="px-2 py-1">{insp.fecha}</td>
-                                                    <td className="px-2 py-1">{insp.vencimiento}</td>
-                                                    <td className="px-2 py-1">{insp.estado}</td>
-                                                    <td className="px-2 py-1 max-w-[120px] truncate">
-                                                        {isLong ? (
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <span className="cursor-pointer">
-                                                                        {obs.slice(0, 25) + '...'}
-                                                                    </span>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <span className="whitespace-pre-line">{obs}</span>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        ) : (
-                                                            obs
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </TooltipProvider>
-                    </div>
+                    
                     {/* Pie de página tipo PDF */}
                     <div className="border-t px-8 py-4 text-xs text-gray-400 text-center print:hidden">
                         Documento generado por el sistema de Gestión SST &copy; {new Date().getFullYear()}

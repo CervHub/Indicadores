@@ -51,54 +51,54 @@ export default function InspectionVehicle({
     company: string;
     area: string;
 }) {
-    // Excluir causas cuyo nombre empieza con "Neumáticos", contiene "Grúa"/"grua" o contiene "Banderín"
-    const causasFiltradasBase = causas.filter(
+    // Separar causas por tipo de área y grúa
+    const causasBase = causas.filter(
         c =>
             !c.name?.toLowerCase().startsWith('neumáticos') &&
-            !c.name?.toLowerCase().includes('grúa') &&
-            !c.name?.toLowerCase().includes('grua') &&
-            !c.name?.toLowerCase().includes('banderín') &&
-            !c.name?.toLowerCase().includes('banderin')
+            !c.is_crane // Excluye causas de grúa del grupo base
     );
-    // Lista de causas de neumáticos (todas)
+
+    // Causas de neumáticos
     const causasNeumaticos = causas.filter(
         c => c.name?.toLowerCase().startsWith('neumáticos')
     );
-    // Lista de causas de grúa (todas)
+
+    // Causas de grúa (usando is_crane)
     const causasGrua = causas.filter(
-        c => c.name?.toLowerCase().includes('grúa') || c.name?.toLowerCase().includes('grua')
-    );
-    // Lista de causas de banderín (todas)
-    const causasBanderin = causas.filter(
-        c => c.name?.toLowerCase().includes('banderín') || c.name?.toLowerCase().includes('banderin')
+        c => c.is_crane === true
     );
 
-    console.log('Causas filtradas base:', causasFiltradasBase);
-    const [causasFiltradas, setCausasFiltradas] = React.useState<Causa[]>(() => {
-        // Inicialmente base + banderín según área
-        let base = [...causasFiltradasBase];
-        if (area?.toLowerCase() === 'mina') {
-            const banderinRojo = causasBanderin.find(c => c.name?.toLowerCase().includes('rojo'));
-            if (banderinRojo) base.push(banderinRojo);
-        } else {
-            const banderinVerde = causasBanderin.find(c => c.name?.toLowerCase().includes('verde'));
-            if (banderinVerde) base.push(banderinVerde);
-        }
-        return base;
-    });
+    // Causas solo para mina
+    const causasSoloMina = causas.filter(
+        c => c.is_for_mine === true
+    );
 
-    // Actualiza banderín si cambia el área
+    // Causas solo para NO mina
+    const causasSoloNoMina = causas.filter(
+        c => c.is_not_for_mine === true
+    );
+
+    // Causas comunes (sin restricción de mina)
+    const causasComunes = causasBase.filter(
+        c => !c.is_for_mine && !c.is_not_for_mine
+    );
+
+    // Determinar causas filtradas según área
+    const causasFiltradasBase = [
+        ...causasComunes,
+        ...(area?.toLowerCase() === 'mina' ? causasSoloMina : causasSoloNoMina)
+    ];
+
+    const [causasFiltradas, setCausasFiltradas] = React.useState<Causa[]>(causasFiltradasBase);
+
+    // Actualiza causas filtradas si cambia el área
     React.useEffect(() => {
-        let base = [...causasFiltradasBase];
-        if (area?.toLowerCase() === 'mina') {
-            const banderinRojo = causasBanderin.find(c => c.name?.toLowerCase().includes('rojo'));
-            if (banderinRojo) base.push(banderinRojo);
-        } else {
-            const banderinVerde = causasBanderin.find(c => c.name?.toLowerCase().includes('verde'));
-            if (banderinVerde) base.push(banderinVerde);
-        }
-        setCausasFiltradas(base);
-    }, [area]);
+        const nuevasCausas = [
+            ...causasComunes,
+            ...(area?.toLowerCase() === 'mina' ? causasSoloMina : causasSoloNoMina)
+        ];
+        setCausasFiltradas(nuevasCausas);
+    }, [area, causas]);
 
     const { data, setData, reset } = useForm({
         plate: '',
@@ -239,7 +239,7 @@ export default function InspectionVehicle({
             if (response.ok && responseData.status === 'success' && responseData.data) {
                 setData((prevData) => ({
                     ...prevData,
-                    vehicleCode: (responseData.company.code + responseData.data.code) || '',
+                    vehicleCode: (responseData.company.code + '-' + responseData.data.code) || '',
                     type: responseData.data.type || '',
                     brand: responseData.data.brand || '',
                     model: responseData.data.model || '',
@@ -248,16 +248,13 @@ export default function InspectionVehicle({
                     company: responseData.company.nombre || '',
                 }));
 
+                // Manejo de causas base según área
+                let nuevasCausas = [
+                    ...causasComunes,
+                    ...(area?.toLowerCase() === 'mina' ? causasSoloMina : causasSoloNoMina)
+                ];
+
                 // Manejo de Neumáticos {tire_count}
-                let nuevasCausas = [...causasFiltradasBase];
-                // Banderín según área
-                if (area?.toLowerCase() === 'mina') {
-                    const banderinRojo = causasBanderin.find(c => c.name?.toLowerCase().includes('rojo'));
-                    if (banderinRojo) nuevasCausas.push(banderinRojo);
-                } else {
-                    const banderinVerde = causasBanderin.find(c => c.name?.toLowerCase().includes('verde'));
-                    if (banderinVerde) nuevasCausas.push(banderinVerde);
-                }
                 const tireCount = responseData.data.tire_count;
                 if (tireCount) {
                     const neumaticoName = `Neumáticos ${Number(tireCount)}`;
@@ -267,10 +264,9 @@ export default function InspectionVehicle({
                     }
                 }
 
-                // Manejo de Grúa
+                // Manejo de Grúa (usando is_crane)
                 const tipoVehiculo = (responseData.data.type || '').toLowerCase();
                 if (tipoVehiculo.includes('grúa') || tipoVehiculo.includes('grua')) {
-                    // Añadir todas las causas de grúa que no estén ya
                     causasGrua.forEach(gruaCausa => {
                         if (!nuevasCausas.some(c => c.id === gruaCausa.id)) {
                             nuevasCausas.push(gruaCausa);

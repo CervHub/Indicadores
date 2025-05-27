@@ -123,7 +123,7 @@ export default function InspectionVehiclePreUse({
             if (response.ok && responseData.status === 'success' && responseData.data) {
                 setData((prevData) => ({
                     ...prevData,
-                    vehicleCode: (responseData.company.code + responseData.data.code) || '',
+                    vehicleCode: (responseData.company.code + '-' + responseData.data.code) || '',
                     department: responseData.company.nombre || '',
                 }));
                 toast.success('Información del vehículo cargada con éxito.');

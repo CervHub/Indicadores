@@ -83,7 +83,9 @@ class FormatController extends Controller
                     'category_companies.nombre',
                     'groups.name as group',
                     'category_companies.is_required as is_crane',
+                    'category_companies.is_required',
                     'category_companies.is_for_mine',
+                    'category_companies.is_not_for_mine',
                     'category_companies.instruction',
                     'category_companies.document_url',
                     'category_companies.document_name',
@@ -96,7 +98,9 @@ class FormatController extends Controller
                 ->get()
                 ->map(function ($item) {
                     $item->is_crane = $item->is_crane == 1;
+                    $item->is_required = $item->is_required == 1;
                     $item->is_for_mine = $item->is_for_mine == 1;
+                    $item->is_not_for_mine = $item->is_not_for_mine == 1;
                     $item->has_attributes = $item->has_attributes == 1;
                     return $item;
                 });
@@ -119,7 +123,9 @@ class FormatController extends Controller
                 'category_companies.nombre',
                 'groups.name as group',
                 'category_companies.is_required as is_crane',
+                'category_companies.is_required',
                 'category_companies.is_for_mine',
+                'category_companies.is_not_for_mine',
                 'category_companies.instruction',
                 'category_companies.document_url',
                 'category_companies.document_name',
@@ -132,7 +138,9 @@ class FormatController extends Controller
                 ->get()
                 ->map(function ($item) {
                     $item->is_crane = $item->is_crane == 1;
+                    $item->is_required = $item->is_required == 1;
                     $item->is_for_mine = $item->is_for_mine == 1;
+                    $item->is_not_for_mine = $item->is_not_for_mine == 1;
                     $item->has_attributes = $item->has_attributes == 1;
                     return $item;
                 });
@@ -144,6 +152,7 @@ class FormatController extends Controller
             ]
         );
     }
+
     public function annualVehicleShutdownInspection(Request $request)
     {
         $categoryIds = Category::where('code', 'IVT')->pluck('id');
@@ -155,7 +164,9 @@ class FormatController extends Controller
                     'category_companies.nombre',
                     'groups.name as group',
                     'category_companies.is_required as is_crane',
+                    'category_companies.is_required',
                     'category_companies.is_for_mine',
+                    'category_companies.is_not_for_mine',
                     'category_companies.instruction',
                     'category_companies.document_url',
                     'category_companies.document_name',
@@ -168,7 +179,9 @@ class FormatController extends Controller
                 ->get()
                 ->map(function ($item) {
                     $item->is_crane = $item->is_crane == 1;
+                    $item->is_required = $item->is_required == 1;
                     $item->is_for_mine = $item->is_for_mine == 1;
+                    $item->is_not_for_mine = $item->is_not_for_mine == 1;
                     $item->has_attributes = $item->has_attributes == 1;
                     return $item;
                 });

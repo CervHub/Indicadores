@@ -37,6 +37,8 @@ export default function AnnualVehicleShutdownInspection() {
     // Filtrar las primeras 5 causas con solo id, name y group
     // Generar el campo 'name' dinámicamente basado en 'nombre'
     // Mapear todas las propiedades relevantes de cada causa
+
+    // Mapear todas las propiedades relevantes de cada causa
     const filteredCausas = causas.map(
         ({
             id,
@@ -44,6 +46,7 @@ export default function AnnualVehicleShutdownInspection() {
             group,
             is_crane,
             is_for_mine,
+            is_not_for_mine,
             instruction,
             document_url,
             document_name,
@@ -56,6 +59,7 @@ export default function AnnualVehicleShutdownInspection() {
             group,
             is_crane,
             is_for_mine,
+            is_not_for_mine,
             instruction,
             document_url,
             document_name,
@@ -65,6 +69,7 @@ export default function AnnualVehicleShutdownInspection() {
         })
     );
 
+    console.log('Filtered Causas:', filteredCausas);
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Inspección Vehicular Parada de Planta" />

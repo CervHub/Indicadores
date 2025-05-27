@@ -225,60 +225,140 @@ class VehicleController extends Controller
     public function showAll()
     {
         $vehicles = \DB::select("
-            WITH latest_vc AS (
-                SELECT vc1.*
-                FROM vehicle_companies vc1
-                JOIN (
-                    SELECT vehicle_id, MAX(updated_at) AS max_updated
-                    FROM vehicle_companies
-                    GROUP BY vehicle_id
-                ) vc2
-                ON vc1.vehicle_id = vc2.vehicle_id AND vc1.updated_at = vc2.max_updated
-            ),
-            inspection_data AS (
-                SELECT
-                    m.vehicle_plate,
-                    m.tipo_inspeccion,
-                    m.estado,
-                    m.vehicle_status
-                FROM modules m
-            ),
-            inspection_pivot AS (
-                SELECT
-                    vehicle_plate,
-                    MAX(CASE WHEN tipo_inspeccion = 'pre-use' THEN estado ELSE NULL END) AS pre_use_estado,
-                    MAX(CASE WHEN tipo_inspeccion = 'pre-use' THEN vehicle_status ELSE NULL END) AS pre_use_status,
-                    MAX(CASE WHEN tipo_inspeccion = 'pre-use-visit' THEN estado ELSE NULL END) AS pre_use_visit_estado,
-                    MAX(CASE WHEN tipo_inspeccion = 'pre-use-visit' THEN vehicle_status ELSE NULL END) AS pre_use_visit_status,
-                    MAX(CASE WHEN tipo_inspeccion = 'trimestral' THEN estado ELSE NULL END) AS trimestral_estado,
-                    MAX(CASE WHEN tipo_inspeccion = 'trimestral' THEN vehicle_status ELSE NULL END) AS trimestral_status,
-                    MAX(CASE WHEN tipo_inspeccion = 'semestral' THEN estado ELSE NULL END) AS semestral_estado,
-                    MAX(CASE WHEN tipo_inspeccion = 'semestral' THEN vehicle_status ELSE NULL END) AS semestral_status,
-                    MAX(CASE WHEN tipo_inspeccion = 'anual' THEN estado ELSE NULL END) AS anual_estado,
-                    MAX(CASE WHEN tipo_inspeccion = 'anual' THEN vehicle_status ELSE NULL END) AS anual_status
-                FROM inspection_data
-                GROUP BY vehicle_plate
-            )
+        DECLARE @HoraLocal DATETIMEOFFSET = SWITCHOFFSET(SYSDATETIMEOFFSET(), '-05:00');
+        DECLARE @Ahora DATETIME = CAST(@HoraLocal AS DATETIME);
+
+        WITH latest_vc AS (
+            SELECT vc1.*
+            FROM vehicle_companies vc1
+            JOIN (
+                SELECT vehicle_id, MAX(updated_at) AS max_updated
+                FROM vehicle_companies
+                GROUP BY vehicle_id
+            ) vc2 ON vc1.vehicle_id = vc2.vehicle_id AND vc1.updated_at = vc2.max_updated
+        ),
+        inspection_data AS (
             SELECT
-                v.license_plate AS placa,
-                c.code + '-' + vc.code AS codigo,
-                vc.is_linked,
-                c.nombre AS nombre_company,
-                ip.pre_use_estado,
-                ip.pre_use_status,
-                ip.pre_use_visit_estado,
-                ip.pre_use_visit_status,
-                ip.trimestral_estado,
-                ip.trimestral_status,
-                ip.semestral_estado,
-                ip.semestral_status,
-                ip.anual_estado,
-                ip.anual_status
-            FROM vehicles v
-            LEFT JOIN latest_vc vc ON vc.vehicle_id = v.id
-            LEFT JOIN companies c ON c.id = vc.company_id
-            LEFT JOIN inspection_pivot ip ON ip.vehicle_plate = v.license_plate
-        ");
+                m.vehicle_plate,
+                m.tipo_inspeccion,
+                m.estado,
+                m.vehicle_status,
+                m.updated_at
+            FROM modules m
+        ),
+        inspection_pivot AS (
+            SELECT
+                vehicle_plate,
+                MAX(CASE WHEN tipo_inspeccion = 'pre-use' THEN estado ELSE NULL END) AS pre_use_estado,
+                MAX(CASE WHEN tipo_inspeccion = 'pre-use' THEN vehicle_status ELSE NULL END) AS pre_use_status,
+                MAX(CASE WHEN tipo_inspeccion = 'pre-use' THEN updated_at ELSE NULL END) AS pre_use_updated_at,
+                
+                MAX(CASE WHEN tipo_inspeccion = 'pre-use-visit' THEN estado ELSE NULL END) AS pre_use_visit_estado,
+                MAX(CASE WHEN tipo_inspeccion = 'pre-use-visit' THEN vehicle_status ELSE NULL END) AS pre_use_visit_status,
+                MAX(CASE WHEN tipo_inspeccion = 'pre-use-visit' THEN updated_at ELSE NULL END) AS pre_use_visit_updated_at,
+                
+                MAX(CASE WHEN tipo_inspeccion = 'trimestral' THEN estado ELSE NULL END) AS trimestral_estado,
+                MAX(CASE WHEN tipo_inspeccion = 'trimestral' THEN vehicle_status ELSE NULL END) AS trimestral_status,
+                MAX(CASE WHEN tipo_inspeccion = 'trimestral' THEN updated_at ELSE NULL END) AS trimestral_updated_at,
+                
+                MAX(CASE WHEN tipo_inspeccion = 'semestral' THEN estado ELSE NULL END) AS semestral_estado,
+                MAX(CASE WHEN tipo_inspeccion = 'semestral' THEN vehicle_status ELSE NULL END) AS semestral_status,
+                MAX(CASE WHEN tipo_inspeccion = 'semestral' THEN updated_at ELSE NULL END) AS semestral_updated_at,
+                
+                MAX(CASE WHEN tipo_inspeccion = 'anual' THEN estado ELSE NULL END) AS parada_planta_estado,
+                MAX(CASE WHEN tipo_inspeccion = 'anual' THEN vehicle_status ELSE NULL END) AS parada_planta_status,
+                MAX(CASE WHEN tipo_inspeccion = 'anual' THEN updated_at ELSE NULL END) AS parada_planta_updated_at
+            FROM inspection_data
+            GROUP BY vehicle_plate
+        ),
+        inspection_final AS (
+            SELECT
+                vehicle_plate,
+                
+                pre_use_updated_at AS pre_use_fecha_realizada,
+                DATEADD(SECOND, 86399, CAST(CAST(pre_use_updated_at AS DATE) AS DATETIME)) AS pre_use_fecha_vencimiento,
+                CASE 
+                    WHEN pre_use_updated_at IS NULL THEN NULL
+                    WHEN @Ahora <= DATEADD(SECOND, 86399, CAST(CAST(pre_use_updated_at AS DATE) AS DATETIME)) THEN 'Conforme'
+                    ELSE 'No Conforme'
+                END AS pre_use_conformidad,
+
+                pre_use_visit_updated_at AS pre_use_visit_fecha_realizada,
+                DATEADD(SECOND, 86399, CAST(CAST(pre_use_visit_updated_at AS DATE) AS DATETIME)) AS pre_use_visit_fecha_vencimiento,
+                CASE
+                    WHEN pre_use_visit_updated_at IS NULL THEN NULL
+                    WHEN @Ahora <= DATEADD(SECOND, 86399, CAST(CAST(pre_use_visit_updated_at AS DATE) AS DATETIME)) THEN 'Conforme'
+                    ELSE 'No Conforme'
+                END AS pre_use_visit_conformidad,
+
+                trimestral_updated_at AS trimestral_fecha_realizada,
+                DATEADD(SECOND, 86399, DATEADD(DAY, 30, CAST(CAST(trimestral_updated_at AS DATE) AS DATETIME))) AS trimestral_fecha_vencimiento,
+                CASE
+                    WHEN trimestral_updated_at IS NULL THEN NULL
+                    WHEN @Ahora <= DATEADD(SECOND, 86399, DATEADD(DAY, 30, CAST(CAST(trimestral_updated_at AS DATE) AS DATETIME))) THEN 'Conforme'
+                    ELSE 'No Conforme'
+                END AS trimestral_conformidad,
+
+                semestral_updated_at AS semestral_fecha_realizada,
+                DATEADD(SECOND, 86399, DATEADD(MONTH, 6, CAST(CAST(semestral_updated_at AS DATE) AS DATETIME))) AS semestral_fecha_vencimiento,
+                CASE
+                    WHEN semestral_updated_at IS NULL THEN NULL
+                    WHEN @Ahora <= DATEADD(SECOND, 86399, DATEADD(MONTH, 6, CAST(CAST(semestral_updated_at AS DATE) AS DATETIME))) THEN 'Conforme'
+                    ELSE 'No Conforme'
+                END AS semestral_conformidad,
+
+                parada_planta_updated_at AS parada_planta_fecha_realizada,
+                DATEADD(SECOND, 86399, DATEADD(DAY, 7, CAST(CAST(parada_planta_updated_at AS DATE) AS DATETIME))) AS parada_planta_fecha_vencimiento,
+                CASE
+                    WHEN parada_planta_updated_at IS NULL THEN NULL
+                    WHEN @Ahora <= DATEADD(SECOND, 86399, DATEADD(DAY, 7, CAST(CAST(parada_planta_updated_at AS DATE) AS DATETIME))) THEN 'Conforme'
+                    ELSE 'No Conforme'
+                END AS parada_planta_conformidad
+
+            FROM inspection_pivot
+        )
+        SELECT
+            v.license_plate AS placa,
+            c.code + '-' + vc.code AS codigo,
+            vc.is_linked,
+            c.nombre AS nombre_company,
+
+            ip.pre_use_estado,
+            ip.pre_use_status,
+            inf.pre_use_fecha_realizada,
+            inf.pre_use_fecha_vencimiento,
+            inf.pre_use_conformidad,
+
+            ip.pre_use_visit_estado,
+            ip.pre_use_visit_status,
+            inf.pre_use_visit_fecha_realizada,
+            inf.pre_use_visit_fecha_vencimiento,
+            inf.pre_use_visit_conformidad,
+
+            ip.trimestral_estado,
+            ip.trimestral_status,
+            inf.trimestral_fecha_realizada,
+            inf.trimestral_fecha_vencimiento,
+            inf.trimestral_conformidad,
+
+            ip.semestral_estado,
+            ip.semestral_status,
+            inf.semestral_fecha_realizada,
+            inf.semestral_fecha_vencimiento,
+            inf.semestral_conformidad,
+
+            ip.parada_planta_estado,
+            ip.parada_planta_status,
+            inf.parada_planta_fecha_realizada,
+            inf.parada_planta_fecha_vencimiento,
+            inf.parada_planta_conformidad
+
+        FROM vehicles v
+        LEFT JOIN latest_vc vc ON vc.vehicle_id = v.id
+        LEFT JOIN companies c ON c.id = vc.company_id
+        LEFT JOIN inspection_pivot ip ON ip.vehicle_plate = v.license_plate
+        LEFT JOIN inspection_final inf ON inf.vehicle_plate = v.license_plate;
+    ");
 
         return Inertia::render('vehicleall/index', [
             'vehicles' => $vehicles,

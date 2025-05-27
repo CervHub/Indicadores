@@ -24,6 +24,16 @@ class InspectionVehicleController extends Controller
 
     public function index()
     {
+        $roleCode = auth()->user()->role_code;
+        $userId = $this->userId;
+
+        // Si el role_code es null, retorna colección vacía
+        if (is_null($roleCode)) {
+            return Inertia::render('inspection/index', [
+                'inspectionVehicles' => collect([]),
+            ]);
+        }
+
         // Consulta base
         $query = "
             SELECT
@@ -34,11 +44,11 @@ class InspectionVehicleController extends Controller
                 u.nombres AS nombre_usuario,
                 c.nombre AS nombre_empresa,
                 CASE
-                    WHEN m.tipo_inspeccion = 'pre-use' THEN 'Inspección Diaria Pre-Uso'
-                    WHEN m.tipo_inspeccion = 'pre-use-visit' THEN 'Inspección Vehicular por Visita'
-                    WHEN m.tipo_inspeccion = 'trimestral' THEN 'Inspección Trimestral'
-                    WHEN m.tipo_inspeccion = 'anual' THEN 'Inspección Anual'
-                    WHEN m.tipo_inspeccion = 'semestral' THEN 'Inspección Semestral'
+                    WHEN m.tipo_inspeccion = 'pre-use' THEN 'Inspección de pre-uso'
+                    WHEN m.tipo_inspeccion = 'pre-use-visit' THEN 'Inspección de pre-uso visitas'
+                    WHEN m.tipo_inspeccion = 'trimestral' THEN 'Inspección trimestral'
+                    WHEN m.tipo_inspeccion = 'anual' THEN 'Inspección por parada de planta'
+                    WHEN m.tipo_inspeccion = 'semestral' THEN 'Inspección semestral'
                     ELSE 'Tipo no definido'
                 END AS tipo_inspeccion_descripcion
             FROM modules AS m
@@ -48,9 +58,17 @@ class InspectionVehicleController extends Controller
         ";
 
         $params = [];
-        if ($this->companyId != 1) {
+
+        // Solo si el rol NO es 'SA', filtra por empresa
+        if ($roleCode !== 'SA') {
             $query .= " AND m.company_id = ?";
             $params[] = $this->companyId;
+        }
+
+        // Si el role_code es 'RU', filtra por usuario
+        if ($roleCode === 'RU') {
+            $query .= " AND m.user_id = ?";
+            $params[] = $userId;
         }
 
         $inspectionVehicles = collect(DB::select($query, $params));
@@ -62,20 +80,14 @@ class InspectionVehicleController extends Controller
 
     public function detalle($reportability_id)
     {
-        $isSecurityEngineer = auth()->user()->isSecurityEngineer();
         $user = User::find($this->userId);
         $reportability = Module::find($reportability_id);
         $companyNombre = Company::find($reportability->company_id)->nombre ?? 'Empresa no encontrada';
 
-        if ($isSecurityEngineer && $this->companyId === $reportability->company_id && $reportability->tipo_inspeccion === 'anual') {
-            $reportability->estado = 'Revisado';
-            $reportability->save();
-        }
-
         return Inertia::render('inspection/detalle', [
             'reportability' => $reportability,
             'reportability_id' => $reportability_id,
-            'isSecurityEngineer' => $user->isSecurityEngineer(),
+            'isSecurityEngineer' => $user->isSecurityEngineerSPCC(),
             'companyNombre' => $companyNombre,
         ]);
     }
@@ -192,11 +204,11 @@ class InspectionVehicleController extends Controller
 
         // Tipo de inspección legible
         $tipo_inspeccion_descripcion = match ($module->tipo_inspeccion) {
-            'pre-use'        => 'Inspección Diaria Pre-Uso',
-            'pre-use-visit'  => 'Inspección Vehicular por Visita',
-            'trimestral'     => 'Inspección Trimestral',
-            'anual'          => 'Inspección Anual',
-            'semestral'      => 'Inspección Semestral',
+            'pre-use'        => 'Inspección de pre-uso',
+            'pre-use-visit'  => 'Inspección de pre-uso visitas',
+            'trimestral'     => 'Inspección trimestral',
+            'anual'          => 'Inspección por parada de planta',
+            'semestral'      => 'Inspección semestral',
             default          => 'Tipo no definido',
         };
 

@@ -15,10 +15,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
+    onAction?: (placa: string, action: 'ver' | 'descargar_qr') => void;
 }
 
 export function DataTable<TData extends {
@@ -39,6 +41,7 @@ export function DataTable<TData extends {
 }, TValue>({
     columns,
     data,
+    onAction,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 });
@@ -120,9 +123,58 @@ export function DataTable<TData extends {
         // Filtros individuales por columna
         Object.entries(inspectionColumnFilters).forEach(([key, status]) => {
             if (status !== '__all__') {
-                filtered = filtered.filter(row =>
-                    ((row as any)[key]?.toLowerCase?.() ?? '') === status.toLowerCase()
-                );
+                filtered = filtered.filter(row => {
+                    const val = ((row as any)[key]?.toLowerCase?.() ?? '');
+                    const fechaVencimientoKey = (() => {
+                        if (key === 'pre_use_status') return 'pre_use_fecha_vencimiento';
+                        if (key === 'pre_use_visit_status') return 'pre_use_visit_fecha_vencimiento';
+                        if (key === 'trimestral_status') return 'trimestral_fecha_vencimiento';
+                        if (key === 'semestral_status') return 'semestral_fecha_vencimiento';
+                        if (key === 'parada_planta_status') return 'parada_planta_fecha_vencimiento';
+                        return undefined;
+                    })();
+                    const fechaVencimiento = fechaVencimientoKey ? (row as any)[fechaVencimientoKey] : undefined;
+                    const now = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000) - (5 * 60 * 60 * 1000 - new Date().getTimezoneOffset() * 60000));
+                    // Parada anual permite "generado"
+                    if (key === 'parada_planta_status') {
+                        if (status === 'generado') {
+                            return ((row as any)['parada_planta_estado']?.toLowerCase?.() ?? '') === 'generado';
+                        }
+                        if (status === 'conforme') {
+                            // status aprobado y fecha válida
+                            return (
+                                val === 'aprobado' &&
+                                fechaVencimiento &&
+                                new Date(fechaVencimiento) >= now
+                            );
+                        }
+                        if (status === 'no conforme') {
+                            // status desaprobado/rechazado o fecha vencida
+                            return (
+                                val === 'desaprobado' ||
+                                val === 'rechazado' ||
+                                (fechaVencimiento && new Date(fechaVencimiento) < now)
+                            );
+                        }
+                        return false;
+                    } else {
+                        if (status === 'conforme') {
+                            return (
+                                val === 'aprobado' &&
+                                fechaVencimiento &&
+                                new Date(fechaVencimiento) >= now
+                            );
+                        }
+                        if (status === 'no conforme') {
+                            return (
+                                val === 'desaprobado' ||
+                                val === 'rechazado' ||
+                                (fechaVencimiento && new Date(fechaVencimiento) < now)
+                            );
+                        }
+                        return false;
+                    }
+                });
             }
         });
         return filtered;
@@ -150,6 +202,9 @@ export function DataTable<TData extends {
         onPaginationChange: setPagination,
         manualPagination: false,
         pageCount: undefined,
+        meta: {
+            onAction,
+        },
     });
 
     // Cuando cambie el pageSize desde el selector, actualiza el estado de paginación
@@ -262,7 +317,7 @@ export function DataTable<TData extends {
                                     if (colKey === 'pre_use_visit_estado') statusKey = 'pre_use_visit_status';
                                     if (colKey === 'trimestral_estado') statusKey = 'trimestral_status';
                                     if (colKey === 'semestral_estado') statusKey = 'semestral_status';
-                                    if (colKey === 'anual_estado') statusKey = 'anual_status';
+                                    if (colKey === 'anual_estado') statusKey = 'parada_planta_status';
                                     return (
                                         <TableHead key={header.id} style={{ minWidth: '10px', maxWidth: '150px', background: '#f9fafb' }}>
                                             <Select
@@ -279,8 +334,11 @@ export function DataTable<TData extends {
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="__all__">Todos</SelectItem>
-                                                    <SelectItem value="aprobado">Aprobado</SelectItem>
-                                                    <SelectItem value="rechazado">Rechazado</SelectItem>
+                                                    <SelectItem value="conforme">Conforme</SelectItem>
+                                                    <SelectItem value="no conforme">No conforme</SelectItem>
+                                                    {colKey === 'anual_estado' && (
+                                                        <SelectItem value="generado">Generado</SelectItem>
+                                                    )}
                                                 </SelectContent>
                                             </Select>
                                         </TableHead>
@@ -303,14 +361,22 @@ export function DataTable<TData extends {
                                         colKey === 'anual_estado'
                                     ) {
                                         let label = '';
-                                        if (colKey === 'pre_use_estado') label = 'Ins. Diaria';
-                                        if (colKey === 'pre_use_visit_estado') label = 'Ins. Diaria Visita';
-                                        if (colKey === 'trimestral_estado') label = 'Ins. Trimestral';
-                                        if (colKey === 'semestral_estado') label = 'Ins. Semestral';
-                                        if (colKey === 'anual_estado') label = 'Ins. Anual';
+                                        let tooltip = '';
+                                        if (colKey === 'pre_use_estado') { label = 'Diaria'; tooltip = 'Inspección Diaria'; }
+                                        if (colKey === 'pre_use_visit_estado') { label = 'Diaria V.'; tooltip = 'Inspección Diaria Visita'; }
+                                        if (colKey === 'trimestral_estado') { label = 'Trim.'; tooltip = 'Inspección Trimestral'; }
+                                        if (colKey === 'semestral_estado') { label = 'Sem.'; tooltip = 'Inspección Semestral'; }
+                                        if (colKey === 'anual_estado') { label = 'Parada'; tooltip = 'Parada Anual'; }
                                         return (
                                             <TableHead key={header.id} style={{ minWidth: '10px', maxWidth: '150px' }}>
-                                                {label}
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <span>{label}</span>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>{tooltip}</TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
                                             </TableHead>
                                         );
                                     }

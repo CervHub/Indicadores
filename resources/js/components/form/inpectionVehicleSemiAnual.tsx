@@ -9,6 +9,8 @@ import React, { useState } from 'react';
 import { toast } from 'sonner';
 import ImageDropZone from './image';
 import { VEHICLE_TYPE_OPTIONS } from '@/lib/utils';
+import { router } from '@inertiajs/react';
+
 
 function getLimaDateTimeString() {
     const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -56,6 +58,30 @@ export default function InspectionVehicleSemiAnual({
     company: string;
     area: string;
 }) {
+    // Filtrado de causas según área y grúa
+    const causasGrua = causas.filter(c => c.is_crane === true);
+    const causasSoloMina = causas.filter(c => c.is_for_mine === true);
+    const causasSoloNoMina = causas.filter(c => c.is_not_for_mine === true);
+    const causasComunes = causas.filter(
+        c => !c.is_crane && !c.is_for_mine && !c.is_not_for_mine
+    );
+
+    // Determinar causas filtradas según área
+    const causasFiltradasBase = [
+        ...causasComunes,
+        ...(area?.toLowerCase() === 'mina' ? causasSoloMina : causasSoloNoMina)
+    ];
+
+    const [causasFiltradas, setCausasFiltradas] = useState<Causa[]>(causasFiltradasBase);
+
+    React.useEffect(() => {
+        const nuevasCausas = [
+            ...causasComunes,
+            ...(area?.toLowerCase() === 'mina' ? causasSoloMina : causasSoloNoMina)
+        ];
+        setCausasFiltradas(nuevasCausas);
+    }, [area, causas]);
+
     const { data, setData, reset } = useForm({
         plate: '',
         type: '',
@@ -92,8 +118,24 @@ export default function InspectionVehicleSemiAnual({
     }, [area]);
 
     const [causaStates, setCausaStates] = useState(
-        causas.map((causa) => ({ id: causa.id, name: causa.name, state: '', observation: '' }))
+        causasFiltradas.map((causa) => ({ id: causa.id, name: causa.name, state: '', observation: '' }))
     );
+
+    // Sincroniza causaStates cuando cambian las causasFiltradas (por ejemplo, tras buscar placa)
+    React.useEffect(() => {
+        setCausaStates(prevStates => {
+            // Mantén los estados existentes y agrega los nuevos
+            const newStates = causasFiltradas.map(causa => {
+                const found = prevStates.find(cs => cs.id === causa.id);
+                return found
+                    ? found
+                    : { id: causa.id, name: causa.name, state: '', observation: '' };
+            });
+            // Elimina los que ya no existen
+            return newStates;
+        });
+    }, [causasFiltradas]);
+
     const [isSearchingPlate, setIsSearchingPlate] = useState(false);
     const [isSearchingLicense, setIsSearchingLicense] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -156,7 +198,7 @@ export default function InspectionVehicleSemiAnual({
             if (response.ok && responseData.status === 'success' && responseData.data) {
                 setData((prevData) => ({
                     ...prevData,
-                    vehicleCode: responseData.data.code || '',
+                    vehicleCode: (responseData.company.code + '-' + responseData.data.code) || '',
                     type: responseData.data.type || '',
                     brand: responseData.data.brand || '',
                     model: responseData.data.model || '',
@@ -164,6 +206,25 @@ export default function InspectionVehicleSemiAnual({
                     year: responseData.data.year || '',
                     company: responseData.company.nombre || '',
                 }));
+
+                // Manejo de causas base según área
+                let nuevasCausas = [
+                    ...causasComunes,
+                    ...(area?.toLowerCase() === 'mina' ? causasSoloMina : causasSoloNoMina)
+                ];
+
+                // Manejo de Grúa (usando is_crane)
+                const tipoVehiculo = (responseData.data.type || '').toLowerCase();
+                if (tipoVehiculo.includes('grúa') || tipoVehiculo.includes('grua')) {
+                    causasGrua.forEach(gruaCausa => {
+                        if (!nuevasCausas.some(c => c.id === gruaCausa.id)) {
+                            nuevasCausas.push(gruaCausa);
+                        }
+                    });
+                }
+
+                setCausasFiltradas(nuevasCausas);
+
                 toast.success('Información del vehículo cargada con éxito.');
             } else if (responseData.status === 'warning') {
                 toast.warning(
@@ -234,6 +295,8 @@ export default function InspectionVehicleSemiAnual({
             } else {
                 const responseData = await response.json();
                 toast.success(responseData.message || 'Reporte guardado con éxito.');
+                router.visit(route('admin.reportability'));
+
                 reset(); // Resetear el formulario
                 setCausaStates(causas.map((causa) => ({ id: causa.id, state: '', observation: '' }))); // Resetear las causas
             }
@@ -245,7 +308,8 @@ export default function InspectionVehicleSemiAnual({
         }
     };
 
-    const groupedCausas = causas.reduce(
+    // Agrupa causas por grupo
+    const groupedCausas = causasFiltradas.reduce(
         (groups, causa) => {
             if (!groups[causa.group]) {
                 groups[causa.group] = [];
@@ -464,12 +528,12 @@ export default function InspectionVehicleSemiAnual({
             </div>
 
             {/* Inspeccionado por */}
-            <div className="col-span-2">
+            {/* <div className="col-span-2">
                 <Label htmlFor="inspectedBy" className="mb-3">
                     Inspeccionado por
                 </Label>
                 <Input type="text" id="inspectedBy" value={userName} disabled />
-            </div>
+            </div> */}
 
             {/* Aprobado/Desaprobado */}
             <div className="flex flex-col justify-center h-full">
