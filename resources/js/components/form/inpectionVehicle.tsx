@@ -330,14 +330,15 @@ export default function InspectionVehicle({
             // Combina causas y extraFormData para enviar ambos, incluyendo id, valor y nombre del atributo
             const causasWithForm = causaStates.map(causa => {
                 const extraForm = extraFormData[causa.id] || {};
-                // Para cada atributo, agrega id, valor y nombre
-                let attributes: { id: string | number, value: any, name: string }[] = [];
+                // Para cada atributo, agrega id, valor, nombre y status (true/false si cumple)
+                let attributes: { id: string | number, value: any, name: string, status: boolean }[] = [];
                 const causaObj = causas.find(c => c.id === causa.id);
                 if (causaObj && causaObj.category_attributes) {
                     attributes = causaObj.category_attributes.map(attr => ({
                         id: attr.id,
                         value: extraForm[attr.id] ?? '',
                         name: attr.name,
+                        status: extraForm[`${attr.id}_cumple`] === true, // true si cumple, false si no
                     }));
                 }
                 return {

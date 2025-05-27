@@ -224,12 +224,61 @@ class VehicleController extends Controller
 
     public function showAll()
     {
-        // Obtener todos los vehículos
-        $vehicles = Vehicle::with(['vehicleCompanies.company' => function($query) {
-            $query->orderByDesc('updated_at');
-        }])->get();
-
-    
+        $vehicles = \DB::select("
+            WITH latest_vc AS (
+                SELECT vc1.*
+                FROM vehicle_companies vc1
+                JOIN (
+                    SELECT vehicle_id, MAX(updated_at) AS max_updated
+                    FROM vehicle_companies
+                    GROUP BY vehicle_id
+                ) vc2
+                ON vc1.vehicle_id = vc2.vehicle_id AND vc1.updated_at = vc2.max_updated
+            ),
+            inspection_data AS (
+                SELECT
+                    m.vehicle_plate,
+                    m.tipo_inspeccion,
+                    m.estado,
+                    m.vehicle_status
+                FROM modules m
+            ),
+            inspection_pivot AS (
+                SELECT
+                    vehicle_plate,
+                    MAX(CASE WHEN tipo_inspeccion = 'pre-use' THEN estado ELSE NULL END) AS pre_use_estado,
+                    MAX(CASE WHEN tipo_inspeccion = 'pre-use' THEN vehicle_status ELSE NULL END) AS pre_use_status,
+                    MAX(CASE WHEN tipo_inspeccion = 'pre-use-visit' THEN estado ELSE NULL END) AS pre_use_visit_estado,
+                    MAX(CASE WHEN tipo_inspeccion = 'pre-use-visit' THEN vehicle_status ELSE NULL END) AS pre_use_visit_status,
+                    MAX(CASE WHEN tipo_inspeccion = 'trimestral' THEN estado ELSE NULL END) AS trimestral_estado,
+                    MAX(CASE WHEN tipo_inspeccion = 'trimestral' THEN vehicle_status ELSE NULL END) AS trimestral_status,
+                    MAX(CASE WHEN tipo_inspeccion = 'semestral' THEN estado ELSE NULL END) AS semestral_estado,
+                    MAX(CASE WHEN tipo_inspeccion = 'semestral' THEN vehicle_status ELSE NULL END) AS semestral_status,
+                    MAX(CASE WHEN tipo_inspeccion = 'anual' THEN estado ELSE NULL END) AS anual_estado,
+                    MAX(CASE WHEN tipo_inspeccion = 'anual' THEN vehicle_status ELSE NULL END) AS anual_status
+                FROM inspection_data
+                GROUP BY vehicle_plate
+            )
+            SELECT
+                v.license_plate AS placa,
+                c.code + '-' + vc.code AS codigo,
+                vc.is_linked,
+                c.nombre AS nombre_company,
+                ip.pre_use_estado,
+                ip.pre_use_status,
+                ip.pre_use_visit_estado,
+                ip.pre_use_visit_status,
+                ip.trimestral_estado,
+                ip.trimestral_status,
+                ip.semestral_estado,
+                ip.semestral_status,
+                ip.anual_estado,
+                ip.anual_status
+            FROM vehicles v
+            LEFT JOIN latest_vc vc ON vc.vehicle_id = v.id
+            LEFT JOIN companies c ON c.id = vc.company_id
+            LEFT JOIN inspection_pivot ip ON ip.vehicle_plate = v.license_plate
+        ");
 
         return Inertia::render('vehicleall/index', [
             'vehicles' => $vehicles,

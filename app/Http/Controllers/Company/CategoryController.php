@@ -80,7 +80,6 @@ class CategoryController extends Controller
 
     public function storeCompany(Request $request, $category_id)
     {
-        dd($request->all());
         try {
             $company_id = 1;
             $nombre = trim($request->input('nombre'));
@@ -174,11 +173,11 @@ class CategoryController extends Controller
             }
 
 
-
             $categoryCompany->update([
                 'nombre' => $nombre,
                 'group_id' => $request->input('group_id'),
                 'is_required' => $request->input('is_required', false),
+                'instruction' => $request->input('instruction'),
             ]);
 
 

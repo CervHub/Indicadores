@@ -170,11 +170,31 @@
             background-size: cover;
             background-position: center;
         }
+        .bg-mobile-gestion-sst {
+            background-image: url("/auth/southern.jpg");
+            background-size: cover;
+            background-position: center;
+        }
+        .bg-mobile-cuajone-sst {
+            background-image: url("/images/background/fondo.webp");
+            background-size: cover;
+            background-position: center;
+        }
     }
 
     @media (min-width: 769px) {
         .bg-mobile {
             background-image: url("/auth/fondo-southern.png");
+            background-size: cover;
+            background-position: left;
+        }
+        .bg-mobile-gestion-sst {
+            background-image: url("/auth/fondo-southern.png");
+            background-size: cover;
+            background-position: left;
+        }
+        .bg-mobile-cuajone-sst {
+            background-image: url("/images/background/fondo.webp");
             background-size: cover;
             background-position: left;
         }

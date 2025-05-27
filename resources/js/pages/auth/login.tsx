@@ -24,9 +24,10 @@ type LoginForm = {
 interface LoginProps {
     status?: string;
     canResetPassword: boolean;
+    appname?: string; // <-- Agrega appname
 }
 
-export default function Login({ status }: LoginProps) {
+export default function Login({ status, canResetPassword, appname }: LoginProps) {
     const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
         email: '',
         password: '',
@@ -40,8 +41,37 @@ export default function Login({ status }: LoginProps) {
         });
     };
 
+    // Configuración de logos e imágenes según appname
+    let logo1 = null;
+    let logo2 = null;
+    let logo3 = null;
+    let bgImage = null;
+
+    if (appname === 'GestionSST') {
+        logo1 = '/auth/logo-SOUTHERN-PERU.png';
+        logo2 = '/auth/CRUZ-minimal-toquepala.png';
+        logo3 = '/auth/logogrupomexico-mineria-02.png';
+        bgImage = '/auth/img-toq.png';
+    } else if (appname === 'CuajoneSST') {
+        logo3 = '/auth/logogrupomexico-mineria-02.png';
+        bgImage = '/auth/img-toq.png';
+    }
+
+    const handleImgError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+        e.currentTarget.style.display = 'none';
+    };
+
+    console.log('App Name:', appname); // Para depuración
+
+    // Determinar clase de fondo móvil según appname
+    const mobileBgClass = appname === 'GestionSST' ? 'bg-mobile-gestion-sst' : 'bg-mobile-cuajone-sst';
+
     return (
-        <AuthLayout title="Inicia sesión en tu cuenta" description="Ingresa tu correo electrónico y contraseña a continuación para iniciar sesión">
+        <AuthLayout
+            title="Inicia sesión en tu cuenta"
+            description="Ingresa tu correo electrónico y contraseña a continuación para iniciar sesión"
+            className={mobileBgClass}
+        >
             <Head title="Iniciar sesión" />
 
             <div className={cn('flex flex-col gap-6')}>
@@ -50,7 +80,14 @@ export default function Login({ status }: LoginProps) {
                         {/* Imagen a la izquierda */}
                         <div className="relative m-4 hidden bg-white p-2 md:block">
                             <div className="h-full w-full overflow-hidden">
-                                <img src="/auth/img-toq.png" alt="Imagen" className="object-initial absolute inset-0 h-full w-full" />
+                                {bgImage && (
+                                    <img
+                                        src={bgImage}
+                                        alt="Imagen"
+                                        className="object-initial absolute inset-0 h-full w-full"
+                                        onError={handleImgError}
+                                    />
+                                )}
 
                                 {/* Botón de descarga para Android */}
                                 <div className="absolute bottom-16 left-4">
@@ -120,11 +157,11 @@ export default function Login({ status }: LoginProps) {
                             <div className="flex flex-col gap-6">
                                 {/* Logos superiores */}
                                 <div className="flex items-center justify-between gap-4">
-                                    <img src="/auth/logo-SOUTHERN-PERU.png" alt="Logo Grupo México" className="h-4" />
-                                    <img src="/auth/CRUZ-minimal-toquepala.png" alt="Logo Southern Peru" className="h-10" />
+                                    {logo1 && <img src={logo1} alt="Logo 1" className="h-4" onError={handleImgError} />}
+                                    {logo2 && <img src={logo2} alt="Logo 2" className="h-10" onError={handleImgError} />}
                                 </div>
                                 <div className="mt-4 flex justify-center">
-                                    <img src="/auth/logogrupomexico-mineria-02.png" alt="Logo Cruz Toquepala" className="h-12" />
+                                    {logo3 && <img src={logo3} alt="Logo 3" className="h-12" onError={handleImgError} />}
                                 </div>
 
                                 {/* Título y descripción */}

@@ -27,15 +27,19 @@ export const AREAS_OPTIONS = [
 ]
 
 export const CONST_UNIDAD_DE_MEDIDA = [
-    { value: 'mm', label: 'Milímetros (mm)' },
-    { value: 'cm', label: 'Centímetros (cm)' },
-    { value: 'm', label: 'Metros (m)' },
-    { value: 'km', label: 'Kilómetros (km)' },
     { value: 'kg', label: 'Kilogramos (kg)' },
-    { value: 'ton', label: 'Toneladas (ton)' },
-    { value: 'l', label: 'Litros (l)' },
+    { value: 'L', label: 'Litros (L)' },
+    { value: 'm', label: 'Metros (m)' },
+    { value: 'm²', label: 'Metros cuadrados (m²)' },
+    { value: 'm³', label: 'Metros cúbicos (m³)' },
+    { value: 'u', label: 'Unidades (u)' },
+    { value: 'h', label: 'Horas (h)' },
+    { value: 'días', label: 'Días' },
+    { value: 'meses', label: 'Meses' },
+    { value: 'años', label: 'Años' },
+    { value: '%', label: 'Porcentaje (%)' },
+    { value: 'otro', label: 'Otro' },
 ];
-
 
 export const VEHICLE_TYPE_OPTIONS = [
     { value: 'Ambulancia', label: 'Ambulancia' },

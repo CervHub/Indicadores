@@ -4,7 +4,7 @@ import { FormEventHandler, useEffect, useState } from 'react';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -237,6 +237,7 @@ export default function CreateCategoryCompany({
                                             <SelectItem value="fecha">Fecha</SelectItem>
                                             <SelectItem value="entero">Entero</SelectItem>
                                             <SelectItem value="texto">Texto</SelectItem>
+                                            <SelectItem value="conforme">Conforme</SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>

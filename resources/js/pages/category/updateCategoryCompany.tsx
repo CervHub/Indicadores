@@ -8,25 +8,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CONST_UNIDAD_DE_MEDIDA } from '@/lib/utils';
 import { toast } from 'sonner';
 
 type OptionalConfigType = 'fecha' | 'entero' | 'texto' | 'conforme';
 type AttributeType = 'fecha' | 'entero' | 'texto' | 'conforme';
-
-const CONST_UNIDAD_DE_MEDIDA = [
-    { value: 'kg', label: 'Kilogramos (kg)' },
-    { value: 'L', label: 'Litros (L)' },
-    { value: 'm', label: 'Metros (m)' },
-    { value: 'm²', label: 'Metros cuadrados (m²)' },
-    { value: 'm³', label: 'Metros cúbicos (m³)' },
-    { value: 'u', label: 'Unidades (u)' },
-    { value: 'h', label: 'Horas (h)' },
-    { value: 'días', label: 'Días' },
-    { value: 'meses', label: 'Meses' },
-    { value: 'años', label: 'Años' },
-    { value: '%', label: 'Porcentaje (%)' },
-    { value: 'otro', label: 'Otro' },
-];
 
 type OptionalConfig = {
     nombre: string;
@@ -90,20 +76,20 @@ export default function UpdateCategoryCompany({
             unidad: attr.unit ?? '',
             min: attr.min_value !== null && attr.min_value !== undefined ? Number(attr.min_value) : undefined,
             withMin: attr.min_value !== null && attr.min_value !== undefined,
-        })) ?? item?.optional_configs ?? [];
+        })) ??
+        item?.optional_configs ??
+        [];
 
     // Determina si debe estar seleccionado el checkbox de documento
     const initialHasDocument =
-        (item?.has_document === true || item?.has_document === 1 || item?.has_document === "1") ||
-        !!item?.document_url ||
-        !!item?.document_name;
+        item?.has_document === true || item?.has_document === 1 || item?.has_document === '1' || !!item?.document_url || !!item?.document_name;
 
     const { data, setData, post, processing, errors, reset } = useForm<Required<CategoryCompanyForm>>({
         nombre: item?.nombre || '',
         group_id: item?.group_id ?? undefined,
-        is_required: item?.is_required === 1 || item?.is_required === "1",
-        is_for_mine: item?.is_for_mine === 1 || item?.is_for_mine === "1",
-        has_attributes: item?.has_attributes === true || item?.has_attributes === 1 || item?.has_attributes === "1",
+        is_required: item?.is_required === 1 || item?.is_required === '1',
+        is_for_mine: item?.is_for_mine === 1 || item?.is_for_mine === '1',
+        has_attributes: item?.has_attributes === true || item?.has_attributes === 1 || item?.has_attributes === '1',
         attribute_type: item?.attribute_type ?? undefined,
         optional_configs: initialOptionalConfigs,
         instruction: item?.instruction ?? '',
@@ -122,20 +108,20 @@ export default function UpdateCategoryCompany({
                     unidad: attr.unit ?? '',
                     min: attr.min_value !== null && attr.min_value !== undefined ? Number(attr.min_value) : undefined,
                     withMin: attr.min_value !== null && attr.min_value !== undefined,
-                })) ?? item.optional_configs ?? [];
+                })) ??
+                item.optional_configs ??
+                [];
             setData({
                 nombre: item.nombre,
                 group_id: item.group_id ?? undefined,
-                is_required: item.is_required === 1 || item.is_required === "1",
-                is_for_mine: item.is_for_mine === 1 || item.is_for_mine === "1",
-                has_attributes: item.has_attributes === true || item.hasAttributes === 1 || item.has_attributes === "1",
+                is_required: item.is_required === 1 || item.is_required === '1',
+                is_for_mine: item.is_for_mine === 1 || item.is_for_mine === '1',
+                has_attributes: item.has_attributes === true || item.hasAttributes === 1 || item.has_attributes === '1',
                 attribute_type: item.attribute_type ?? undefined,
                 optional_configs: optConfigs,
                 instruction: item.instruction ?? '',
                 has_document:
-                    (item.has_document === true || item.has_document === 1 || item.has_document === "1") ||
-                    !!item.document_url ||
-                    !!item.document_name,
+                    item.has_document === true || item.has_document === 1 || item.has_document === '1' || !!item.document_url || !!item.document_name,
                 document_name: item.document_name ?? '',
                 document_url: null,
             });
@@ -218,10 +204,7 @@ export default function UpdateCategoryCompany({
     };
 
     const handleAddOptionalConfigWithMin = () => {
-        setOptionalConfigs([
-            ...optionalConfigs,
-            { nombre: '', tipo: '' as OptionalConfigType, unidad: '', min: undefined, withMin: true }
-        ]);
+        setOptionalConfigs([...optionalConfigs, { nombre: '', tipo: '' as OptionalConfigType, unidad: '', min: undefined, withMin: true }]);
     };
 
     const handleChangeOptionalConfig = (idx: number, field: keyof OptionalConfig, value: any) => {
@@ -231,7 +214,7 @@ export default function UpdateCategoryCompany({
                       ...cfg,
                       [field]: field === 'min' ? (value === '' ? undefined : parseInt(value)) : value,
                   }
-                : cfg
+                : cfg,
         );
         setOptionalConfigs(updated);
     };
@@ -248,7 +231,7 @@ export default function UpdateCategoryCompany({
                         <DialogTitle>Editar {title}</DialogTitle>
                         <DialogDescription>Modifique los campos para actualizar la categoría de empresa.</DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={submit} className="space-y-3 max-h-[60vh] overflow-y-auto">
+                    <form onSubmit={submit} className="max-h-[60vh] space-y-3 overflow-y-auto">
                         <div className="grid gap-2">
                             <Label htmlFor="nombre">Nombre</Label>
                             <Input
@@ -265,10 +248,7 @@ export default function UpdateCategoryCompany({
                         {isCategorized === '1' && (
                             <div className="grid gap-2">
                                 <Label>Grupos disponibles:</Label>
-                                <Select
-                                    value={data.group_id}
-                                    onValueChange={(value) => setData('group_id', value)}
-                                >
+                                <Select value={data.group_id} onValueChange={(value) => setData('group_id', value)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Seleccione un grupo" />
                                     </SelectTrigger>
@@ -352,7 +332,7 @@ export default function UpdateCategoryCompany({
                                                 href={`/${item.document_url}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="underline text-blue-600"
+                                                className="text-blue-600 underline"
                                             >
                                                 {item.document_name || 'Ver documento'}
                                             </a>
@@ -429,7 +409,7 @@ export default function UpdateCategoryCompany({
                                             onValueChange={(value) => handleChangeOptionalConfig(idx, 'unidad', value)}
                                             disabled={processing}
                                         >
-                                            <SelectTrigger className="min-w-[120px] max-w-[200px]">
+                                            <SelectTrigger className="max-w-[200px] min-w-[120px]">
                                                 <SelectValue placeholder="Seleccione una unidad" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -462,23 +442,11 @@ export default function UpdateCategoryCompany({
                                         </Button>
                                     </div>
                                 ))}
-                                <div className="flex gap-2 mt-1">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={handleAddOptionalConfig}
-                                        disabled={processing}
-                                    >
+                                <div className="mt-1 flex gap-2">
+                                    <Button type="button" variant="outline" size="sm" onClick={handleAddOptionalConfig} disabled={processing}>
                                         <Plus className="mr-1 h-4 w-4" /> Atributo
                                     </Button>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={handleAddOptionalConfigWithMin}
-                                        disabled={processing}
-                                    >
+                                    <Button type="button" variant="outline" size="sm" onClick={handleAddOptionalConfigWithMin} disabled={processing}>
                                         <Plus className="mr-1 h-4 w-4" /> Atributo con mínimo
                                     </Button>
                                 </div>

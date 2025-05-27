@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\View;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -18,9 +19,13 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(Request $request): Response
     {
+        // Obtener el appname compartido por el middleware
+        $appname = View::shared('appname');
+
         return Inertia::render('auth/login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => $request->session()->get('status'),
+            'appname' => $appname,
         ]);
     }
 

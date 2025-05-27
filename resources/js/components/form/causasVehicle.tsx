@@ -1,11 +1,12 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileText, Download, Info, AlertTriangle } from 'lucide-react';
+import {CONST_UNIDAD_DE_MEDIDA} from '@/lib/utils';
 
 // Tipos e interfaces
 export type CategoryAttribute = {
@@ -92,13 +93,68 @@ function ModalExtraForm({
     causaState: CausaState | undefined;
 }) {
     const formState = extraFormData[causaId] || {};
-    const handleChange = (attrId: string | number, value: any, attrName: string) => {
+
+    // Helper para mostrar la unidad legible
+    function getUnitLabel(unit?: string) {
+        if (!unit) return '';
+        const found = CONST_UNIDAD_DE_MEDIDA.find(u => u.value === unit);
+        return found ? found.label : unit;
+    }
+
+    // Helper para validar el valor de un atributo según su min_value
+    function getValidation(attr: any, value: any) {
+        let cumple = false;
+        let regla = '';
+        if (attr.attribute_type === 'fecha' && attr.min_value !== null && attr.min_value !== undefined) {
+            if (attr.min_value === "0") {
+                regla = 'Debe ser mayor o igual a hoy';
+                if (value) {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const inputDate = new Date(value);
+                    inputDate.setHours(0, 0, 0, 0);
+                    cumple = inputDate >= today;
+                }
+            } else if (!isNaN(Number(attr.min_value))) {
+                // min_value numérico: días a futuro
+                regla = `Debe ser al menos dentro de ${attr.min_value} días`;
+                if (value) {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const minDate = new Date(today);
+                    minDate.setDate(today.getDate() + Number(attr.min_value));
+                    const inputDate = new Date(value);
+                    inputDate.setHours(0, 0, 0, 0);
+                    cumple = inputDate >= minDate;
+                }
+            }
+        } else if (attr.attribute_type === 'entero' && attr.min_value !== null && attr.min_value !== undefined) {
+            regla = `Debe ser mayor o igual a ${attr.min_value}`;
+            if (value !== undefined && value !== '' && !isNaN(Number(value))) {
+                cumple = Number(value) >= Number(attr.min_value);
+            }
+        } else if (attr.attribute_type === 'texto') {
+            regla = 'Debe estar lleno';
+            cumple = !!value && value !== '';
+        } else {
+            regla = 'Debe estar lleno';
+            cumple = !!value && value !== '';
+        }
+        return { cumple, regla };
+    }
+
+    // Cambia y guarda valor, nombre, validación y regla, y si está conforme
+    const handleChange = (attrId: string | number, value: any, attrName: string, attr: any) => {
+        const { cumple, regla } = getValidation(attr, value);
         setExtraFormData(prev => ({
             ...prev,
             [causaId]: {
                 ...prev[causaId],
                 [attrId]: value,
-                // No guardar el nombre aquí, solo el valor
+                [`${attrId}_nombre`]: attrName,
+                [`${attrId}_cumple`]: cumple,
+                [`${attrId}_regla`]: regla,
+                [`${attrId}_conforme`]: cumple ? 'Conforme' : 'No Conforme',
             },
         }));
     };
@@ -107,7 +163,6 @@ function ModalExtraForm({
     let tireImg: string | undefined;
     if (causaState?.name) {
         const match = causaState.name.match(/^Neum[aá]ticos\s+(\d+)/i);
-        console.log("Causa State Name:", causaState.name, "Match:", match);
         if (match) {
             const tireCount = match[1];
             const found = TIRE_COUNT_OPTIONS.find(opt => opt.value === tireCount);
@@ -125,33 +180,50 @@ function ModalExtraForm({
                     w-full
                 "
             >
-                {attributes.map(attr => (
-                    <div key={attr.id} className="flex flex-col gap-1">
-                        <Label>{attr.name}</Label>
-                        {attr.attribute_type === 'fecha' && (
-                            <Input
-                                type="date"
-                                value={formState[attr.id] || ''}
-                                onChange={e => handleChange(attr.id, e.target.value, attr.name)}
-                            />
-                        )}
-                        {attr.attribute_type === 'entero' && (
-                            <Input
-                                type="number"
-                                value={formState[attr.id] || ''}
-                                onChange={e => handleChange(attr.id, e.target.value, attr.name)}
-                            />
-                        )}
-                        {attr.attribute_type === 'texto' && (
-                            <Input
-                                type="text"
-                                value={formState[attr.id] || ''}
-                                onChange={e => handleChange(attr.id, e.target.value, attr.name)}
-                            />
-                        )}
-                        {/* ...no mostrar id/valor/nombre aquí... */}
-                    </div>
-                ))}
+                {attributes.map(attr => {
+                    const value = formState[attr.id];
+                    return (
+                        <div key={attr.id} className="flex flex-col gap-1">
+                            <Label>
+                                {attr.name}
+                                {attr.unit && (
+                                    <span className="text-xs text-muted-foreground ml-1">
+                                        ({getUnitLabel(attr.unit)})
+                                    </span>
+                                )}
+                            </Label>
+                            {attr.attribute_type === 'fecha' && (
+                                <Input
+                                    type="date"
+                                    value={value || ''}
+                                    onChange={e => handleChange(attr.id, e.target.value, attr.name, attr)}
+                                />
+                            )}
+                            {attr.attribute_type === 'entero' && (
+                                <Input
+                                    type="number"
+                                    value={value || ''}
+                                    onChange={e => handleChange(attr.id, e.target.value, attr.name, attr)}
+                                />
+                            )}
+                            {attr.attribute_type === 'texto' && (
+                                <Input
+                                    type="text"
+                                    value={value || ''}
+                                    onChange={e => handleChange(attr.id, e.target.value, attr.name, attr)}
+                                />
+                            )}
+                            {/* Mostrar regla, si cumple y conforme */}
+                            {formState[`${attr.id}_regla`] && (
+                                <span className="text-xs mt-1">
+                                    {/* Regla: {formState[`${attr.id}_regla`]}<br />
+                                    Cumple: {formState[`${attr.id}_cumple`] ? 'Sí' : 'No'}<br /> */}
+                                    Estado: {formState[`${attr.id}_conforme`] || ''}
+                                </span>
+                            )}
+                        </div>
+                    );
+                })}
             </form>
             {tireImg && (
                 <div className="w-full flex flex-col items-center mt-4">
@@ -258,40 +330,41 @@ export function CausasTableWithModal({
                 const causa = causas.find(c => c.id === causaState.id);
                 if (!causa || !causa.has_attributes || !causa.category_attributes) return causaState;
 
-                // Solo aplica si hay al menos un atributo tipo fecha con min_value no nulo
-                const fechaAttrs = causa.category_attributes.filter(attr => attr.attribute_type === 'fecha' && attr.min_value !== null);
-                if (fechaAttrs.length === 0) return causaState;
-
+                // Validaciones por atributo: cumple o no cumple
                 const formState = extraFormData[causa.id] || {};
-                let allFechaOk = true;
-                let allOtherOk = true;
-
-                for (const attr of causa.category_attributes) {
+                const validaciones = causa.category_attributes.map(attr => {
                     const value = formState[attr.id];
+                    let cumple = false;
                     if (attr.attribute_type === 'fecha' && attr.min_value !== null) {
-                        // min_value "0" significa debe ser mayor o igual a hoy
-                        if (!value) {
-                            allFechaOk = false;
-                        } else if (attr.min_value === "0") {
-                            const today = new Date();
-                            today.setHours(0, 0, 0, 0);
-                            const inputDate = new Date(value);
-                            inputDate.setHours(0, 0, 0, 0);
-                            if (inputDate < today) {
-                                allFechaOk = false;
+                        if (value) {
+                            if (attr.min_value === "0") {
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+                                const inputDate = new Date(value);
+                                inputDate.setHours(0, 0, 0, 0);
+                                cumple = inputDate >= today;
+                            } else {
+                                // Otros casos de min_value para fecha pueden agregarse aquí
+                                cumple = true;
                             }
                         }
-                        // Si hay otros min_value, puedes agregar más lógica aquí
-                    } else {
-                        // Otros campos: solo verifica que estén llenos
-                        if (!value) {
-                            allOtherOk = false;
+                    } else if (attr.attribute_type === 'entero' && attr.min_value !== null) {
+                        if (value !== undefined && value !== '' && !isNaN(Number(value))) {
+                            cumple = Number(value) >= Number(attr.min_value);
                         }
+                    } else if (attr.attribute_type === 'texto') {
+                        cumple = !!value && value !== '';
+                    } else {
+                        // Otros tipos, considerar como cumple si tiene valor
+                        cumple = !!value && value !== '';
                     }
-                }
+                    return { attrId: attr.id, cumple };
+                });
 
-                // Si todos los campos cumplen, auto-set estado
-                if (allFechaOk && allOtherOk) {
+                // Todos los campos completos y válidos
+                const allCumplen = validaciones.every(v => v.cumple);
+
+                if (allCumplen) {
                     if (causaState.state !== 'Conforme') {
                         return { ...causaState, state: 'Conforme' };
                     }

@@ -67,7 +67,7 @@ class InspectionVehicleController extends Controller
         $reportability = Module::find($reportability_id);
         $companyNombre = Company::find($reportability->company_id)->nombre ?? 'Empresa no encontrada';
 
-        if ($isSecurityEngineer && $this->companyId === '1') {
+        if ($isSecurityEngineer && $this->companyId === $reportability->company_id && $reportability->tipo_inspeccion === 'anual') {
             $reportability->estado = 'Revisado';
             $reportability->save();
         }
@@ -155,6 +155,7 @@ class InspectionVehicleController extends Controller
                                     'id' => $item['id'] ?? null,
                                     'value' => $item['value'] ?? null,
                                     'name' => $item['name'] ?? null,
+                                    'status' => $item['status'] ?? null,
                                 ];
                             }, $causa['extraForm'])
                             : null;

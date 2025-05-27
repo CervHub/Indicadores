@@ -158,7 +158,7 @@
             </td>
             <td style="width:60%;" class="header-title">
                 <div class="th-mayus" style="font-weight:bold; font-size:16px;">INSPECCIÓN VEHICULAR</div>
-              
+
             </td>
             <td style="width:20%;" class="header-meta">
                 <div class="th-mayus"><b>Código:</b> SCJ-RE-18</div>
@@ -280,52 +280,19 @@
                 @php $detalleIndex = 1; @endphp
                 @if (!empty($causa['extraForm']) && is_array($causa['extraForm']))
                     @foreach ($causa['extraForm'] as $detalle)
-                        @php
-                            $valor = $detalle['value'] ?? '';
-                            $isDate = false;
-                            $isNumber = false;
-                            $isEmpty = false;
-                            $bien = false;
-                            $mal = false;
-                            $noaplica = false;
-                            // Detectar si es fecha válida
-                            if (is_string($valor) && preg_match('/^\d{4}-\d{2}-\d{2}/', $valor)) {
-                                $isDate = true;
-                            } elseif (is_numeric($valor)) {
-                                $isNumber = true;
-                            } elseif (is_string($valor)) {
-                                $isEmpty = trim($valor) === '';
-                            }
-                            if ($isDate) {
-                                try {
-                                    $fechaValor = \Carbon\Carbon::parse($valor)->startOfDay();
-                                    $hoy = \Carbon\Carbon::now()->startOfDay();
-                                    $bien = $fechaValor->greaterThanOrEqualTo($hoy);
-                                    $mal = !$bien;
-                                } catch (\Exception $e) {
-                                    $mal = true;
-                                }
-                            } elseif ($isNumber) {
-                                $bien = floatval($valor) >= 0;
-                                $mal = !$bien;
-                            } elseif ($isEmpty) {
-                                $mal = true;
-                            } else {
-                                $bien = true;
-                            }
-                        @endphp
                         <tr>
                             <td>{{ $counter . '.' . $detalleIndex }}</td>
                             <td class="col-item" colspan="1" style="text-align:left; font-style:italic; color:#444;">
                                 {{ $detalle['name'] ?? '' }}
                             </td>
                             <td class="col-estado">
-                                @if ($bien)
+                                @if (!empty($detalle['status']) && $detalle['status'] === true)
                                     <span style="font-size:10px; font-weight:bold;">x</span>
                                 @endif
                             </td>
+
                             <td class="col-estado">
-                                @if ($mal)
+                                @if (isset($detalle['status']) && $detalle['status'] === false)
                                     <span style="font-size:10px; font-weight:bold;">x</span>
                                 @endif
                             </td>

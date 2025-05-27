@@ -15,7 +15,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Combobox } from '@/components/ui/combobox';
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
@@ -23,147 +22,117 @@ interface DataTableProps<TData, TValue> {
 }
 
 export function DataTable<TData extends {
-    brand?: string;
-    model?: string;
-    license_plate?: string;
-    code?: string | null;
-    vehicle_companies?: { company?: { nombre?: string, code?: string }, code?: string, created_at?: string }[];
+    placa?: string;
+    codigo?: string | null;
+    nombre_company?: string;
+    pre_use_estado?: string | null;
+    pre_use_status?: string | null;
+    pre_use_visit_estado?: string | null;
+    pre_use_visit_status?: string | null;
+    trimestral_estado?: string | null;
+    trimestral_status?: string | null;
+    semestral_estado?: string | null;
+    semestral_status?: string | null;
+    anual_estado?: string | null;
+    anual_status?: string | null;
+    // ...otros campos si es necesario...
 }, TValue>({
     columns,
     data,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
-    const [gerenciaFilter, setGerenciaFilter] = React.useState<string>('__all__');
-    // const [tipoReporteFilter, setTipoReporteFilter] = React.useState<string>('__all__');
-    // const [empresaGeneradoraFilter, setEmpresaGeneradoraFilter] = React.useState('');
-    // const [empresaReportadaFilter, setEmpresaReportadaFilter] = React.useState('');
-    // const [estadoFilter, setEstadoFilter] = React.useState<string>('__all__');
     const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 });
 
-    // Opciones únicas para los selects
-    const gerenciaOptions = React.useMemo(() => {
+    // Filtros de búsqueda por Placa y Empresa Vinculada y filtros individuales
+    const [placaSearch, setPlacaSearch] = React.useState('');
+    const [empresaSearch, setEmpresaSearch] = React.useState('');
+    const [globalStatus, setGlobalStatus] = React.useState<string>('__all__');
+    const [inspectionColumnFilters, setInspectionColumnFilters] = React.useState<{ [key: string]: string }>({});
+    const [mainColumnFilters, setMainColumnFilters] = React.useState<{ [key: string]: string }>({});
+
+    // Opciones únicas para los selects de empresa vinculada (para combobox)
+    const empresaVinculadaOptions = React.useMemo(() => {
         const set = new Set<string>();
         data.forEach(row => {
-            if (row.gerencia_name) set.add(row.gerencia_name);
+            if (row.nombre_company) set.add(row.nombre_company);
         });
         return Array.from(set);
     }, [data]);
 
-    // const tipoReporteOptions = React.useMemo(() => {
+    // Opciones únicas para los selects de placa y código (no usados como select, pero pueden ser útiles si se requiere)
+    // const placaOptions = React.useMemo(() => {
     //     const set = new Set<string>();
     //     data.forEach(row => {
-    //         if (row.tipo_reporte) set.add(row.tipo_reporte);
+    //         if (row.placa) set.add(row.placa);
+    //     });
+    //     return Array.from(set);
+    // }, [data]);
+    // const codigoOptions = React.useMemo(() => {
+    //     const set = new Set<string>();
+    //     data.forEach(row => {
+    //         if (row.codigo) set.add(row.codigo);
     //     });
     //     return Array.from(set);
     // }, [data]);
 
-    // const estadoOptions = React.useMemo(() => {
-    //     const set = new Set<string>();
-    //     data.forEach(row => {
-    //         if (row.estado) set.add(row.estado);
-    //     });
-    //     return Array.from(set);
-    // }, [data]);
-
-    // Opciones únicas para empresa generadora y reportada (para combobox)
-    const empresaGeneradoraOptions = React.useMemo(() => {
-        const set = new Set<string>();
-        data.forEach(row => {
-            if (row.company_name) set.add(row.company_name);
-        });
-        return Array.from(set).map(e => ({ value: e, label: e }));
-    }, [data]);
-    const empresaReportadaOptions = React.useMemo(() => {
-        const set = new Set<string>();
-        data.forEach(row => {
-            if (row.company_report_name) set.add(row.company_report_name);
-        });
-        return Array.from(set).map(e => ({ value: e, label: e }));
-    }, [data]);
-
-    // const ultimaEmpresaOptions = React.useMemo(() => {
-    //     const set = new Set<string>();
-    //     data.forEach(row => {
-    //         const companies = row.vehicle_companies ?? [];
-    //         if (companies.length) {
-    //             // Ordenar y tomar la más reciente
-    //             const sorted = [...companies].sort((a, b) =>
-    //                 (b.created_at ?? '') > (a.created_at ?? '') ? 1 : -1
-    //             );
-    //             const nombre = sorted[0]?.company?.nombre;
-    //             if (nombre) set.add(nombre);
-    //         }
-    //     });
-    //     return Array.from(set).map(e => ({ value: e, label: e }));
-    // }, [data]);
-
-    // Filtros de búsqueda por Placa y Última Empresa Vinculada
-    const [placaSearch, setPlacaSearch] = React.useState('');
-    const [ultimaEmpresaSearch, setUltimaEmpresaSearch] = React.useState('');
-
-    // Opciones únicas para última empresa vinculada
-    const ultimaEmpresaOptions = React.useMemo(() => {
-        const set = new Set<string>();
-        data.forEach(row => {
-            const companies = row.vehicle_companies ?? [];
-            if (companies.length) {
-                const sorted = [...companies].sort((a, b) =>
-                    (b.created_at ?? '') > (a.created_at ?? '') ? 1 : -1
-                );
-                const nombre = sorted[0]?.company?.nombre;
-                if (nombre) set.add(nombre);
-            }
-        });
-        return Array.from(set).map(e => ({ value: e, label: e }));
-    }, [data]);
-
-    // Filtro personalizado por gerencia, tipo reporte, empresa generadora, empresa reportada, estado y última empresa vinculada
+    // Filtro personalizado por búsqueda de Placa, Empresa Vinculada, status global, status por columna y filtros principales
     const filteredData = React.useMemo(() => {
         let filtered = data;
-        if (gerenciaFilter !== '__all__') {
-            filtered = filtered.filter(row => row.gerencia_name === gerenciaFilter);
-        }
-        // if (tipoReporteFilter !== '__all__') {
-        //     filtered = filtered.filter(row => row.tipo_reporte === tipoReporteFilter);
-        // }
-        // if (empresaGeneradoraFilter) {
-        //     filtered = filtered.filter(row =>
-        //         row.company_name === empresaGeneradoraFilter
-        //     );
-        // }
-        // if (empresaReportadaFilter) {
-        //     filtered = filtered.filter(row =>
-        //         row.company_report_name === empresaReportadaFilter
-        //     );
-        // }
-        // if (estadoFilter !== '__all__') {
-        //     filtered = filtered.filter(row => row.estado === estadoFilter);
-        // }
-        // Filtro por búsqueda de Placa
-        if (placaSearch) {
+        // Filtros por inputs principales
+        if (mainColumnFilters['placa']) {
             filtered = filtered.filter(row =>
-                (row.license_plate ?? '').toLowerCase().includes(placaSearch.toLowerCase())
+                (row.placa ?? '').toLowerCase().includes(mainColumnFilters['placa'].toLowerCase())
             );
         }
-        // Filtro por búsqueda de Última Empresa Vinculada
-        if (ultimaEmpresaSearch) {
+        if (mainColumnFilters['codigo']) {
+            filtered = filtered.filter(row =>
+                (row.codigo ?? '').toLowerCase().includes(mainColumnFilters['codigo'].toLowerCase())
+            );
+        }
+        if (mainColumnFilters['nombre_company']) {
+            filtered = filtered.filter(row =>
+                (row.nombre_company ?? '').toLowerCase().includes(mainColumnFilters['nombre_company'].toLowerCase())
+            );
+        }
+        // Filtros de búsqueda por Placa y Empresa Vinculada (legacy, puedes eliminar si solo usas los de arriba)
+        if (placaSearch) {
+            filtered = filtered.filter(row =>
+                (row.placa ?? '').toLowerCase().includes(placaSearch.toLowerCase())
+            );
+        }
+        if (empresaSearch) {
+            filtered = filtered.filter(row =>
+                (row.nombre_company ?? '').toLowerCase().includes(empresaSearch.toLowerCase())
+            );
+        }
+        // Filtro global de status (afecta todas las inspecciones)
+        if (globalStatus !== '__all__') {
             filtered = filtered.filter(row => {
-                const companies = row.vehicle_companies ?? [];
-                if (!companies.length) return false;
-                const sorted = [...companies].sort((a, b) =>
-                    (b.created_at ?? '') > (a.created_at ?? '') ? 1 : -1
+                return (
+                    (row.pre_use_status?.toLowerCase() === globalStatus.toLowerCase()) ||
+                    (row.pre_use_visit_status?.toLowerCase() === globalStatus.toLowerCase()) ||
+                    (row.trimestral_status?.toLowerCase() === globalStatus.toLowerCase()) ||
+                    (row.semestral_status?.toLowerCase() === globalStatus.toLowerCase()) ||
+                    (row.anual_status?.toLowerCase() === globalStatus.toLowerCase())
                 );
-                const nombre = sorted[0]?.company?.nombre ?? '';
-                return nombre.toLowerCase().includes(ultimaEmpresaSearch.toLowerCase());
             });
         }
-
+        // Filtros individuales por columna
+        Object.entries(inspectionColumnFilters).forEach(([key, status]) => {
+            if (status !== '__all__') {
+                filtered = filtered.filter(row =>
+                    ((row as any)[key]?.toLowerCase?.() ?? '') === status.toLowerCase()
+                );
+            }
+        });
         return filtered;
     }, [
         data,
-        gerenciaFilter,
+        mainColumnFilters,
         placaSearch,
-        ultimaEmpresaSearch,
+        empresaSearch,
+        globalStatus,
+        inspectionColumnFilters,
     ]);
 
     const table = useReactTable({
@@ -202,7 +171,7 @@ export function DataTable<TData extends {
     return (
         <div>
             {/* Filtros en grid para responsive */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 py-4 w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-4 w-full">
                 <div className="flex flex-col gap-1">
                     <label className="text-sm mb-1">Mostrar</label>
                     <Select value={pagination.pageSize.toString()} onValueChange={handlePageSizeChange}>
@@ -218,54 +187,139 @@ export function DataTable<TData extends {
                     </Select>
                     <span className="text-xs text-muted-foreground mt-1">registros</span>
                 </div>
-                <div className="flex flex-col gap-1">
-                    <label className="text-sm mb-1">Gerencia</label>
-                    <Select value={gerenciaFilter} onValueChange={setGerenciaFilter}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Todas" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="__all__">Todas</SelectItem>
-                            {gerenciaOptions.map((g) => (
-                                <SelectItem key={g} value={g}>{g}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-                {/* Elimina los filtros de tipo reporte, empresa generadora, empresa reportada, estado */}
-                <div className="flex flex-col gap-1">
-                    <label className="text-sm mb-1">Buscar Placa</label>
-                    <Input
-                        value={placaSearch}
-                        onChange={e => setPlacaSearch(e.target.value)}
-                        placeholder="Placa..."
-                        className="w-full"
-                    />
-                </div>
-                <div className="flex flex-col gap-1">
-                    <label className="text-sm mb-1">Empresa </label>
-                    <Combobox
-                        data={ultimaEmpresaOptions}
-                        value={ultimaEmpresaSearch}
-                        onChange={setUltimaEmpresaSearch}
-                        placeholder="Seleccione o escriba empresa..."
-                        className="w-full"
-                        onInputChange={value => {
-                            if (!value) setUltimaEmpresaSearch('');
-                        }}
-                    />
-                </div>
             </div>
             <div className="grid grid-cols-1 rounded-md border">
                 <Table className="text-xs">
                     <TableHeader>
+                        {/* Fila de inputs de filtro por texto para placa, código y empresa; selects para inspecciones */}
+                        <TableRow>
+                            {table.getHeaderGroups()[0].headers.map((header) => {
+                                const colKey = header.column.id;
+                                // Placa
+                                if (colKey === 'placa') {
+                                    return (
+                                        <TableHead key={header.id} style={{ minWidth: '10px', maxWidth: '150px', background: '#f9fafb' }}>
+                                            <Input
+                                                value={mainColumnFilters['placa'] ?? ''}
+                                                onChange={e =>
+                                                    setMainColumnFilters(prev => ({
+                                                        ...prev,
+                                                        placa: e.target.value,
+                                                    }))
+                                                }
+                                                placeholder="Buscar placa"
+                                                className="w-28 h-7 text-xs"
+                                            />
+                                        </TableHead>
+                                    );
+                                }
+                                // Código de Vehículo
+                                if (colKey === 'codigo') {
+                                    return (
+                                        <TableHead key={header.id} style={{ minWidth: '10px', maxWidth: '150px', background: '#f9fafb' }}>
+                                            <Input
+                                                value={mainColumnFilters['codigo'] ?? ''}
+                                                onChange={e =>
+                                                    setMainColumnFilters(prev => ({
+                                                        ...prev,
+                                                        codigo: e.target.value,
+                                                    }))
+                                                }
+                                                placeholder="Buscar código"
+                                                className="w-28 h-7 text-xs"
+                                            />
+                                        </TableHead>
+                                    );
+                                }
+                                // Empresa Vinculada
+                                if (colKey === 'nombre_company') {
+                                    return (
+                                        <TableHead key={header.id} style={{ minWidth: '10px', maxWidth: '150px', background: '#f9fafb' }}>
+                                            <Input
+                                                value={mainColumnFilters['nombre_company'] ?? ''}
+                                                onChange={e =>
+                                                    setMainColumnFilters(prev => ({
+                                                        ...prev,
+                                                        nombre_company: e.target.value,
+                                                    }))
+                                                }
+                                                placeholder="Buscar empresa"
+                                                className="w-28 h-7 text-xs"
+                                            />
+                                        </TableHead>
+                                    );
+                                }
+                                // Inspecciones
+                                if (
+                                    colKey === 'pre_use_estado' ||
+                                    colKey === 'pre_use_visit_estado' ||
+                                    colKey === 'trimestral_estado' ||
+                                    colKey === 'semestral_estado' ||
+                                    colKey === 'anual_estado'
+                                ) {
+                                    let statusKey = '';
+                                    if (colKey === 'pre_use_estado') statusKey = 'pre_use_status';
+                                    if (colKey === 'pre_use_visit_estado') statusKey = 'pre_use_visit_status';
+                                    if (colKey === 'trimestral_estado') statusKey = 'trimestral_status';
+                                    if (colKey === 'semestral_estado') statusKey = 'semestral_status';
+                                    if (colKey === 'anual_estado') statusKey = 'anual_status';
+                                    return (
+                                        <TableHead key={header.id} style={{ minWidth: '10px', maxWidth: '150px', background: '#f9fafb' }}>
+                                            <Select
+                                                value={inspectionColumnFilters[statusKey] ?? '__all__'}
+                                                onValueChange={v =>
+                                                    setInspectionColumnFilters(prev => ({
+                                                        ...prev,
+                                                        [statusKey]: v,
+                                                    }))
+                                                }
+                                            >
+                                                <SelectTrigger className="w-24 h-7 text-xs">
+                                                    <SelectValue placeholder="Todos" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="__all__">Todos</SelectItem>
+                                                    <SelectItem value="aprobado">Aprobado</SelectItem>
+                                                    <SelectItem value="rechazado">Rechazado</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </TableHead>
+                                    );
+                                }
+                                // Celda vacía para otras columnas
+                                return <TableHead key={header.id} />;
+                            })}
+                        </TableRow>
+                        {/* Fila de headers normales */}
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id} style={{ minWidth: '10px', maxWidth: '150px' }}>
-                                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                    </TableHead>
-                                ))}
+                                {headerGroup.headers.map((header) => {
+                                    const colKey = header.column.id;
+                                    if (
+                                        colKey === 'pre_use_estado' ||
+                                        colKey === 'pre_use_visit_estado' ||
+                                        colKey === 'trimestral_estado' ||
+                                        colKey === 'semestral_estado' ||
+                                        colKey === 'anual_estado'
+                                    ) {
+                                        let label = '';
+                                        if (colKey === 'pre_use_estado') label = 'Ins. Diaria';
+                                        if (colKey === 'pre_use_visit_estado') label = 'Ins. Diaria Visita';
+                                        if (colKey === 'trimestral_estado') label = 'Ins. Trimestral';
+                                        if (colKey === 'semestral_estado') label = 'Ins. Semestral';
+                                        if (colKey === 'anual_estado') label = 'Ins. Anual';
+                                        return (
+                                            <TableHead key={header.id} style={{ minWidth: '10px', maxWidth: '150px' }}>
+                                                {label}
+                                            </TableHead>
+                                        );
+                                    }
+                                    return (
+                                        <TableHead key={header.id} style={{ minWidth: '10px', maxWidth: '150px' }}>
+                                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                        </TableHead>
+                                    );
+                                })}
                             </TableRow>
                         ))}
                     </TableHeader>
