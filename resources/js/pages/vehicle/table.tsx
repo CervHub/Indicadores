@@ -62,7 +62,7 @@ const ITEMS_PER_PAGE = 15;
 // Utilidad para descargar QR como PNG en formato rectangular de dos columnas bordeado
 function downloadQRCodeCanvas(vehicle: VehicleData, filename: string) {
     // Configuración editable para QR (solo afecta a esta función)
-    const QR_TITLE = "VEHÍCULO CONTRATISTA - SEGURIDAD CUAJONE";
+    const QR_TITLE = "VEHÍCULO CONTRATISTA";
     const QR_FOOTER = "GERENCIA DEL PROGRAMA DE SEGURIDAD CUAJONE";
     const QR_TITLE_FONT_SIZE = "1.2rem";
     const QR_FOOTER_FONT_SIZE = "0.82rem";
