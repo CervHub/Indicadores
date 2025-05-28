@@ -57,7 +57,7 @@ const staticReports = [
         image: '/reports/IMG-01.png',
         background: '/reports/FONDO%20AMARILLO.svg',
         route: route('format.dailyVehicleInspection'),
-        permissions: ['CA', 'IS', 'RU'],
+        permissions: ['IS', 'RU'],
     },
     {
         title: 'Inspección',
@@ -66,7 +66,7 @@ const staticReports = [
         image: '/reports/IMG-01.png',
         background: '/reports/FONDO%20AMARILLO.svg',
         route: route('format.dailyVehicleInspectionVisit'),
-        permissions: ['CA', 'IS', 'RU'],
+        permissions: ['IS', 'RU'],
     },
     {
         title: 'Inspección',
@@ -75,7 +75,7 @@ const staticReports = [
         image: '/reports/IMG-01.png',
         background: '/reports/FONDO%20ROJO.svg',
         route: route('format.quarterlyVehicleInspection'),
-        permissions: ['CA', 'IS'],
+        permissions: ['IS'],
     },
     {
         title: 'Inspección',
@@ -84,7 +84,7 @@ const staticReports = [
         image: '/reports/IMG-01.png',
         background: '/reports/FONDO%20TURQUESA.svg',
         route: route('format.semiannualVehicleInspection'),
-        permissions: ['CA', 'IS'],
+        permissions: ['IS'],
     },
     {
         title: 'Inspección',
@@ -93,7 +93,7 @@ const staticReports = [
         image: '/reports/IMG-01.png',
         background: '/reports/FONDO%20VERDE.svg',
         route: route('format.annualVehicleShutdownInspection'),
-        permissions: ['CA', 'IS'],
+        permissions: ['IS'],
     },
 ];
 
@@ -106,28 +106,28 @@ export default function Format() {
         report.permissions.includes(ROLE_CODE)
     );
 
-    // if (ROLE_CODE === 'IS') {
-    //     if (COMPANY_ID === '1') {
-    //         // Empresa 1: quitar trimestral y anual
-    //         filteredReports = filteredReports.filter(
-    //             report =>
-    //                 report.route !== route('format.quarterlyVehicleInspection') &&
-    //                 report.route !== route('format.annualVehicleShutdownInspection')
-    //         );
-    //     } else {
-    //         // Otras empresas: quitar semestral
-    //         filteredReports = filteredReports.filter(
-    //             report => report.route !== route('format.semiannualVehicleInspection')
-    //         );
-    //     }
-    // }
+    if (ROLE_CODE === 'IS') {
+        if (COMPANY_ID === '1') {
+            // Empresa 1: quitar trimestral y anual
+            filteredReports = filteredReports.filter(
+                report =>
+                    report.route !== route('format.quarterlyVehicleInspection') &&
+                    report.route !== route('format.annualVehicleShutdownInspection')
+            );
+        } else {
+            // Otras empresas: quitar semestral
+            filteredReports = filteredReports.filter(
+                report => report.route !== route('format.semiannualVehicleInspection')
+            );
+        }
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Formatos" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-3">
-                    {staticReports.map((report, index) => (
+                    {filteredReports.map((report, index) => (
                         <Link
                             key={index}
                             href={report.route}
