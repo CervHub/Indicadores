@@ -21,7 +21,6 @@ interface CreateContractorProps {
 
 type ContractorForm = {
     ruc: string;
-    code: string; // Nuevo campo code
     nombre: string;
     descripcion: string;
     email: string;
@@ -45,7 +44,6 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
 
     const { data, setData, post, processing, errors, reset } = useForm<Required<ContractorForm>>({
         ruc: '',
-        code: '', // Nuevo campo code
         nombre: '',
         descripcion: '',
         email: '',
@@ -53,11 +51,6 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
     });
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-    // Sincroniza el estado local y el del formulario
-    useEffect(() => {
-        setData('email', `${data.ruc}@code.com.pe`);
-    }, [data.ruc]);
 
     // Sincroniza el array de configuraciones con el form
     useEffect(() => {
@@ -177,19 +170,6 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
                                 <InputError message={errors.ruc} />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="code">Código de llamada</Label>
-                                <Input
-                                    id="code"
-                                    type="text"
-                                    required
-                                    value={data.code}
-                                    onChange={(e) => setData('code', e.target.value.toUpperCase())}
-                                    disabled={processing}
-                                    placeholder="Código o correlativo"
-                                />
-                                <InputError message={errors.code} />
-                            </div>
-                            <div className="grid gap-2">
                                 <Label htmlFor="nombre">Nombre</Label>
                                 <Input
                                     id="nombre"
@@ -211,14 +191,22 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
                                     onChange={(e) => setData('descripcion', e.target.value)}
                                     disabled={processing}
                                     placeholder="Descripción (máx. 150 caracteres)"
-                                    required
                                 />
                                 <InputError message={errors.descripcion} />
                             </div>
-                            {/* <div className="grid gap-2">
+                            <div className="grid gap-2">
                                 <Label htmlFor="email">Email</Label>
-                                <Input id="email" type="text" required value={`${data.ruc}@code.com.pe`} disabled placeholder="Email" />
-                            </div> */}
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    required
+                                    value={data.email}
+                                    onChange={(e) => setData('email', e.target.value)}
+                                    disabled={processing}
+                                    placeholder="Email"
+                                />
+                                <InputError message={errors.email} />
+                            </div>
                             {/* NUEVO: Combos dinámicos */}
                             <div className="space-y-2">
                                 <Label>UEA y Tipo de Empresa</Label>
@@ -284,6 +272,7 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
                                     variant="primary"
                                     size="icon"
                                     aria-label="Agregar"
+                                    disabled={ueaCompanyTypes.length >= 3}
                                 >
                                     <Plus className="w-5 h-5" />
                                 </Button>

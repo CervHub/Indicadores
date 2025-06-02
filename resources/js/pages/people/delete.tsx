@@ -8,14 +8,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { toast } from 'sonner';
 
 type DeletePersonForm = {
-    id: string;
+    id: number;
 };
 
 type DeletePersonProps = {
     isOpen?: boolean;
     onOpenChange?: (isOpen: boolean) => void;
     selectedItem: {
-        id: string;
+        id: number;
         nombres: string;
         apellidos: string;
     };
@@ -37,7 +37,7 @@ export default function DeletePerson({ isOpen = false, onOpenChange, selectedIte
     const [isFormValid, setIsFormValid] = useState(false);
 
     useEffect(() => {
-        setIsFormValid(data.id !== '0');
+        setIsFormValid(data.id !== 0);
     }, [data]);
 
     useEffect(() => {
@@ -52,15 +52,15 @@ export default function DeletePerson({ isOpen = false, onOpenChange, selectedIte
         e.preventDefault();
         destroy(route('contrata.personal.destroy', { personal: data.id }), {
             onSuccess: (page) => {
-                const flash = page.props.flash;
+                const flash = page.props.flash as any;
 
-                if (flash.success) {
+                if (flash?.success) {
                     toast.success(flash.success);
                     setIsDialogOpen(false);
                     if (onOpenChange) onOpenChange(false);
                 }
 
-                if (flash.error) {
+                if (flash?.error) {
                     toast.error(flash.error);
                     setIsDialogOpen(true);
                 }

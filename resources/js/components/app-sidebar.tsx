@@ -24,59 +24,26 @@ import {
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
-// SA: 'Super Admin',
-// RU: 'Regular User',
-// CA: 'Company Admin',
-// SCC: 'Sub Comité de Contratistas',
-// ALM: 'Almacenes',
-// PI: 'Proyectos de Inversión',
-// CO: 'Contratos de Obras',
-// CS: 'Contratos y Servicios',
-// IS: 'Ingeniero de Seguridad',
-
-
 // Roles por app
-const appName = import.meta.env.VITE_APP_NAME || 'GestionSST';
-
-const rolesByApp: Record<string, Record<string, string[]>> = {
-    GestionSST: {
-        Dashboard: ['SA', 'IS', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS', 'RU'],
-        Empresas: ['SA'],
-        Gerencias: ['SA'],
-        'Gestión de SSO': ['SA'],
-        Vehículos: [],
-        Indicadores: ['CA'],
-        Consolidados: ['SA', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS'],
-        Reporte: ['SA', 'IS', 'CA', 'SCC'],
-        Formatos: ['RU', 'IS'],
-        Inspecciones: [],
-        Configuración: ['SA'],
-        Personal: ['CA', 'IS'],
-        'Ingeniero de Seguridad': [],
-        Roles: ['CA'],
-    },
-    InspeccionVehicularCuajone: {
-        Dashboard: ['SA', 'IS', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS', 'RU'],
-        Empresas: ['SA'],
-        Gerencias: ['SA'],
-        'Gestión de SSO': ['SA'],
-        Vehículos: ['CA', 'SA'],
-        'Administración de Vehículos': ['CA', 'SA'], // Nuevo elemento
-        Indicadores: [],
-        Consolidados: [],
-        Reporte: [],
-        Formatos: ['RU', 'IS'],
-        Inspecciones: ['CA', 'RU', 'IS'],
-        Configuración: ['SA'],
-        Personal: ['CA', 'IS'],
-        'Ingeniero de Seguridad': [],
-        Roles: ['CA'],
-    },
+const roles: Record<string, string[]> = {
+    Dashboard: ['SA', 'IS', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS', 'RU'],
+    Empresas: ['SA'],
+    Gerencias: ['SA'],
+    'Gestión de SSO': ['SA'],
+    Vehículos: [],
+    Indicadores: ['CA'],
+    Consolidados: ['SA', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS'],
+    Reporte: ['SA', 'IS', 'CA', 'SCC'],
+    Formatos: ['RU', 'IS'],
+    Inspecciones: [],
+    Configuración: ['SA'],
+    Personal: ['CA', 'IS'],
+    'Ingeniero de Seguridad': [],
+    Roles: [],
 };
 
 function getRolesForItem(title: string): string[] {
-    const roles = rolesByApp[appName]?.[title];
-    return roles ?? [];
+    return roles[title] ?? [];
 }
 
 const groupedNavItems = [
@@ -88,7 +55,6 @@ const groupedNavItems = [
             { title: 'Gerencias', url: '/admin/management', icon: Users },
             { title: 'Gestión de SSO', url: '/admin/category', icon: ShieldAlert },
             { title: 'Vehículos', url: '/vehicle', icon: Truck },
-            { title: 'Administración de Vehículos', url: '/vehicle/show/all', icon: Truck }, // Nuevo elemento solo para InspeccionVehicularCuajone
         ],
     },
     {

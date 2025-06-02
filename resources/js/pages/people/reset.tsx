@@ -8,14 +8,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { toast } from 'sonner';
 
 type ResetPasswordForm = {
-    id: string;
+    id: number;
 };
 
 type ResetPasswordProps = {
     isOpen?: boolean;
     onOpenChange?: (isOpen: boolean) => void;
     selectedItem: {
-        id: string;
+        id: number;
         nombres: string;
         apellidos: string;
         doi: string; // DNI del usuario
@@ -38,7 +38,7 @@ export default function ResetPassword({ isOpen = false, onOpenChange, selectedIt
     const [isFormValid, setIsFormValid] = useState(false);
 
     useEffect(() => {
-        setIsFormValid(data.id !== '0');
+        setIsFormValid(data.id !== 0);
     }, [data]);
 
     useEffect(() => {

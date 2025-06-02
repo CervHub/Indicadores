@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, CheckCircle, Edit, Key, Trash2 } from 'lucide-react'; // Importar el ícono Key
+import { ArrowUpDown, CheckCircle, Edit, Key, Trash2 } from 'lucide-react';
 
 export type Person = {
     id: number;
@@ -11,11 +11,17 @@ export type Person = {
     email: string;
     nombres: string;
     apellidos: string;
-    telefono: string | null;
+    telefono: string;
     estado: string;
     created_at: string;
     updated_at: string;
     cargo: string;
+    role_id: number;
+    role?: {
+        id: number;
+        nombre: string;
+        code: string;
+    };
 };
 
 export const getColumns = (handleAction: (action: string, id: number) => void): ColumnDef<Person>[] => [
@@ -32,25 +38,22 @@ export const getColumns = (handleAction: (action: string, id: number) => void): 
         cell: ({ row }) => row.original.id,
     },
     {
-        accessorKey: 'nombres',
+        id: 'nombre_completo',
         header: ({ column }) => {
             return (
                 <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-                    Nombres
+                    Nombre Completo
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             );
         },
-    },
-    {
-        accessorKey: 'apellidos',
-        header: ({ column }) => {
-            return (
-                <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-                    Apellidos
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-            );
+        cell: ({ row }) => {
+            return `${row.original.nombres} ${row.original.apellidos}`;
+        },
+        sortingFn: (rowA, rowB) => {
+            const nameA = `${rowA.original.nombres} ${rowA.original.apellidos}`;
+            const nameB = `${rowB.original.nombres} ${rowB.original.apellidos}`;
+            return nameA.localeCompare(nameB);
         },
     },
     {
@@ -58,12 +61,45 @@ export const getColumns = (handleAction: (action: string, id: number) => void): 
         header: 'Email',
     },
     {
-        accessorKey: 'telefono',
-        header: 'Teléfono',
+        accessorKey: 'role',
+        header: ({ column }) => {
+            return (
+                <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+                    Rol
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            );
+        },
+        cell: ({ row }) => {
+            const role = row.original.role;
+            return role?.nombre || 'Sin rol';
+        },
     },
     {
-        accessorKey: 'cargo',
-        header: 'Cargo',
+        accessorKey: 'doi',
+        header: ({ column }) => {
+            return (
+                <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+                    DNI
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            );
+        },
+    },
+    {
+        accessorKey: 'updated_at',
+        header: ({ column }) => {
+            return (
+                <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+                    Fecha Modificación
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            );
+        },
+        cell: ({ row }) => {
+            const date = new Date(row.original.updated_at);
+            return date.toLocaleString('es-ES');
+        },
     },
     {
         accessorKey: 'estado',

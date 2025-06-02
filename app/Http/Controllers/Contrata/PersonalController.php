@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\RoleUser;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -16,14 +17,23 @@ class PersonalController extends Controller
     public function index()
     {
         $excludedRoles = Role::whereIn('code', ['SA', 'CA'])->pluck('id');
+        $roles = Role::whereNotIn('code', ['SA', 'CA'])->get();
         $company_id = Auth::user()->company_id;
+
+
+        if ($company_id !== '1') {
+
+            $roles = Role::whereIn('code', ['RU', 'IS'])->get();
+        }
 
         $people = User::whereNotIn('role_id', $excludedRoles)
             ->where('company_id', $company_id)
+            ->with('role') // Eager load the role relationship
             ->get();
 
         return Inertia::render('people/index', [
-            'people' => $people
+            'people' => $people,
+            'roles' => $roles,
         ]);
     }
 
@@ -34,11 +44,14 @@ class PersonalController extends Controller
             'doi' => 'required|unique:users,doi',
             'nombres' => 'required',
             'apellidos' => 'required',
+            'role_id' => 'required|exists:roles,id',
         ], [
             'doi.required' => 'El campo DNI es obligatorio.',
             'doi.unique' => 'El DNI ya está registrado.',
             'nombres.required' => 'El campo nombres es obligatorio.',
             'apellidos.required' => 'El campo apellidos es obligatorio.',
+            'role_id.required' => 'Debe seleccionar un rol.',
+            'role_id.exists' => 'El rol seleccionado no es válido.',
         ]);
 
         try {
@@ -53,10 +66,17 @@ class PersonalController extends Controller
                 'email' => $request->email, // Opcional
                 'cargo' => $request->cargo,
                 'company_id' => Auth::user()->company_id,
-                'role_id' => Role::where('code', 'RU')->first()->id, // Asignar el rol RU
+                'role_id' => $request->role_id, // Mantener compatibilidad
             ]);
 
             $user->save();
+
+            // Crear o actualizar el registro en role_users
+            // Con restricción de un solo rol por usuario
+            RoleUser::updateOrCreate(
+                ['user_id' => $user->id], // Buscar por user_id
+                ['role_id' => $request->role_id] // Actualizar o crear con el nuevo role_id
+            );
 
             return redirect()->back()->with('success', 'Usuario creado con éxito.');
         } catch (\Exception $e) {
@@ -73,11 +93,14 @@ class PersonalController extends Controller
                 'doi' => 'required|unique:users,doi,' . $id,
                 'nombres' => 'required',
                 'apellidos' => 'required',
+                'role_id' => 'required|exists:roles,id',
             ], [
                 'doi.required' => 'El campo DNI es obligatorio.',
                 'doi.unique' => 'El DNI ya está registrado.',
                 'nombres.required' => 'El campo nombres es obligatorio.',
                 'apellidos.required' => 'El campo apellidos es obligatorio.',
+                'role_id.required' => 'Debe seleccionar un rol.',
+                'role_id.exists' => 'El rol seleccionado no es válido.',
             ]);
 
             $person = User::findOrFail($id);
@@ -87,7 +110,15 @@ class PersonalController extends Controller
             $person->apellidos = $request->apellidos;
             $person->telefono = $request->telefono;
             $person->cargo = $request->cargo;
+            $person->role_id = $request->role_id; // Actualizar el rol en la tabla users
             $person->save();
+
+            // Actualizar o crear el registro en role_users
+            // Con restricción de un solo rol por usuario
+            RoleUser::updateOrCreate(
+                ['user_id' => $id], // Buscar por user_id
+                ['role_id' => $request->role_id] // Actualizar o crear con el nuevo role_id
+            );
 
             return redirect()->route('contrata.personal')->with('success', 'Personal actualizado correctamente');
         } catch (\Exception $e) {

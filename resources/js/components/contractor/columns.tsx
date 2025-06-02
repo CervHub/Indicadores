@@ -12,6 +12,7 @@ export type Contractor = {
     ruc: string;
     nombre: string;
     estado: string;
+    email?: string;
     updated_at?: string; // Asegúrate de tener este campo
 };
 
@@ -57,6 +58,26 @@ export const getColumns = (
             cell: ({ row }) => (
                 <span className="block truncate max-w-[120px] whitespace-nowrap">
                     {row.original.ruc}
+                </span>
+            ),
+        },
+        {
+            accessorKey: 'email',
+            size: 200,
+            enableSorting: true,
+            header: ({ column }) => (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                    className="w-full justify-start"
+                >
+                    Correo de contacto
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            ),
+            cell: ({ row }) => (
+                <span className="block truncate max-w-[180px] whitespace-nowrap text-sm">
+                    {row.original.email || '-'}
                 </span>
             ),
         },

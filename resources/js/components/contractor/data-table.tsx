@@ -59,7 +59,8 @@ export function DataTable<TData extends { nombre?: string; ruc?: string; estado?
       filtered = filtered.filter((row) =>
         (row.nombre && row.nombre.toLowerCase().includes(filter)) ||
         (row.ruc && row.ruc.toLowerCase().includes(filter)) ||
-        (row.estado && row.estado.toLowerCase().includes(filter))
+        (row.estado && row.estado.toLowerCase().includes(filter)) ||
+        (row.email && row.email.toLowerCase().includes(filter))
       );
     }
     if (estadoFilter && estadoFilter !== "__all__") {

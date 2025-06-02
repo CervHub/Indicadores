@@ -2,8 +2,8 @@ import { useForm, usePage } from '@inertiajs/react';
 import { LoaderCircle, Trash2, Plus } from 'lucide-react';
 import { FormEventHandler, useEffect, useState } from 'react';
 import { Combobox } from '@/components/ui/combobox';
-import { 
-    Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+import {
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select';
 
 import InputError from '@/components/input-error';
@@ -20,7 +20,6 @@ type UeaCompanyType = {
 
 type ContractorForm = {
     id: string;
-    code: string; // Agrega el campo code
     ruc: string | null;
     nombre: string | null;
     descripcion: string | null;
@@ -49,7 +48,6 @@ export default function EditContractor({
     // Inicializa el form
     const { data, setData, put, processing, errors, reset } = useForm<Required<ContractorForm>>({
         id: contractor?.id || '',
-        code: contractor?.code || '', // Inicializa code
         ruc: contractor?.ruc || '',
         nombre: contractor?.nombre || '',
         descripcion: contractor?.descripcion || '',
@@ -62,7 +60,6 @@ export default function EditContractor({
         if (contractor) {
             setData({
                 id: contractor.id,
-                code: contractor.code || '', // Asigna code
                 ruc: contractor.ruc,
                 nombre: contractor.nombre,
                 descripcion: contractor.descripcion,
@@ -85,10 +82,6 @@ export default function EditContractor({
     useEffect(() => {
         setData('ueaCompanyTypes', ueaCompanyTypes);
     }, [ueaCompanyTypes, setData]);
-
-    useEffect(() => {
-        setData('email', `${data.ruc}@code.com.pe`);
-    }, [data.ruc, setData]);
 
     // Handlers para combos dinámicos (igual que en create)
     const handleUeaChange = (idx: number, value: string) => {
@@ -196,19 +189,6 @@ export default function EditContractor({
                             <InputError message={errors.ruc} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="code">Código</Label>
-                            <Input
-                                id="code"
-                                type="text"
-                                required
-                                value={data.code || ''}
-                                onChange={(e) => setData('code', e.target.value)}
-                                disabled={processing}
-                                placeholder="Código o correlativo"
-                            />
-                            <InputError message={errors.code} />
-                        </div>
-                        <div className="grid gap-2">
                             <Label htmlFor="nombre">Nombre</Label>
                             <Input
                                 id="nombre"
@@ -226,13 +206,25 @@ export default function EditContractor({
                             <Input
                                 id="descripcion"
                                 type="text"
-                                required
                                 value={data.descripcion || ''}
                                 onChange={(e) => setData('descripcion', e.target.value)}
                                 disabled={processing}
                                 placeholder="Descripción"
                             />
                             <InputError message={errors.descripcion} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                required
+                                value={data.email || ''}
+                                onChange={(e) => setData('email', e.target.value)}
+                                disabled={processing}
+                                placeholder="Email"
+                            />
+                            <InputError message={errors.email} />
                         </div>
                         {/* NUEVO: Combos dinámicos */}
                         <div className="space-y-2">

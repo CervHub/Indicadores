@@ -8,14 +8,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { toast } from 'sonner';
 
 type ActivatePersonForm = {
-    id: string;
+    id: number;
 };
 
 type ActivatePersonProps = {
     isOpen?: boolean;
     onOpenChange?: (isOpen: boolean) => void;
     selectedItem: {
-        id: string;
+        id: number;
         nombres: string;
         apellidos: string;
     };
@@ -37,7 +37,7 @@ export default function ActivatePerson({ isOpen = false, onOpenChange, selectedI
     const [isFormValid, setIsFormValid] = useState(false);
 
     useEffect(() => {
-        setIsFormValid(data.id !== '0');
+        setIsFormValid(data.id !== 0);
     }, [data]);
 
     useEffect(() => {

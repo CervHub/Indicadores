@@ -20,10 +20,10 @@ class OwnerMiddleware
         $host = $request->getHost();
         $appname = match ($host) {
             'newgestionsst.cursso.digital' => 'GestionSST',
-            'cuajonesst.cursso.digital'    => 'InspeccionVehicularCuajone',
-            'localhost'                    => 'InspeccionVehicularCuajone',
+            'cuajonesst.cursso.digital'    => 'GestionSST',
+            'localhost'                    => 'GestionSST',
             '127.0.0.1'                    => 'GestionSST',
-            default                        => 'DefaultApp',
+            default                        => 'GestionSST',
         };
 
         View::share('appname', $appname);

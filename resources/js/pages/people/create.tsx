@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import { toast } from 'sonner';
 type PersonForm = {
@@ -16,21 +17,38 @@ type PersonForm = {
     apellidos: string;
     telefono: string;
     cargo: string;
+    role_id: string;
+};
+
+type Role = {
+    id: number;
+    code: string;
+    nombre: string;
+    descripcion: string;
+    estado: string;
+    created_at: string;
+    updated_at: string;
 };
 
 type CreatePersonProps = {
     isOpen?: boolean;
     onOpenChange?: (isOpen: boolean) => void;
+    roles: Role[];
 };
 
-export default function CreatePerson({ isOpen = false, onOpenChange }: CreatePersonProps) {
-    const { data, setData, post, processing, errors, reset } = useForm<PersonForm>({
+export default function CreatePerson({ isOpen = false, onOpenChange, roles }: CreatePersonProps) {
+    // Encontrar el rol con código "RU" y establecerlo como valor por defecto
+    const defaultRole = roles.find(role => role.code === 'RU');
+    const defaultRoleId = defaultRole ? defaultRole.id.toString() : '';
+
+    const { data, setData, post, processing, errors, reset, clearErrors } = useForm<PersonForm>({
         doi: '',
         email: '',
         nombres: '',
         apellidos: '',
         telefono: '',
         cargo: '',
+        role_id: defaultRoleId,
     });
 
     const [isDialogOpen, setIsDialogOpen] = useState(isOpen);
@@ -45,26 +63,38 @@ export default function CreatePerson({ isOpen = false, onOpenChange }: CreatePer
         setIsFormValid(data.doi.trim() !== '' && data.nombres.trim() !== '' && data.apellidos.trim() !== '');
     }, [data.doi, data.nombres, data.apellidos]);
 
+    // Reset form when dialog closes
+    const handleDialogChange = (open: boolean) => {
+        setIsDialogOpen(open);
+        if (onOpenChange) onOpenChange(open);
+
+        // Reset form when dialog closes
+        if (!open) {
+            reset();
+            clearErrors();
+        }
+    };
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post(route('contrata.personal.store'), {
             onSuccess: (page) => {
-                const flash = page.props.flash;
+                const flash = page.props.flash as any;
 
-                if (flash.success) {
+                if (flash?.success) {
                     toast.success(flash.success);
-                    setIsDialogOpen(false);
                     reset();
+                    clearErrors();
+                    setIsDialogOpen(false);
                     if (onOpenChange) onOpenChange(false);
                 }
 
-                if (flash.error) {
+                if (flash?.error) {
                     toast.error(flash.error);
                 }
             },
             onError: (errors) => {
                 setIsDialogOpen(true);
-
                 toast.error('Ocurrió un error al crear la persona.');
             },
         });
@@ -74,10 +104,7 @@ export default function CreatePerson({ isOpen = false, onOpenChange }: CreatePer
         <div>
             <Dialog
                 open={isDialogOpen}
-                onOpenChange={(open) => {
-                    setIsDialogOpen(open);
-                    if (onOpenChange) onOpenChange(open);
-                }}
+                onOpenChange={handleDialogChange}
             >
                 <div className="flex justify-start">
                     <DialogTrigger asChild>
@@ -119,6 +146,22 @@ export default function CreatePerson({ isOpen = false, onOpenChange }: CreatePer
                             <Label htmlFor="cargo">Cargo</Label>
                             <Input id="cargo" value={data.cargo} onChange={(e) => setData('cargo', e.target.value)} />
                             <InputError message={errors.cargo} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="role_id">Rol</Label>
+                            <Select value={data.role_id} onValueChange={(value) => setData('role_id', value)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Seleccionar rol" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {roles.map((role) => (
+                                        <SelectItem key={role.id} value={role.id.toString()}>
+                                            {role.nombre} ({role.code})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.role_id} />
                         </div>
                         <Button type="submit" className="mt-2" disabled={processing || !isFormValid}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}

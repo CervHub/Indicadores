@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import { toast } from 'sonner';
 
@@ -18,16 +19,28 @@ type PersonForm = {
     apellidos: string;
     telefono: string;
     cargo: string;
+    role_id: number;
+};
+
+type Role = {
+    id: number;
+    code: string;
+    nombre: string;
+    descripcion: string;
+    estado: string;
+    created_at: string;
+    updated_at: string;
 };
 
 type EditPersonProps = {
     isOpen?: boolean;
     onOpenChange?: (isOpen: boolean) => void;
-    person?: PersonForm;
+    person?: PersonForm & { role_id: number };
+    roles: Role[];
 };
 
-export default function EditPerson({ isOpen = false, onOpenChange, person }: EditPersonProps) {
-    const { data, setData, put, processing, errors, reset } = useForm<PersonForm>({
+export default function EditPerson({ isOpen = false, onOpenChange, person, roles }: EditPersonProps) {
+    const { data, setData, put, processing, errors, reset, clearErrors } = useForm<PersonForm>({
         id: person?.id || 0,
         doi: person?.doi || '',
         email: person?.email || '',
@@ -35,6 +48,7 @@ export default function EditPerson({ isOpen = false, onOpenChange, person }: Edi
         apellidos: person?.apellidos || '',
         telefono: person?.telefono || '',
         cargo: person?.cargo || '',
+        role_id: person?.role_id || 0,
     });
 
     const [isDialogOpen, setIsDialogOpen] = useState(isOpen);
@@ -54,6 +68,7 @@ export default function EditPerson({ isOpen = false, onOpenChange, person }: Edi
                 apellidos: person.apellidos,
                 telefono: person.telefono,
                 cargo: person.cargo,
+                role_id: person.role_id || 0,
             });
         }
     }, [person, setData]);
@@ -71,7 +86,6 @@ export default function EditPerson({ isOpen = false, onOpenChange, person }: Edi
 
                 if (flash.success) {
                     toast.success(flash.success);
-                    reset();
                     setIsDialogOpen(false);
                     if (onOpenChange) onOpenChange(false);
                 }
@@ -87,21 +101,28 @@ export default function EditPerson({ isOpen = false, onOpenChange, person }: Edi
         });
     };
 
+    // Reset form when dialog closes
+    const handleDialogChange = (open: boolean) => {
+        setIsDialogOpen(open);
+        if (onOpenChange) onOpenChange(open);
+
+        if (!open) {
+            clearErrors();
+        }
+    };
+
     return (
         <div>
             <Dialog
                 open={isDialogOpen}
-                onOpenChange={(open) => {
-                    setIsDialogOpen(open);
-                    if (onOpenChange) onOpenChange(open);
-                }}
+                onOpenChange={handleDialogChange}
             >
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle>Editar Persona</DialogTitle>
                         <DialogDescription>Complete los campos para editar la persona.</DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={submit} className="space-y-3" method="post" action={route('contrata.personal.update', person?.doi)}>
+                    <form onSubmit={submit} className="space-y-3" method="post" action={route('contrata.personal.update', person?.id)}>
                         <div className="grid gap-2">
                             <Label htmlFor="doi">DOI</Label>
                             <Input id="doi" value={data.doi} onChange={(e) => setData('doi', e.target.value)} />
@@ -131,6 +152,22 @@ export default function EditPerson({ isOpen = false, onOpenChange, person }: Edi
                             <Label htmlFor="cargo">Cargo</Label>
                             <Input id="cargo" value={data.cargo} onChange={(e) => setData('cargo', e.target.value)} />
                             <InputError message={errors.cargo} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="role_id">Rol</Label>
+                            <Select value={data.role_id} onValueChange={(value) => setData('role_id', value)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Seleccionar rol" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {roles.map((role) => (
+                                        <SelectItem key={role.id} value={role.id.toString()}>
+                                            {role.nombre} ({role.code})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.role_id} />
                         </div>
                         <Button type="submit" className="mt-2" disabled={processing || !isFormValid}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}

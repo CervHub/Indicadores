@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Mobile\AuthenticateController;
 use App\Http\Controllers\Api\Mobile\ZoneController;
+use App\Http\Controllers\Api\UtilityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,7 +25,7 @@ Route::get('/connection', function () {
     return response()->json(['status' => true, 'message' => 'Conexión exitosa'], 200);
 });
 
-Route::post('/authenticate', [AuthenticateController::class, 'authenticate']);
+Route::post('/authenticate', [UtilityController::class, 'authenticate']);
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     // Obtener zonas

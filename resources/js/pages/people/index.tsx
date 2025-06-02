@@ -1,5 +1,5 @@
 import { getColumns, Person } from '@/components/person/columns';
-import { DataTable } from '@/components/reportability/data-table';
+import { DataTable } from '@/components/person/data-table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
@@ -18,7 +18,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function ReportabilityPage() {
-    const { people } = usePage<{ people: Person[] }>().props;
+    const { people, roles } = usePage<{ people: Person[], roles: any[] }>().props;
 
     const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -45,14 +45,14 @@ export default function ReportabilityPage() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Personal" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <CreatePerson />
+                <CreatePerson roles={roles} />
                 <div className="w-full max-w-full overflow-x-auto">
                     <DataTable columns={getColumns(handleAction)} data={people} />
                 </div>
             </div>
             {selectedPerson && (
                 <>
-                    <EditPerson isOpen={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} person={selectedPerson} />
+                    <EditPerson isOpen={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} person={selectedPerson} roles={roles} />
                     <DeletePerson isOpen={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen} selectedItem={selectedPerson} />
                     <ActivatePerson isOpen={isActivateDialogOpen} onOpenChange={setIsActivateDialogOpen} selectedItem={selectedPerson} />
                     <ResetPassword isOpen={isResetDialogOpen} onOpenChange={setIsResetDialogOpen} selectedItem={selectedPerson} />
