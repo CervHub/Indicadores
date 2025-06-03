@@ -22,11 +22,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function ReportabilityPage() {
-    const { reportability_id, reportability, isSecurityEngineer } = usePage<{
+    const { reportability_id, reportability, isSecurityEngineer, canCloseReport } = usePage<{
         reportability_id: number;
         reportability: any;
         isSecurityEngineer: boolean;
+        canCloseReport: boolean;
     }>().props;
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -125,7 +127,7 @@ export default function ReportabilityPage() {
                                 variant="destructive"
                                 className="mt-4 w-auto"
                                 onClick={() => setIsDialogOpen(true)}
-                                disabled={reportability.estado === 'Finalizado' || !isSecurityEngineer}
+                                disabled={!canCloseReport || reportability.estado === 'Finalizado' || !isSecurityEngineer}
                             >
                                 Finalizar Reporte
                             </Button>

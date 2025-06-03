@@ -40,11 +40,15 @@ class ReportabilityController extends Controller
             COALESCE(m.descripcion, '-') AS DESCRIPCION_EVENTO,
             COALESCE(m.gravedad, '-') AS NIVEL_RIESGO,
             COALESCE(m.correctiva, '-') AS ACCION_CORRECTIVA,
-            COALESCE(cc.nombre, '-') AS CAUSAS
+            COALESCE(cc.nombre, '-') AS CAUSAS,
+            m.user_report_id,
+            COALESCE(CONCAT(ur.nombres, ' ', ur.apellidos), '-') AS ENCARGADO_CIERRE
         FROM
             modules AS m
         INNER JOIN
             users AS u ON u.id = m.user_id
+        LEFT JOIN
+            users AS ur ON ur.id = m.user_report_id
         LEFT JOIN
             companies AS c ON c.id = m.company_id
         LEFT JOIN
@@ -124,11 +128,15 @@ class ReportabilityController extends Controller
             c.id AS company_id,
             c.nombre AS company_name,
             m.company_report_id,
-            cr.nombre AS company_report_name
+            cr.nombre AS company_report_name,
+            m.user_report_id,
+            COALESCE(CONCAT(ur.nombres, ' ', ur.apellidos), 'No asignado') AS encargado_cierre
         FROM
             modules AS m
         INNER JOIN
             users AS u ON u.id = m.user_id
+        LEFT JOIN
+            users AS ur ON ur.id = m.user_report_id
         LEFT JOIN
             entities AS e ON e.id =
                 CASE
@@ -179,11 +187,24 @@ class ReportabilityController extends Controller
     public function detalle($reportability_id)
     {
         $user = auth()->user();
+        $module = Module::select('company_report_id', 'company_id', 'estado', 'user_id', 'user_report_id')->findOrFail($reportability_id);
+
+        $canCloseReport = false; // Variable para determinar si el usuario puede cerrar el reporte
+
         if ($user->isSecurityEngineer()) {
-            $reportability = Module::findOrFail($reportability_id);
-            if ($reportability->estado !== 'Finalizado') {
-                $reportability->estado = 'Revisado';
-                $reportability->save();
+            if ($module->estado !== 'Finalizado') {
+                // Regla 1: El reporte pertenece a mi empresa y la empresa reportada es Southern (ID 1), además estoy asignado para cerrarlo (user_report_id)
+                if ($module->company_id === $user->company_id && $module->company_report_id === 1 && $module->user_report_id === $user->id) {
+                    $module->estado = 'Revisado';
+                    $module->save();
+                    $canCloseReport = true; // El usuario puede cerrar el reporte
+                }
+                // Regla 2: La empresa reportada es igual a mi empresa y estoy asignado para cerrarlo
+                elseif ($module->company_report_id === $user->company_id && $module->user_report_id === $user->id) {
+                    $module->estado = 'Revisado';
+                    $module->save();
+                    $canCloseReport = true; // El usuario puede cerrar el reporte
+                }
             }
         }
 
@@ -201,15 +222,19 @@ class ReportabilityController extends Controller
             m.company_id,
             c.nombre AS company_name,
             m.company_report_id,
-            COALESCE(cr.nombre, 'No especificado') AS company_report_name, -- Manejar null en company_report_id
+            COALESCE(cr.nombre, 'No especificado') AS company_report_name,
             m.fecha_reporte,
-            m.fecha_evento
+            m.fecha_evento,
+            m.user_report_id,
+            COALESCE(CONCAT(ur.nombres, ' ', ur.apellidos), 'No asignado') AS encargado_cierre
         FROM
             modules AS m
         INNER JOIN
             companies AS c ON c.id = m.company_id
         LEFT JOIN
             companies AS cr ON cr.id = m.company_report_id
+        LEFT JOIN
+            users AS ur ON ur.id = m.user_report_id
         WHERE
             m.id = ?
         ";
@@ -220,6 +245,7 @@ class ReportabilityController extends Controller
             'reportability' => $reportability,
             'reportability_id' => $reportability_id,
             'isSecurityEngineer' => $user->isSecurityEngineer(),
+            'canCloseReport' => $canCloseReport,
         ]);
     }
 
@@ -246,7 +272,7 @@ class ReportabilityController extends Controller
         if ($user->role_id != 1 && $user->company_id != $reportability->company_id && $user->company_id != 1) {
             abort(403, 'Usted no está habilitado para ver este reporte.');
         }
-        
+
 
         $name = "Reporte de reportabilidad {$reportability->fecha_reporte}.pdf";
 

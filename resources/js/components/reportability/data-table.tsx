@@ -28,6 +28,7 @@ export function DataTable<TData extends {
     company_name?: string;
     company_report_name?: string;
     estado?: string;
+    encargado_cierre?: string;
 }, TValue>({
     columns,
     data,
@@ -38,6 +39,7 @@ export function DataTable<TData extends {
     const [empresaGeneradoraFilter, setEmpresaGeneradoraFilter] = React.useState('');
     const [empresaReportadaFilter, setEmpresaReportadaFilter] = React.useState('');
     const [estadoFilter, setEstadoFilter] = React.useState<string>('__all__');
+    const [encargadoCierreFilter, setEncargadoCierreFilter] = React.useState('');
     const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 });
 
     // Opciones únicas para los selects
@@ -65,7 +67,7 @@ export function DataTable<TData extends {
         return Array.from(set);
     }, [data]);
 
-    // Opciones únicas para empresa generadora y reportada (para combobox)
+    // Opciones únicas para empresa generadora, reportada y encargado de cierre (para combobox)
     const empresaGeneradoraOptions = React.useMemo(() => {
         const set = new Set<string>();
         data.forEach(row => {
@@ -73,6 +75,7 @@ export function DataTable<TData extends {
         });
         return Array.from(set).map(e => ({ value: e, label: e }));
     }, [data]);
+
     const empresaReportadaOptions = React.useMemo(() => {
         const set = new Set<string>();
         data.forEach(row => {
@@ -81,7 +84,17 @@ export function DataTable<TData extends {
         return Array.from(set).map(e => ({ value: e, label: e }));
     }, [data]);
 
-    // Filtro personalizado por gerencia, tipo reporte, empresa generadora, empresa reportada y estado
+    const encargadoCierreOptions = React.useMemo(() => {
+        const set = new Set<string>();
+        data.forEach(row => {
+            if (row.encargado_cierre && row.encargado_cierre !== '-' && row.encargado_cierre.trim() !== '') {
+                set.add(row.encargado_cierre);
+            }
+        });
+        return Array.from(set).map(e => ({ value: e, label: e }));
+    }, [data]);
+
+    // Filtro personalizado por gerencia, tipo reporte, empresa generadora, empresa reportada, estado y encargado de cierre
     const filteredData = React.useMemo(() => {
         let filtered = data;
         if (gerenciaFilter !== '__all__') {
@@ -103,8 +116,13 @@ export function DataTable<TData extends {
         if (estadoFilter !== '__all__') {
             filtered = filtered.filter(row => row.estado === estadoFilter);
         }
+        if (encargadoCierreFilter) {
+            filtered = filtered.filter(row =>
+                row.encargado_cierre === encargadoCierreFilter
+            );
+        }
         return filtered;
-    }, [data, gerenciaFilter, tipoReporteFilter, empresaGeneradoraFilter, empresaReportadaFilter, estadoFilter]);
+    }, [data, gerenciaFilter, tipoReporteFilter, empresaGeneradoraFilter, empresaReportadaFilter, estadoFilter, encargadoCierreFilter]);
 
     const table = useReactTable({
         data: filteredData,
@@ -141,12 +159,12 @@ export function DataTable<TData extends {
 
     return (
         <div>
-            {/* Filtros en grid para responsive */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 py-4 w-full">
-                <div className="flex flex-col gap-1">
+            {/* Filtros en flex para responsive */}
+            <div className="flex flex-wrap gap-4 py-4 w-full">
+                <div className="flex flex-col gap-1 min-w-[120px]">
                     <label className="text-sm mb-1">Mostrar</label>
                     <Select value={pagination.pageSize.toString()} onValueChange={handlePageSizeChange}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -158,7 +176,7 @@ export function DataTable<TData extends {
                     </Select>
                     <span className="text-xs text-muted-foreground mt-1">registros</span>
                 </div>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 min-w-[150px]">
                     <label className="text-sm mb-1">Gerencia</label>
                     <Select value={gerenciaFilter} onValueChange={setGerenciaFilter}>
                         <SelectTrigger>
@@ -172,7 +190,7 @@ export function DataTable<TData extends {
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 min-w-[150px]">
                     <label className="text-sm mb-1">Tipo Reporte</label>
                     <Select value={tipoReporteFilter} onValueChange={setTipoReporteFilter}>
                         <SelectTrigger>
@@ -186,33 +204,43 @@ export function DataTable<TData extends {
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 min-w-[200px]">
                     <label className="text-sm mb-1">Empresa Generadora</label>
                     <Combobox
                         data={empresaGeneradoraOptions}
                         value={empresaGeneradoraFilter}
                         onChange={setEmpresaGeneradoraFilter}
                         placeholder="Seleccione Empresa Generadora..."
-                        className="w-full"
                         onInputChange={value => {
                             if (!value) setEmpresaGeneradoraFilter('');
                         }}
                     />
                 </div>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 min-w-[200px]">
                     <label className="text-sm mb-1">Empresa Reportada</label>
                     <Combobox
                         data={empresaReportadaOptions}
                         value={empresaReportadaFilter}
                         onChange={setEmpresaReportadaFilter}
                         placeholder="Seleccione Empresa Reportada..."
-                        className="w-full"
                         onInputChange={value => {
                             if (!value) setEmpresaReportadaFilter('');
                         }}
                     />
                 </div>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 min-w-[180px]">
+                    <label className="text-sm mb-1">Encargado de Cierre</label>
+                    <Combobox
+                        data={encargadoCierreOptions}
+                        value={encargadoCierreFilter}
+                        onChange={setEncargadoCierreFilter}
+                        placeholder="Seleccione Encargado..."
+                        onInputChange={value => {
+                            if (!value) setEncargadoCierreFilter('');
+                        }}
+                    />
+                </div>
+                <div className="flex flex-col gap-1 min-w-[130px]">
                     <label className="text-sm mb-1">Estado</label>
                     <Select value={estadoFilter} onValueChange={setEstadoFilter}>
                         <SelectTrigger>
@@ -227,13 +255,13 @@ export function DataTable<TData extends {
                     </Select>
                 </div>
             </div>
-            <div className="grid grid-cols-1 rounded-md border">
+            <div className="rounded-md border">
                 <Table className="text-xs">
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id} style={{ minWidth: '10px', maxWidth: '150px' }}>
+                                    <TableHead key={header.id}>
                                         {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                                     </TableHead>
                                 ))}
@@ -245,16 +273,7 @@ export function DataTable<TData extends {
                             table.getRowModel().rows.map((row) => (
                                 <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell
-                                            key={cell.id}
-                                            style={{
-                                                minWidth: '10px',
-                                                maxWidth: '150px',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                            }}
-                                        >
+                                        <TableCell key={cell.id}>
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                         </TableCell>
                                     ))}

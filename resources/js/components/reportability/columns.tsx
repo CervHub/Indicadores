@@ -2,6 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatDateTime } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
@@ -21,39 +22,144 @@ export type Reportability = {
     company_name: string;
     company_report_id: string;
     company_report_name: string;
+    user_report_id: string;
+    encargado_cierre: string;
 };
-
-
 
 export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability>[] => [
     {
         accessorKey: 'id',
         header: 'ID',
+        cell: ({ row }) => (
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span className="cursor-help">{row.original.id}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>ID del reporte: {row.original.id}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        ),
     },
     {
         accessorKey: 'gerencia_name',
         header: 'Gerencia',
+        cell: ({ row }) => (
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span className="cursor-help">{row.original.gerencia_name}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Gerencia: {row.original.gerencia_name}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        ),
     },
     {
         accessorKey: 'tipo_reporte',
         header: 'Tipo Reporte',
+        cell: ({ row }) => (
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span className="cursor-help">{row.original.tipo_reporte}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Tipo de reporte: {row.original.tipo_reporte}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        ),
     },
     {
         accessorKey: 'fecha_evento',
         header: 'Fecha Evento',
-        cell: ({ row }) => formatDateTime(row.original.fecha_evento),
+        cell: ({ row }) => (
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span className="cursor-help">{formatDateTime(row.original.fecha_evento)}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Fecha del evento: {formatDateTime(row.original.fecha_evento)}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        ),
     },
     {
         accessorKey: 'nombres',
         header: 'Generado por',
+        cell: ({ row }) => {
+            const nombreCompleto = `${row.original.nombres} ${row.original.apellidos}`.trim();
+            return (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="cursor-help">{nombreCompleto}</span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Generado por: {nombreCompleto}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            );
+        },
+    },
+    {
+        accessorKey: 'encargado_cierre',
+        header: 'Encargado de cierre',
+        cell: ({ row }) => {
+            const encargado = row.original.encargado_cierre || '-';
+            return (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="cursor-help">{encargado}</span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Encargado de cierre: {encargado}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            );
+        },
     },
     {
         accessorKey: 'company_name',
         header: 'Empresa Generadora',
+        cell: ({ row }) => (
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span className="cursor-help">{row.original.company_name}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Empresa generadora: {row.original.company_name}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        ),
     },
     {
         accessorKey: 'company_report_name',
         header: 'Empresa Reportarada',
+        cell: ({ row }) => (
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span className="cursor-help">{row.original.company_report_name}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Empresa reportada: {row.original.company_report_name}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        ),
     },
     {
         accessorKey: 'estado',
@@ -83,9 +189,18 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
             }
 
             return (
-                <Badge variant={'default'} className={badgeClass}>
-                    {badgeText}
-                </Badge>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Badge variant={'default'} className={`${badgeClass} cursor-help`}>
+                                {badgeText}
+                            </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Estado del reporte: {badgeText}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
             );
         },
     },
