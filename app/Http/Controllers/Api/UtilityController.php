@@ -265,20 +265,8 @@ class UtilityController extends Controller
             'details' => $request->details,
             'company_report_id' => $request->company_report_id,
             'device' => $request->device,
+            'user_report_id' => $request->user_report_id,
         ];
-
-
-        // if ($request->has('enable_gerente') && $request->enable_gerente == 'on') {
-        //     $reporte_usuarios_ids = json_decode($data['reporte_usuarios_ids'], true);
-        //     if (isset($reporte_usuarios_ids[0])) {
-        //         $reporte_usuarios_ids = $reporte_usuarios_ids[0];
-        //     }
-        //     if (!isset($reporte_usuarios_ids['gerente'])) {
-        //         $reporte_usuarios_ids['gerente'] = [];
-        //     }
-        //     $reporte_usuarios_ids['gerente'] = 61; // Add new user id here
-        //     $data['reporte_usuarios_ids'] = json_encode($reporte_usuarios_ids); // Wrap in an additional array
-        // }
 
         $report = null; // replace with actual report
         switch ($request->tipo_reporte) {

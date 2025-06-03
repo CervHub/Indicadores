@@ -39,6 +39,7 @@ class Module extends Model
         'vehicle_status',
         'mileage',
         'area',
+        'user_report_id',
     ];
 
     public function getGerenciaIdAttribute()
