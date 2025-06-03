@@ -95,6 +95,8 @@ Route::get('/show/credentials', [UtilityController::class, 'showCredentials'])->
 
 //get user for company
 Route::get('/{company_id}/users', [UserContrller::class, 'getUserCompany'])->name('company.users');
+//get ueser with role ingeneer security
+Route::get('/{company_id}/users/ingeneer-security', [UserContrller::class, 'getUserCompanyIngSecurity'])->name('company.users.ingeneer-security');
 
 Route::get('/current-version', function () {
     return response()->json([
