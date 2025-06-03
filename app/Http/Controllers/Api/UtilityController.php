@@ -291,13 +291,16 @@ class UtilityController extends Controller
 
         $roleSecurityEngineer = Role::where('code', 'IS')->first();
         $json = null;
-        //Ingeniero de seguridad que cerrara el reporte
-        $securityEnginner = User::find($request->user_report_id);
-        //Empresa administradora
-        $company = Company::find($company_id);
 
-        if ($company->id === 1) {
-            $securityEnginner = User::find($request->user_id);
+        $engineerSecurity = $user; //Ingeniero de Seguridad que genera el reporte -> doi
+        $engineerSecurityCompany = Company::find($company_id); // Empresa que genera el reporte, es la empresa del IS.
+
+        $engineerSecurityReported = User::find($request->user_report_id); // Ingeniero de Seguridad que cierra el reporte -> user_report_id
+        $engineerSecurityCompanyReported = Company::find($request->company_report_id); // Empresa que cierra el reporte, es la empresa del IS.
+
+        // Si la empresa reportada es SOUTHER con id 1 entonces el ingeniero que cierra el reporte debe ser el mismo ingeniero que genera el reporte
+        if ($engineerSecurityCompanyReported->id == 1) {
+            $engineerSecurityReported = $engineerSecurity;
         }
 
         // Ingenieros de seguridad de southern
@@ -332,23 +335,23 @@ class UtilityController extends Controller
                 Log::info('Correos electrónicos preparados para envío.');
             }
 
-            if ($securityEnginner->email) {
+            if ($engineerSecurityReported->email) {
                 // Agregar el ingeniero de seguridad que cerrará el reporte
                 $json->push([
-                    'email' => $securityEnginner->email,
-                    'nombre' => $securityEnginner->nombres,
-                    'apellidos' => $securityEnginner->apellidos,
+                    'email' => $engineerSecurityReported->email,
+                    'nombre' => $engineerSecurityReported->nombres,
+                    'apellidos' => $engineerSecurityReported->apellidos,
                     'type' => 'IS',
                 ]);
             } else {
                 Log::warning('Ingeniero de seguridad no encontrado para el ID proporcionado: ' . $request->user_report_id);
             }
             # code...
-            if ($company->email) {
+            if ($engineerSecurityCompanyReported->email) {
                 // Agregar el correo de la empresa administradora
                 $json->push([
-                    'email' => $company->email,
-                    'nombre' => $company->nombre,
+                    'email' => $engineerSecurityCompanyReported->email,
+                    'nombre' => $engineerSecurityCompanyReported->nombre,
                     'apellidos' => '',
                     'type' => 'COMPANY',
                 ]);
@@ -362,12 +365,6 @@ class UtilityController extends Controller
         $date = $request->fecha_reporte; // replace with actual date
         $levels = json_decode($request->levels, true);
 
-        if ($levels) {
-            $managementEntity = Entity::find($levels['gerencia']);
-            $management = $managementEntity ? $managementEntity->nombre : null;
-        } else {
-            $management = null;
-        }
         $generatedBy = $user->nombres . ' ' . $user->apellidos; // replace with actual generatedBy
 
         try {
@@ -378,10 +375,10 @@ class UtilityController extends Controller
 
             //envio de correo electronico
 
-            if ($securityEnginner) {
+            if ($engineerSecurityReported) {
                 try {
                     // SendReportMail::dispatch($user->email, $report, $date, $management, $generatedBy, $reportLink);
-                    $this->sendReportMail($securityEnginner, $report, $date, $management, $generatedBy, $reportLink, $company, $securityEnginnerSPCCs);
+                    $this->sendReportMail($engineerSecurityReported, $report, $date, $generatedBy, $reportLink, $engineerSecurityCompanyReported, $securityEnginnerSPCCs, $engineerSecurityCompany);
                 } catch (\Exception $emailException) {
                     Log::error('Error al enviar correo a ' . $user->email . ': ' . $emailException->getMessage());
                 }
@@ -641,34 +638,50 @@ class UtilityController extends Controller
         ]);
     }
 
-    public function sendReportMail($securityEngineer, $report, $date, $management, $generatedBy, $reportLink, $company, $securityEngineerSPCCs)
+    /**
+     * Enviar correo electrónico con el reporte generado.
+     *
+     * @param User $securityEngineerReported Ingeniero de seguridad que cierra el reporte.
+     * @param string $report Tipo de reporte generado.
+     * @param string $date Fecha del evento.
+     * @param string $generatedBy Nombre del usuario que generó el reporte.
+     * @param string $reportLink Enlace al reporte generado.
+     * @param Company $companyReported Empresa que cierra el reporte.
+     * @param Collection $securityEngineerSPCCs Ingenieros de seguridad de SPCC.
+     * @param Company $company Empresa que genera el reporte.
+     */
+    public function sendReportMail($securityEngineerReported, $report, $date, $generatedBy, $reportLink, $companyReported, $securityEngineerSPCCs, $company)
     {
         $recipients = collect();
 
-        // Add the main recipient (security engineer)
-        if ($securityEngineer && $securityEngineer->email) {
-            $recipients->push($securityEngineer->email);
+        // Agregar el destinatario principal (ingeniero de seguridad que cierra el reporte)
+        if ($securityEngineerReported && $securityEngineerReported->email) {
+            $recipients->push($securityEngineerReported->email);
         }
 
-        // Add the company email as CC
-        if ($company && $company->email) {
-            $recipients->push($company->email);
+        // Agregar el correo de la empresa como CC
+        if ($companyReported && $companyReported->email) {
+            $recipients->push($companyReported->email);
         }
 
-        // Add all SPCC security engineers as CC
+        // Agregar todos los ingenieros de seguridad de SPCC como CC
         $securityEngineerSPCCs->each(function ($engineer) use ($recipients) {
             if ($engineer->email) {
                 $recipients->push($engineer->email);
             }
         });
 
-        // Remove duplicates
+        // Eliminar correos duplicados
         $recipients = $recipients->unique();
 
-        // Send the email
-        Mail::to($securityEngineer->email)
+        // Obtener nombres de las empresas
+        $empresaReportada = $companyReported->nombre ?? 'Empresa no encontrada';
+        $empresaQueReporta = $company->nombre ?? 'Empresa no encontrada';
+
+        // Enviar el correo electrónico
+        Mail::to($securityEngineerReported->email)
             ->cc($recipients->toArray())
-            ->send(new TestEmail($report, $date, $management, $generatedBy, $reportLink));
+            ->send(new TestEmail($report, $date, $generatedBy, $reportLink, $empresaReportada, $empresaQueReporta));
     }
 
     public function showCredentials(Request $request)

@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Reporte de : "{{ $report }}" Gestión SST</title>
+    <title>REPORTE DE : "{{ strtoupper($report) }}" [ABIERTO] GESTIÓN SST</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,7 +22,6 @@
 
         .header {
             background-color: #800020;
-            /* Rojo guinda */
             color: white;
             padding: 10px 0;
             text-align: center;
@@ -38,22 +37,21 @@
         .content {
             padding: 20px;
             text-align: center;
-            /* Centrar el contenido */
         }
 
         .content p {
             line-height: 1.6;
+            font-weight: bold;
+            /* Added bold styling */
         }
 
         .button {
             display: inline-block;
-            padding: 10px 20px;
+            padding: 15px 25px;
             font-size: 16px;
             color: white !important;
-            /* Letra negra */
             background-color: #800020;
-            /* Azul */
-            border-radius: 5px;
+            border-radius: 30px;
             text-decoration: none;
             margin-top: 20px;
         }
@@ -69,6 +67,13 @@
             color: #4CAF50;
             text-decoration: none;
         }
+
+        .report-id {
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -76,21 +81,26 @@
     <div class="container">
         <div class="header">
             @if ($logoUrl)
-                <img src="{{ $logoUrl }}" alt="Logo">
+                <img src="{{ $logoUrl }}" alt="LOGO">
             @else
-                <p>Logo no disponible</p>
+                <p>LOGO NO DISPONIBLE</p>
             @endif
-            <h1>Reporte de : "{{ $report }}"</h1>
+            <h1>REPORTE DE : "{{ strtoupper($report) }}" [ABIERTO]</h1>
         </div>
         <div class="content">
-            <p>Se ha generado un reporte de : "{{ $report }}" el día de {{ $date }}.</p>
-            <p>Gerencia reportada: {{ $management }}</p>
-            <p>Generado por: {{ $generatedBy }}</p>
-            <a href="{{ $reportLink }}" class="button">Descargar Reporte</a>
+            <p>SE HA GENERADO UN REPORTE DE : "{{ strtoupper($report) }}" EL DÍA DE {{ strtoupper($date) }}.</p>
+            <p><strong>EMPRESA REPORTADA:</strong> {{ strtoupper($empresaReportada) }}</p>
+            <p><strong>EMPRESA QUE REPORTA:</strong> {{ strtoupper($empresaQueReporta) }}</p>
+            <p><strong>GENERADO POR:</strong> {{ strtoupper($generatedBy) }}</p> <!-- Updated text -->
+            <div class="report-id">
+                ID DEL REPORTE: {{ last(explode('/', $reportLink)) }}
+            </div>
+            <a href="{{ $reportLink }}" class="button">DESCARGAR REPORTE</a>
+
         </div>
         <div class="footer">
-            <p>&copy; {{ date('Y') }} Gestión SST. Powered by <a href="https://cerv.com.pe/">CERV</a>. Todos los
-                derechos reservados.</p>
+            <p>&COPY; {{ date('Y') }} GESTIÓN SST. POWERED BY <a href="https://cerv.com.pe/">CERV</a>. TODOS LOS
+                DERECHOS RESERVADOS.</p>
         </div>
     </div>
 </body>

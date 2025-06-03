@@ -15,17 +15,20 @@ class TestEmail extends Mailable
     public $management;
     public $generatedBy;
     public $reportLink;
+    public $empresaReportada;
+    public $empresaQueReporta;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($report, $date, $management, $generatedBy, $reportLink)
+    public function __construct($report, $date, $generatedBy, $reportLink, $empresaReportada, $empresaQueReporta)
     {
         $this->report = $report;
         $this->date = $date;
-        $this->management = $management;
         $this->generatedBy = $generatedBy;
         $this->reportLink = $reportLink;
+        $this->empresaReportada = $empresaReportada;
+        $this->empresaQueReporta = $empresaQueReporta;
     }
 
     /**
@@ -37,14 +40,15 @@ class TestEmail extends Mailable
     {
         $logoPath = url('logos/logo-souther-300x-white.png');
 
-        return $this->subject("Reporte de : \"{$this->report}\"")
+        return $this->subject("Reporte de : \"{$this->report}\" [ABIERTO]")
             ->view('emails.test_email')
             ->with([
                 'report' => $this->report,
                 'date' => $this->date,
-                'management' => $this->management,
                 'generatedBy' => $this->generatedBy,
                 'reportLink' => $this->reportLink,
+                'empresaReportada' => $this->empresaReportada,
+                'empresaQueReporta' => $this->empresaQueReporta,
                 'logoUrl' => $logoPath,
             ]);
     }
