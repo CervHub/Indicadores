@@ -31,6 +31,8 @@ Route::get('/show/credentials', [UtilityController::class, 'showCredentials'])->
 
 //get user for company
 Route::get('/{company_id}/users', [UserContrller::class, 'getUserCompany'])->name('company.users');
+//get user with role engineer security
+Route::get('/{company_id}/engineer-security', [UserContrller::class, 'getUserCompanyIngSecurity'])->name('company.users.engineer-security');
 
 Route::get('/year/metrics/{company_id}', [UtilityController::class, 'yearMetrics'])->name('year.metrics');
 Route::get('/year/metrics/inspeccion/{company_id}', [UtilityController::class, 'yearMetricsInspeccion'])->name('year.metrics.inspeccion');
