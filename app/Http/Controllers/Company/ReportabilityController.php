@@ -246,6 +246,7 @@ class ReportabilityController extends Controller
         if ($user->role_id != 1 && $user->company_id != $reportability->company_id && $user->company_id != 1) {
             abort(403, 'Usted no está habilitado para ver este reporte.');
         }
+        
 
         $name = "Reporte de reportabilidad {$reportability->fecha_reporte}.pdf";
 

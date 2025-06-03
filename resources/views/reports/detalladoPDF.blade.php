@@ -362,7 +362,7 @@
     </section>
 
     <section>
-        <h4 class="negrita mb-1">SE REPORTA : </h4>
+        <h4 class="negrita mb-1">INGENIEROS DE SEGURIDAD NOTIFICADOS:</h4>
         @php
             $cellWidth = 'auto';
         @endphp
@@ -376,17 +376,21 @@
             </thead>
             <tbody>
                 @php
-                    $engineers = json_decode($reportability->send_email);
+                    $engineers = json_decode($reportability->send_email) ?? [];
                 @endphp
 
-                @foreach ($engineers as $index => $engineer)
+                @forelse ($engineers as $index => $engineer)
                     <tr>
                         <td class="cell" style="width: 5%">{{ $index + 1 }}</td>
                         <td class="cell" style="width: {{ $cellWidth }}">{{ $engineer->nombre }}
                             {{ $engineer->apellidos }}</td>
                         <td class="cell" style="width: {{ $cellWidth }}">{{ $engineer->email }}</td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td class="cell text-center" colspan="3">No hay ingenieros de seguridad notificados.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </section>

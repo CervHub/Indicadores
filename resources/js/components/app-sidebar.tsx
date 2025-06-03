@@ -37,7 +37,7 @@ const roles: Record<string, string[]> = {
     Formatos: ['RU', 'IS'],
     Inspecciones: [],
     Configuración: ['SA'],
-    Personal: ['CA', 'IS'],
+    Personal: ['CA', 'IS', 'SA'],
     'Ingeniero de Seguridad': [],
     Roles: [],
 };

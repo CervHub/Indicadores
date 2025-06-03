@@ -9,6 +9,7 @@ import CreatePerson from './create';
 import DeletePerson from './delete';
 import EditPerson from './edit';
 import ResetPassword from './reset';
+import MassiveUpdate from './update';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -45,9 +46,12 @@ export default function ReportabilityPage() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Personal" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <CreatePerson roles={roles} />
+                <div className="flex justify-between items-center">
+                    <CreatePerson roles={roles} />
+                    <MassiveUpdate />
+                </div>
                 <div className="w-full max-w-full overflow-x-auto">
-                    <DataTable columns={getColumns(handleAction)} data={people} />
+                    <DataTable columns={getColumns(handleAction, roles)} data={people} roles={roles} />
                 </div>
             </div>
             {selectedPerson && (

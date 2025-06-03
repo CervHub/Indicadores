@@ -6,6 +6,7 @@ use App\Http\Controllers\Company\ReportabilityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinishController;
 use App\Http\Controllers\Contrata\RoleController;
+use App\Http\Controllers\UpdateUserController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -37,7 +38,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     require __DIR__ . '/legacy/contrata.php';
     require __DIR__ . '/legacy/admin.php';
 });
-
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('contrata/roles', [RoleController::class, 'index'])->name('contrata.roles.index');

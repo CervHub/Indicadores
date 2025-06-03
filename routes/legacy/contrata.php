@@ -13,6 +13,7 @@ Route::put('/contrata/personal/{personal}', [PersonalController::class, 'update'
 Route::delete('/contrata/personal/{personal}', [PersonalController::class, 'destroy'])->name('contrata.personal.destroy');
 Route::put('/contrata/personal/activate/{personal}', [PersonalController::class, 'activate'])->name('contrata.personal.activate');
 Route::post('/contrata/password/reset/{personal}', [PersonalController::class, 'resetPassword'])->name('contrata.password.reset');
+Route::post('/contrata/personal/update/massive', [PersonalController::class, 'updateMassive'])->name('contrata.personal.update.massive');
 // /reprotabilidad
 Route::get('contrata/analysis/category', [ContrataController::class, 'category'])->name('contrata.analysis.category');
 Route::get('contrata/analysis/category/{category_name}', [ContrataController::class, 'categoryDetail'])->name('contrata.analysis.category.detail');

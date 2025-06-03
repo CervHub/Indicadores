@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
+    roles: any[];
 }
 
 export function DataTable<TData extends {
@@ -29,14 +30,12 @@ export function DataTable<TData extends {
     telefono?: string | null;
     cargo?: string;
     estado?: string;
-    role?: {
-        id: number;
-        nombre: string;
-        code: string;
-    };
+    role_id?: number;
+    doi?: string;
 }, TValue>({
     columns,
     data,
+    roles,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = React.useState('');
@@ -46,12 +45,12 @@ export function DataTable<TData extends {
 
     // Opciones únicas para los selects
     const roleOptions = React.useMemo(() => {
-        const set = new Set<string>();
+        const usedRoleIds = new Set<number>();
         data.forEach(row => {
-            if (row.role?.nombre) set.add(row.role.nombre);
+            if (row.role_id) usedRoleIds.add(row.role_id);
         });
-        return Array.from(set);
-    }, [data]);
+        return roles.filter(role => usedRoleIds.has(role.id));
+    }, [data, roles]);
 
     const estadoOptions = React.useMemo(() => {
         const set = new Set<string>();
@@ -64,23 +63,29 @@ export function DataTable<TData extends {
     // Filtro personalizado
     const filteredData = React.useMemo(() => {
         let filtered = data;
-          // Filtro global de búsqueda
+        // Filtro global de búsqueda
         if (globalFilter) {
             const filter = globalFilter.toLowerCase();
-            filtered = filtered.filter((row) =>
-                (row.nombres && row.nombres.toLowerCase().includes(filter)) ||
-                (row.apellidos && row.apellidos.toLowerCase().includes(filter)) ||
-                (row.email && row.email.toLowerCase().includes(filter)) ||
-                (row.telefono && row.telefono.toLowerCase().includes(filter)) ||
-                (row.cargo && row.cargo.toLowerCase().includes(filter)) ||
-                (row.role?.nombre && row.role.nombre.toLowerCase().includes(filter)) ||
-                (row.doi && row.doi.toLowerCase().includes(filter))
-            );
+            filtered = filtered.filter((row) => {
+                const role = roles.find(r => r.id === row.role_id);
+                return (
+                    (row.nombres && row.nombres.toLowerCase().includes(filter)) ||
+                    (row.apellidos && row.apellidos.toLowerCase().includes(filter)) ||
+                    (row.email && row.email.toLowerCase().includes(filter)) ||
+                    (row.telefono && row.telefono.toLowerCase().includes(filter)) ||
+                    (row.cargo && row.cargo.toLowerCase().includes(filter)) ||
+                    (role?.nombre && role.nombre.toLowerCase().includes(filter)) ||
+                    (row.doi && row.doi.toLowerCase().includes(filter))
+                );
+            });
         }
         
         // Filtro por rol
         if (roleFilter !== '__all__') {
-            filtered = filtered.filter(row => row.role?.nombre === roleFilter);
+            const selectedRole = roles.find(r => r.nombre === roleFilter);
+            if (selectedRole) {
+                filtered = filtered.filter(row => row.role_id === selectedRole.id);
+            }
         }
         
         // Filtro por estado
@@ -89,7 +94,7 @@ export function DataTable<TData extends {
         }
         
         return filtered;
-    }, [data, globalFilter, roleFilter, estadoFilter]);
+    }, [data, globalFilter, roleFilter, estadoFilter, roles]);
 
     const table = useReactTable({
         data: filteredData,
@@ -161,7 +166,7 @@ export function DataTable<TData extends {
                         <SelectContent>
                             <SelectItem value="__all__">Todos</SelectItem>
                             {roleOptions.map((role) => (
-                                <SelectItem key={role} value={role}>{role}</SelectItem>
+                                <SelectItem key={role.id} value={role.nombre}>{role.nombre}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>

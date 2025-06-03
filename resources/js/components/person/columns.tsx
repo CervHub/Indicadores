@@ -24,7 +24,7 @@ export type Person = {
     };
 };
 
-export const getColumns = (handleAction: (action: string, id: number) => void): ColumnDef<Person>[] => [
+export const getColumns = (handleAction: (action: string, id: number) => void, roles: any[]): ColumnDef<Person>[] => [
     {
         accessorKey: 'id',
         header: ({ column }) => {
@@ -61,7 +61,7 @@ export const getColumns = (handleAction: (action: string, id: number) => void): 
         header: 'Email',
     },
     {
-        accessorKey: 'role',
+        accessorKey: 'role_id',
         header: ({ column }) => {
             return (
                 <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
@@ -71,8 +71,16 @@ export const getColumns = (handleAction: (action: string, id: number) => void): 
             );
         },
         cell: ({ row }) => {
-            const role = row.original.role;
+            const roleId = row.original.role_id;
+            const role = roles.find(r => r.id === roleId);
             return role?.nombre || 'Sin rol';
+        },
+        sortingFn: (rowA, rowB) => {
+            const roleA = roles.find(r => r.id === rowA.original.role_id);
+            const roleB = roles.find(r => r.id === rowB.original.role_id);
+            const nameA = roleA?.nombre || 'Sin rol';
+            const nameB = roleB?.nombre || 'Sin rol';
+            return nameA.localeCompare(nameB);
         },
     },
     {
