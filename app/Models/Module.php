@@ -40,6 +40,10 @@ class Module extends Model
         'mileage',
         'area',
         'user_report_id',
+        'delete_reason',
+        'reassigned_user_id',
+        'reassignment_reason',
+        'deleted_at',
     ];
 
     public function getGerenciaIdAttribute()

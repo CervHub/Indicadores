@@ -11,7 +11,30 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        return Inertia::render('dashboard');
+        $titles = [
+            'actos' => 'Actos subestandar',
+            'condiciones' => 'Condiciones subestandar',
+            'incidentes' => 'Incidentes subestandar'
+        ];
+
+        $user = auth()->user();
+        $userCompany = $user->company_id ?? null;
+
+        // Si la empresa del usuario es 1 o null, enviar todas las empresas
+        if ($userCompany == 1 || $userCompany == null) {
+            $companies = Company::all();
+        } else {
+            // Caso contrario, solo su empresa
+            $companies = Company::where('id', $userCompany)->get();
+        }
+
+        $entities = Entity::all();
+
+        return Inertia::render('dashboard', [
+            'companies' => $companies,
+            'entities' => $entities,
+            'titles' => $titles
+        ]);
     }
 
     public function type($type)
@@ -22,15 +45,9 @@ class DashboardController extends Controller
             'incidentes' => 'Incidentes subestandar'
         ];
 
-        $companies = Company::all();
-        $entities = Entity::all();
-
         return Inertia::render('dashboardType', [
             'type' => $type,
             'title' => $titles[$type] ?? 'Dashboard',
-            'companies' => $companies,
-            'titles' => $titles,
-            'entities' => $entities
         ]);
     }
 }

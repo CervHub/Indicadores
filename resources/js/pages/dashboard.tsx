@@ -1,11 +1,19 @@
 import LineChartComponent from '@/components/charts/line-chart';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
-import { ArrowRight, Info } from 'lucide-react';
+import { Head } from '@inertiajs/react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Combobox } from '@/components/ui/combobox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
+
+// Dashboard Components
+import ReportsSummaryCards from '@/components/dashboard/reports-summary-cards';
+import ReportsStatusChart from '@/components/dashboard/reports-status-chart';
+import FindingsByEventRiskChart from '@/components/dashboard/findings-by-event-risk-chart';
+import ClosedByManagementChart from '@/components/dashboard/closed-by-management-chart';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -14,84 +22,171 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-interface InfoCardProps {
-    title: string;
-    buttons: { text: string; type: string; disabled?: boolean }[];
-    info: string;
+interface DashboardProps {
+    companies: any[];
+    entities: any[];
+    titles: any[];
 }
 
-const InfoCard = ({ title, buttons, info }: InfoCardProps) => (
-    <Card className="relative w-full">
-        <CardHeader className="flex items-center justify-between">
-            <CardTitle>{title}</CardTitle>
-            <Popover>
-                <PopoverTrigger asChild>
-                    <Button variant="ghost" size="icon" className="absolute top-2 right-2">
-                        <Info className="h-5 w-5" />
-                    </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80">
-                    <div className="grid gap-4 p-4">
-                        <p className="text-muted-foreground text-sm">{info}</p>
-                    </div>
-                </PopoverContent>
-            </Popover>
-        </CardHeader>
-        <CardContent>
-            {buttons.map(({ text, type, disabled }, index) => (
-                disabled ? (
-                    <Button key={index} variant="outline" className="flex w-full items-center gap-2 mb-2" disabled>
-                        <span className="flex-1 overflow-hidden text-left text-ellipsis whitespace-nowrap">{text}</span>
-                        <ArrowRight className="h-5 w-5 flex-shrink-0" />
-                    </Button>
-                ) : (
-                    <Link key={index} href={route('dashboard.type', { type })} method="get" className="mb-2 flex w-full items-center gap-2">
-                        <Button variant="outline" className="flex w-full items-center gap-2">
-                            <span className="flex-1 overflow-hidden text-left text-ellipsis whitespace-nowrap">{text}</span>
-                            <ArrowRight className="h-5 w-5 flex-shrink-0" />
-                        </Button>
-                    </Link>
-                )
-            ))}
-        </CardContent>
-    </Card>
-);
+interface FilterFormData {
+    status: string;
+    company: string;
+    reportType: string;
+    startDate: string;
+    endDate: string;
+}
 
-export default function Dashboard() {
-    const distributionButtons = [
-        { text: 'Actos y condiciones subestándares e incidentes', type: 'cat', disabled: false },
-        { text: 'Actos Subestándares', type: 'actos', disabled: false },
-        { text: 'Condiciones Subestándares', type: 'condiciones', disabled: false },
-        { text: 'Incidentes', type: 'incidentes', disabled: false },
+export default function Dashboard({ companies, entities, titles }: DashboardProps) {
+    const [filters, setFilters] = useState<FilterFormData>({
+        status: '',
+        company: '',
+        reportType: '',
+        startDate: '',
+        endDate: ''
+    });
+
+    // Initialize with last year date range
+    useEffect(() => {
+        const now = new Date();
+        const lastYear = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+        
+        setFilters(prev => ({
+            ...prev,
+            startDate: lastYear.toISOString().split('T')[0],
+            endDate: now.toISOString().split('T')[0]
+        }));
+    }, []);
+
+    const handleFilterChange = (key: keyof FilterFormData, value: string) => {
+        setFilters(prev => ({
+            ...prev,
+            [key]: value
+        }));
+    };
+
+    const handleApplyFilters = () => {
+        // This function will be used to apply filters to charts
+        console.log('Applied filters:', filters);
+        // TODO: Apply filters to charts
+    };
+
+    const handleResetFilters = () => {
+        const now = new Date();
+        const lastYear = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+        
+        setFilters({
+            status: '',
+            company: '',
+            reportType: '',
+            startDate: lastYear.toISOString().split('T')[0],
+            endDate: now.toISOString().split('T')[0]
+        });
+    };
+
+    const statusOptions = [
+        { label: 'Abierto', value: 'abierto' },
+        { label: 'Visualizado', value: 'visualizado' },
+        { label: 'Cerrado', value: 'cerrado' }
     ];
 
-    const trendButtons = [
-        { text: 'Actos y condiciones subestándares e incidentes', type: 'yr', disabled: false },
-        { text: 'Observaciones detectadas por Gerencia', type: 'insp.yr', disabled: false },
-    ];
-
-    const inspectionButtons = [
-        { text: 'Planeada, no planeada, comite y otros', type: 'insp', disabled: false },
-        { text: 'Detalles de inspección', type: 'inspección', disabled: false },
-    ];
+    const companyOptions = companies.map(company => ({
+        label: company.name || company.nombre || 'Empresa',
+        value: company.id?.toString() || ''
+    }));
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <LineChartComponent />
-                <div className="grid auto-rows-min gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <InfoCard
-                        title="DISTRIBUCIÓN POR TIPO"
-                        buttons={distributionButtons}
-                        info="Información detallada sobre la distribución por tipo."
-                    />
-                    <InfoCard title="CURVA DE TENDENCIA" buttons={trendButtons} info="Información detallada sobre la curva de tendencia." />
-                    <InfoCard
-                        title="DISTRIBUCIÓN INSPECCIÓN"
-                        buttons={inspectionButtons}
-                        info="Información detallada sobre la distribución de inspección."
-                    />
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 pt-0">
+                <div className="sticky top-10 z-10 bg-white p-3">
+                    <h2 className="text-lg font-semibold mb-3">Filtros</h2>
+                    <form onSubmit={(e) => { e.preventDefault(); handleApplyFilters(); }}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mb-3">
+                            <div className="space-y-1">
+                                <label className="text-sm font-medium">Estado</label>
+                                <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Seleccionar estado" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {statusOptions.map((status, index) => (
+                                            <SelectItem key={index} value={status.value}>
+                                                {status.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            
+                            <div className="space-y-1">
+                                <label className="text-sm font-medium">Empresa</label>
+                                <Combobox
+                                    data={companyOptions}
+                                    value={filters.company}
+                                    onChange={(value) => handleFilterChange('company', value)}
+                                    placeholder="Seleccionar empresa"
+                                    className="w-full"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-sm font-medium">Tipo de reporte</label>
+                                <Select value={filters.reportType} onValueChange={(value) => handleFilterChange('reportType', value)}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Seleccionar tipo" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Object.entries(titles).map(([key, value]) => (
+                                            <SelectItem key={key} value={key}>
+                                                {value}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            
+                            <div className="space-y-1">
+                                <label className="text-sm font-medium">Fecha Desde</label>
+                                <Input
+                                    type="date"
+                                    value={filters.startDate}
+                                    onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                                    className="w-full"
+                                />
+                            </div>
+                            
+                            <div className="space-y-1">
+                                <label className="text-sm font-medium">Fecha Hasta</label>
+                                <Input
+                                    type="date"
+                                    value={filters.endDate}
+                                    onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                                    className="w-full"
+                                />
+                            </div>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                            <Button type="submit">
+                                Aplicar Filtros
+                            </Button>
+                            <Button type="button" variant="outline" onClick={handleResetFilters}>
+                                Limpiar Filtros
+                            </Button>
+                        </div>
+                    </form>
+                </div>
+                
+                {/* Row 1: Reports Summary Cards and Status Chart */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <ReportsSummaryCards filters={filters} />
+                    <ReportsStatusChart filters={filters} />
+                </div>
+                
+                {/* Row 2: Findings by Event/Risk and Closed by Management */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <FindingsByEventRiskChart filters={filters} />
+                    <ClosedByManagementChart filters={filters} />
                 </div>
             </div>
         </AppLayout>

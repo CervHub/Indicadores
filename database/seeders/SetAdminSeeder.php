@@ -13,16 +13,20 @@ class SetAdminSeeder extends Seeder
      */
     public function run(): void
     {
-        // Quitar empresa del admin o crearlo si no existe
-        $admin = User::where('email', 'admin@cerv.com.pe')->first();
+        // Buscar al único usuario con el rol 1
+        $admin = User::where('role_id', 1)->first();
+
         if ($admin) {
-            $admin->company_id = null;
+            // Actualizar su contraseña y correo
+            $admin->email = 'admin@spcctoquepala.com';
+            $admin->password = bcrypt('admin@spcctoquepala.com'); // Contraseña actualizada
             $admin->save();
         } else {
+            // Crear un nuevo administrador si no existe
             User::create([
                 'doi' => '00000000',
-                'email' => 'admin@cerv.com.pe',
-                'password' => bcrypt('password'), // Contraseña actualizada
+                'email' => 'admin@spcctoquepala.com',
+                'password' => bcrypt('admin@spcctoquepala.com'), // Contraseña actualizada
                 'nombres' => 'Admin',
                 'apellidos' => 'Principal',
                 'telefono' => null,

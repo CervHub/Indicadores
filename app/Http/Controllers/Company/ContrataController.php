@@ -222,8 +222,7 @@ class ContrataController extends Controller
 
             if ($user) {
                 $user->update([
-                    'password' => bcrypt($contractor->ruc),
-                    'text_password' => $contractor->ruc,
+                    'password' => bcrypt($contractor->ruc)
                 ]);
 
                 return response()->json(['success' => true, 'message' => 'Contraseña restablecida correctamente.']);
