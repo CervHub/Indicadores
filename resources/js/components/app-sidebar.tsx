@@ -34,7 +34,7 @@ const roles: Record<string, string[]> = {
     Indicadores: ['CA'],
     Consolidados: ['SA', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS'],
     Reporte: ['SA', 'IS', 'CA', 'SCC'],
-    Formatos: ['RU', 'IS'],
+    Formatos: [],
     Inspecciones: [],
     Configuración: ['SA'],
     Personal: ['CA', 'SA'],

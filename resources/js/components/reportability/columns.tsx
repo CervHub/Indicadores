@@ -42,6 +42,7 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
                 </Tooltip>
             </TooltipProvider>
         ),
+        enableHiding: false,
     },
     {
         accessorKey: 'gerencia_name',
@@ -58,6 +59,7 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
                 </Tooltip>
             </TooltipProvider>
         ),
+        enableHiding: true,
     },
     {
         accessorKey: 'tipo_reporte',
@@ -74,6 +76,7 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
                 </Tooltip>
             </TooltipProvider>
         ),
+        enableHiding: true,
     },
     {
         accessorKey: 'fecha_evento',
@@ -90,6 +93,7 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
                 </Tooltip>
             </TooltipProvider>
         ),
+        enableHiding: true,
     },
     {
         accessorKey: 'nombres',
@@ -109,6 +113,7 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
                 </TooltipProvider>
             );
         },
+        enableHiding: true,
     },
     {
         accessorKey: 'encargado_cierre',
@@ -128,10 +133,11 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
                 </TooltipProvider>
             );
         },
+        enableHiding: true,
     },
     {
         accessorKey: 'company_name',
-        header: 'Empresa Generadora',
+        header: 'Empresa que reporta',
         cell: ({ row }) => (
             <TooltipProvider>
                 <Tooltip>
@@ -144,6 +150,7 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
                 </Tooltip>
             </TooltipProvider>
         ),
+        enableHiding: true,
     },
     {
         accessorKey: 'company_report_name',
@@ -160,6 +167,7 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
                 </Tooltip>
             </TooltipProvider>
         ),
+        enableHiding: true,
     },
     {
         accessorKey: 'estado',
@@ -203,6 +211,7 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
                 </TooltipProvider>
             );
         },
+        enableHiding: true,
     },
     {
         accessorKey: 'acciones',
@@ -243,5 +252,6 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
                 </div>
             );
         },
+        enableHiding: false,
     },
 ];

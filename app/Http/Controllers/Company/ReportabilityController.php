@@ -187,24 +187,29 @@ class ReportabilityController extends Controller
     public function detalle($reportability_id)
     {
         $user = auth()->user();
-        $module = Module::select('company_report_id', 'company_id', 'estado', 'user_id', 'user_report_id')->findOrFail($reportability_id);
+        $module = Module::findOrFail($reportability_id);
 
         $canCloseReport = false; // Variable para determinar si el usuario puede cerrar el reporte
 
-        if ($user->isSecurityEngineer()) {
-            if ($module->estado !== 'Finalizado') {
-                // Regla 1: El reporte pertenece a mi empresa y la empresa reportada es Southern (ID 1), además estoy asignado para cerrarlo (user_report_id)
-                if ($module->company_id === $user->company_id && $module->company_report_id === 1 && $module->user_report_id === $user->id) {
-                    $module->estado = 'Revisado';
-                    $module->save();
-                    $canCloseReport = true; // El usuario puede cerrar el reporte
-                }
-                // Regla 2: La empresa reportada es igual a mi empresa y estoy asignado para cerrarlo
-                elseif ($module->company_report_id === $user->company_id && $module->user_report_id === $user->id) {
-                    $module->estado = 'Revisado';
-                    $module->save();
-                    $canCloseReport = true; // El usuario puede cerrar el reporte
-                }
+        // Regla 1: El reporte pertenece a mi empresa y la empresa reportada es Southern (ID 1), además estoy asignado para cerrarlo (user_report_id)
+        $ruleOne = $module->company_id == $user->company_id && $module->company_report_id == 1 && $module->user_report_id == $user->id;
+
+        // Regla 2: La empresa reportada es igual a mi empresa y estoy asignado para cerrarlo
+        $ruleTwo = $module->company_report_id == $user->company_id && $module->user_report_id == $user->id;
+
+        // El código actual solo cambia el estado a 'Revisado' si el usuario es SecurityEngineer
+        // y cumple con las reglas, pero esto ocurre solo cuando se accede al método detalle.
+        // Si recargas la página, el estado ya es 'Revisado' y no vuelve a entrar al if.
+        // Además, si el usuario no es SecurityEngineer, nunca cambia el estado.
+
+        // Si quieres que el estado cambie a 'Revisado' siempre que se cumpla alguna regla,
+        // sin importar si es SecurityEngineer, puedes modificar así:
+
+        if ($module->estado !== 'Finalizado') {
+            if ($ruleOne || $ruleTwo) {
+                $module->estado = 'Revisado';
+                $module->save();
+                $canCloseReport = true;
             }
         }
 
@@ -257,22 +262,18 @@ class ReportabilityController extends Controller
         }
 
         $user = auth()->user();
-
-        // Verificar si el usuario tiene el role_id 2 y está autorizado
-        if ($user->role_id == 2) {
-            $authorized = SecurityEngineer::where('user_id', $user->id)->exists();
-            if (!$authorized) {
-                abort(403, 'Usted no está habilitado para esto.');
-            }
-        }
-
         $reportability = Module::findOrFail($reportability_id);
 
-        // Verificar si el usuario tiene el role_id diferente de 1 y si el reporte le pertenece
-        if ($user->role_id != 1 && $user->company_id != $reportability->company_id && $user->company_id != 1) {
-            abort(403, 'Usted no está habilitado para ver este reporte.');
+        // Si es de Southern (company_id == 1), puede ver todos los documentos
+        if ($user->company_id !== 1) {
+            // Si no es Southern, solo puede ver si es company_id o company_report_id
+            if (
+                $user->company_id != $reportability->company_id &&
+                $user->company_id != $reportability->company_report_id
+            ) {
+                abort(403, 'Usted no está habilitado para ver este reporte.');
+            }
         }
-
 
         $name = "Reporte de reportabilidad {$reportability->fecha_reporte}.pdf";
 
@@ -286,7 +287,7 @@ class ReportabilityController extends Controller
         };
 
         // Convertir el logo a base64
-        $logoPath = public_path('logos/grupomexico.png'); // Cambiado a 'madna'
+        $logoPath = public_path('logos/grupomexico.png');
         $logoBase64 = base64_encode(file_get_contents($logoPath));
         $logo = "data:image/png;base64,{$logoBase64}";
 

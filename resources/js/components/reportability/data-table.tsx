@@ -2,6 +2,7 @@
 import {
     ColumnDef,
     SortingState,
+    VisibilityState,
     flexRender,
     getCoreRowModel,
     getFilteredRowModel,
@@ -10,12 +11,19 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import * as React from 'react';
+import { ChevronDown } from 'lucide-react';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/ui/combobox';
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
@@ -23,6 +31,7 @@ interface DataTableProps<TData, TValue> {
 }
 
 export function DataTable<TData extends {
+    id?: number | string;
     gerencia_name?: string;
     tipo_reporte?: string;
     company_name?: string;
@@ -34,12 +43,26 @@ export function DataTable<TData extends {
     data,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
+    // Configuración por defecto de visibilidad de columnas - solo las más importantes
+    const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
+        id: true,
+        gerencia_name: true,
+        tipo_reporte: true,
+        fecha_evento: false,
+        nombres: false,
+        encargado_cierre: true,
+        company_name: false,
+        company_report_name: true,
+        estado: true,
+        acciones: true,
+    });
     const [gerenciaFilter, setGerenciaFilter] = React.useState<string>('__all__');
     const [tipoReporteFilter, setTipoReporteFilter] = React.useState<string>('__all__');
     const [empresaGeneradoraFilter, setEmpresaGeneradoraFilter] = React.useState('');
     const [empresaReportadaFilter, setEmpresaReportadaFilter] = React.useState('');
     const [estadoFilter, setEstadoFilter] = React.useState<string>('__all__');
     const [encargadoCierreFilter, setEncargadoCierreFilter] = React.useState('');
+    const [idReporteFilter, setIdReporteFilter] = React.useState('');
     const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 });
 
     // Opciones únicas para los selects
@@ -94,9 +117,14 @@ export function DataTable<TData extends {
         return Array.from(set).map(e => ({ value: e, label: e }));
     }, [data]);
 
-    // Filtro personalizado por gerencia, tipo reporte, empresa generadora, empresa reportada, estado y encargado de cierre
+    // Filtro personalizado por ID de reporte, gerencia, tipo reporte, empresa generadora, empresa reportada, estado y encargado de cierre
     const filteredData = React.useMemo(() => {
         let filtered = data;
+        if (idReporteFilter) {
+            filtered = filtered.filter(row =>
+                (row.id?.toString() ?? '').toLowerCase().includes(idReporteFilter.toLowerCase())
+            );
+        }
         if (gerenciaFilter !== '__all__') {
             filtered = filtered.filter(row => row.gerencia_name === gerenciaFilter);
         }
@@ -122,7 +150,7 @@ export function DataTable<TData extends {
             );
         }
         return filtered;
-    }, [data, gerenciaFilter, tipoReporteFilter, empresaGeneradoraFilter, empresaReportadaFilter, estadoFilter, encargadoCierreFilter]);
+    }, [data, idReporteFilter, gerenciaFilter, tipoReporteFilter, empresaGeneradoraFilter, empresaReportadaFilter, estadoFilter, encargadoCierreFilter]);
 
     const table = useReactTable({
         data: filteredData,
@@ -132,9 +160,11 @@ export function DataTable<TData extends {
         onSortingChange: setSorting,
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
+        onColumnVisibilityChange: setColumnVisibility,
         state: {
             sorting,
             pagination,
+            columnVisibility,
         },
         onPaginationChange: setPagination,
         manualPagination: false,
@@ -158,7 +188,7 @@ export function DataTable<TData extends {
     const endRow = Math.min((pageIndex + 1) * pageSize, totalRows);
 
     return (
-        <div>
+        <div className='grid grid-cols-1 gap-4 p-4'>
             {/* Filtros en flex para responsive */}
             <div className="flex flex-wrap gap-4 py-4 w-full">
                 <div className="flex flex-col gap-1 min-w-[120px]">
@@ -177,83 +207,136 @@ export function DataTable<TData extends {
                     <span className="text-xs text-muted-foreground mt-1">registros</span>
                 </div>
                 <div className="flex flex-col gap-1 min-w-[150px]">
-                    <label className="text-sm mb-1">Gerencia</label>
-                    <Select value={gerenciaFilter} onValueChange={setGerenciaFilter}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Todas" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="__all__">Todas</SelectItem>
-                            {gerenciaOptions.map((g) => (
-                                <SelectItem key={g} value={g}>{g}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <label className="text-sm mb-1">Columnas</label>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="w-full justify-between">
+                                Ocultar/Mostrar
+                                <ChevronDown className="ml-2 h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[200px]">
+                            {table
+                                .getAllColumns()
+                                .filter((column) => column.getCanHide())
+                                .map((column) => {
+                                    return (
+                                        <DropdownMenuCheckboxItem
+                                            key={column.id}
+                                            className="capitalize"
+                                            checked={column.getIsVisible()}
+                                            onCheckedChange={(value) =>
+                                                column.toggleVisibility(!!value)
+                                            }
+                                        >
+                                            {column.id}
+                                        </DropdownMenuCheckboxItem>
+                                    );
+                                })}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
-                <div className="flex flex-col gap-1 min-w-[150px]">
-                    <label className="text-sm mb-1">Tipo Reporte</label>
-                    <Select value={tipoReporteFilter} onValueChange={setTipoReporteFilter}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Todos" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="__all__">Todos</SelectItem>
-                            {tipoReporteOptions.map((t) => (
-                                <SelectItem key={t} value={t}>{t}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="flex flex-col gap-1 min-w-[200px]">
-                    <label className="text-sm mb-1">Empresa Generadora</label>
-                    <Combobox
-                        data={empresaGeneradoraOptions}
-                        value={empresaGeneradoraFilter}
-                        onChange={setEmpresaGeneradoraFilter}
-                        placeholder="Seleccione Empresa Generadora..."
-                        onInputChange={value => {
-                            if (!value) setEmpresaGeneradoraFilter('');
-                        }}
-                    />
-                </div>
-                <div className="flex flex-col gap-1 min-w-[200px]">
-                    <label className="text-sm mb-1">Empresa Reportada</label>
-                    <Combobox
-                        data={empresaReportadaOptions}
-                        value={empresaReportadaFilter}
-                        onChange={setEmpresaReportadaFilter}
-                        placeholder="Seleccione Empresa Reportada..."
-                        onInputChange={value => {
-                            if (!value) setEmpresaReportadaFilter('');
-                        }}
-                    />
-                </div>
-                <div className="flex flex-col gap-1 min-w-[180px]">
-                    <label className="text-sm mb-1">Encargado de Cierre</label>
-                    <Combobox
-                        data={encargadoCierreOptions}
-                        value={encargadoCierreFilter}
-                        onChange={setEncargadoCierreFilter}
-                        placeholder="Seleccione Encargado..."
-                        onInputChange={value => {
-                            if (!value) setEncargadoCierreFilter('');
-                        }}
-                    />
-                </div>
-                <div className="flex flex-col gap-1 min-w-[130px]">
-                    <label className="text-sm mb-1">Estado</label>
-                    <Select value={estadoFilter} onValueChange={setEstadoFilter}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Todos" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="__all__">Todos</SelectItem>
-                            {estadoOptions.map((e) => (
-                                <SelectItem key={e} value={e}>{e}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
+                {columnVisibility.id !== false && (
+                    <div className="flex flex-col gap-1 min-w-[150px]">
+                        <label className="text-sm mb-1">ID Reporte</label>
+                        <Input
+                            value={idReporteFilter}
+                            onChange={e => setIdReporteFilter(e.target.value)}
+                            placeholder="Buscar ID..."
+                            className="w-full"
+                        />
+                    </div>
+                )}
+                {columnVisibility.gerencia_name !== false && (
+                    <div className="flex flex-col gap-1 min-w-[150px]">
+                        <label className="text-sm mb-1">Gerencia</label>
+                        <Select value={gerenciaFilter} onValueChange={setGerenciaFilter}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Todas" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="__all__">Todas</SelectItem>
+                                {gerenciaOptions.map((g) => (
+                                    <SelectItem key={g} value={g}>{g}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
+                {columnVisibility.tipo_reporte !== false && (
+                    <div className="flex flex-col gap-1 min-w-[150px]">
+                        <label className="text-sm mb-1">Tipo Reporte</label>
+                        <Select value={tipoReporteFilter} onValueChange={setTipoReporteFilter}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Todos" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="__all__">Todos</SelectItem>
+                                {tipoReporteOptions.map((t) => (
+                                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
+                {columnVisibility.company_name !== false && (
+                    <div className="flex flex-col gap-1 min-w-[200px]">
+                        <label className="text-sm mb-1">Empresa Generadora</label>
+                        <Combobox
+                            data={empresaGeneradoraOptions}
+                            value={empresaGeneradoraFilter}
+                            onChange={setEmpresaGeneradoraFilter}
+                            placeholder="Seleccione Empresa Generadora..."
+                            onInputChange={value => {
+                                if (!value) setEmpresaGeneradoraFilter('');
+                            }}
+                        />
+                    </div>
+                )}
+                {columnVisibility.company_report_name !== false && (
+                    <div className="flex flex-col gap-1 min-w-[200px]">
+                        <label className="text-sm mb-1">Empresa Reportada</label>
+                        <Combobox
+                            data={empresaReportadaOptions}
+                            value={empresaReportadaFilter}
+                            onChange={setEmpresaReportadaFilter}
+                            placeholder="Seleccione Empresa Reportada..."
+                            onInputChange={value => {
+                                if (!value) setEmpresaReportadaFilter('');
+                            }}
+                        />
+                    </div>
+                )}
+                {columnVisibility.encargado_cierre !== false && (
+                    <div className="flex flex-col gap-1 min-w-[180px]">
+                        <label className="text-sm mb-1">Encargado de Cierre</label>
+                        <Combobox
+                            data={encargadoCierreOptions}
+                            value={encargadoCierreFilter}
+                            onChange={setEncargadoCierreFilter}
+                            placeholder="Seleccione Encargado..."
+                            onInputChange={value => {
+                                if (!value) setEncargadoCierreFilter('');
+                            }}
+                        />
+                    </div>
+                )}
+                {columnVisibility.estado !== false && (
+                    <div className="flex flex-col gap-1 min-w-[130px]">
+                        <label className="text-sm mb-1">Estado</label>
+                        <Select value={estadoFilter} onValueChange={setEstadoFilter}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Todos" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="__all__">Todos</SelectItem>
+                                {estadoOptions.map((e) => (
+                                    <SelectItem key={e} value={e}>{e}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
             </div>
             <div className="rounded-md border">
                 <Table className="text-xs">
