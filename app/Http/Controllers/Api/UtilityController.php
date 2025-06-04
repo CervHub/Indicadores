@@ -364,6 +364,8 @@ class UtilityController extends Controller
 
         $date = $request->fecha_reporte; // replace with actual date
         $levels = json_decode($request->levels, true);
+        $data['entity_id'] = $levels['gerencia'] ?? null;
+
 
         $generatedBy = $user->nombres . ' ' . $user->apellidos; // replace with actual generatedBy
 

@@ -31,6 +31,32 @@ export interface SharedData {
     [key: string]: unknown;
 }
 
+export interface Report {
+    areaInvolucrada: string | null;
+    causaReporte: string;
+    descripcionEvento: string;
+    eliminadoEn: string | null;
+    estadoReporte: string;
+    fechaEvento: string;
+    fechaReporte: string;
+    idCausa: string;
+    idEmpresaReporta: string;
+    idEmpresaReportada: string;
+    idGerencia: string;
+    idUsuarioCierre: string | null;
+    idUsuarioReasignado: string | null;
+    idUsuarioReporta: string;
+    motivoReasignacion: string | null;
+    nivelGravedad: string;
+    nombreEmpresaReporta: string;
+    nombreEmpresaReportada: string;
+    nombreGerencia: string;
+    nombreUsuarioCierre: string;
+    nombreUsuarioReasignado: string;
+    nombreUsuarioReporta: string;
+    tipoReporte: string;
+}
+
 export interface User {
     id: number;
     name: string;

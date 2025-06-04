@@ -44,6 +44,7 @@ class Module extends Model
         'reassigned_user_id',
         'reassignment_reason',
         'deleted_at',
+        'entity_id'
     ];
 
     public function getGerenciaIdAttribute()

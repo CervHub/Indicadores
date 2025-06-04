@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Mobile\AuthenticateController;
 use App\Http\Controllers\Api\Mobile\ZoneController;
 use App\Http\Controllers\Api\UtilityController;
+use App\Http\Controllers\Api\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +28,7 @@ Route::get('/connection', function () {
 
 Route::post('/authenticate', [UtilityController::class, 'authenticate']);
 
+
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     // Obtener zonas
     Route::get('/zones', [ZoneController::class, 'index'])
@@ -36,4 +38,6 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
 require __DIR__ . '/apimobile.php';
 require __DIR__ . '/apiweb.php';
-   
+
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->name('api.dashboard.index');
