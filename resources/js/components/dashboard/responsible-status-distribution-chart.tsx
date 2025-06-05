@@ -43,71 +43,51 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
     }, [searchTerm]);
 
     const allChartData = useMemo(() => {
-        // Get all reports that have a responsible person assigned (idUsuarioReporta)
-        const reportesAsignados = data.filter((report) => report.idUsuarioReporta);
+        // Group by idUsuarioCierre and nombreUsuarioCierre pair
+        const responsableData: { [key: string]: { generado: number; visualizado: number; cerrado: number; total: number; idUsuario: string; nombre: string } } = {};
 
-        const responsableData: { [key: string]: { generado: number; visualizado: number; cerrado: number; total: number; nombre: string } } = {};
-
-        // Count reports by responsible ID and status
-        reportesAsignados.forEach((report) => {
-            const idResponsable = report.idUsuarioReporta!.toString();
-            // Use nombreUsuarioReporta or fallback to nombreUsuarioCierre or a default name
-            const nombreResponsable = report.nombreUsuarioReporta || report.nombreUsuarioCierre || `Usuario ${idResponsable}`;
+        data.forEach((report) => {
+            const idUsuario = report.idUsuarioCierre || 'sin-id';
+            const nombre = report.nombreUsuarioCierre || 'Sin encargado de cierre';
+            const key = `${idUsuario}-${nombre}`;
             const estado = report.estadoReporte?.toLowerCase();
 
-            if (!responsableData[idResponsable]) {
-                responsableData[idResponsable] = {
+            if (!responsableData[key]) {
+                responsableData[key] = {
                     generado: 0,
                     visualizado: 0,
                     cerrado: 0,
                     total: 0,
-                    nombre: nombreResponsable
+                    idUsuario,
+                    nombre
                 };
             }
 
-            responsableData[idResponsable].total++;
+            responsableData[key].total++;
 
             if (estado === 'generado') {
-                responsableData[idResponsable].generado++;
+                responsableData[key].generado++;
             } else if (estado === 'visualizado') {
-                responsableData[idResponsable].visualizado++;
+                responsableData[key].visualizado++;
             } else if (estado === 'cerrado') {
-                responsableData[idResponsable].cerrado++;
-            }
-
-            // Debug log for inconsistent data
-            const currentData = responsableData[idResponsable];
-            const calculatedTotal = currentData.generado + currentData.visualizado + currentData.cerrado;
-            if (calculatedTotal !== currentData.total) {
-                console.warn(`Data inconsistency for user ${idResponsable}:`, {
-                    total: currentData.total,
-                    calculated: calculatedTotal,
-                    generado: currentData.generado,
-                    visualizado: currentData.visualizado,
-                    cerrado: currentData.cerrado,
-                    estado: estado,
-                    reportId: report.id
-                });
+                responsableData[key].cerrado++;
             }
         });
 
-        console.log('Grouped data:', responsableData);
-
-        // Sort by total assigned reports (descending)
+        // Sort by closure performance (percentage of closed reports), then by total reports
         const sortedEntries = Object.entries(responsableData).sort(([, a], [, b]) => {
+            const aPerformance = a.total > 0 ? (a.cerrado / a.total) * 100 : 0;
+            const bPerformance = b.total > 0 ? (b.cerrado / b.total) * 100 : 0;
+            
+            // First sort by performance (closure percentage), then by total reports
+            if (bPerformance !== aPerformance) {
+                return bPerformance - aPerformance;
+            }
             return b.total - a.total;
         });
 
         return sortedEntries
-            .map(([idResponsable, datos], globalIndex) => {
-                // Verify totals match before calculating percentages
-                const calculatedTotal = datos.generado + datos.visualizado + datos.cerrado;
-                if (calculatedTotal !== datos.total) {
-                    console.error(`Final data inconsistency for user ${idResponsable}:`, datos);
-                    // Fix the total to match calculated values
-                    datos.total = calculatedTotal;
-                }
-
+            .map(([key, datos], globalIndex) => {
                 // Calculate exact percentages that sum to 100%
                 const generadoPercent = datos.total > 0 ? (datos.generado / datos.total) * 100 : 0;
                 const visualizadoPercent = datos.total > 0 ? (datos.visualizado / datos.total) * 100 : 0;
@@ -123,14 +103,12 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
                 const difference = 100 - totalRounded;
 
                 if (difference !== 0 && datos.total > 0) {
-                    // Find the percentage with the largest decimal part to adjust
                     const decimals = [
                         { key: 'generado', decimal: generadoPercent - generadoPercentRounded, value: generadoPercentRounded },
                         { key: 'visualizado', decimal: visualizadoPercent - visualizadoPercentRounded, value: visualizadoPercentRounded },
                         { key: 'cerrado', decimal: cerradoPercent - cerradoPercentRounded, value: cerradoPercentRounded }
                     ].sort((a, b) => Math.abs(b.decimal) - Math.abs(a.decimal));
 
-                    // Adjust the percentage with the largest decimal difference
                     if (decimals[0].key === 'generado') {
                         generadoPercentRounded += difference;
                     } else if (decimals[0].key === 'visualizado') {
@@ -140,14 +118,15 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
                     }
                 }
 
-                const result = {
-                    idResponsable,
+                return {
+                    idResponsable: datos.idUsuario,
                     responsable: datos.nombre.length > 12 ? datos.nombre.substring(0, 12) + '...' : datos.nombre,
                     fullResponsable: datos.nombre,
                     generado: datos.generado,
                     visualizado: datos.visualizado,
                     cerrado: datos.cerrado,
                     total: datos.total,
+                    performance: datos.total > 0 ? Math.round((datos.cerrado / datos.total) * 100) : 0,
                     generadoPercent: generadoPercentRounded,
                     visualizadoPercent: visualizadoPercentRounded,
                     cerradoPercent: cerradoPercentRounded,
@@ -156,16 +135,6 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
                     cerradoPercentRounded,
                     globalRank: globalIndex + 1,
                 };
-
-                console.log(`User ${datos.nombre}:`, {
-                    total: result.total,
-                    generado: result.generado,
-                    visualizado: result.visualizado,
-                    cerrado: result.cerrado,
-                    percentages: `${result.generadoPercentRounded}% + ${result.visualizadoPercentRounded}% + ${result.cerradoPercentRounded}% = ${result.generadoPercentRounded + result.visualizadoPercentRounded + result.cerradoPercentRounded}%`
-                });
-
-                return result;
             });
     }, [data]);
 
@@ -203,8 +172,9 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
             return (
                 <div className="bg-background border-border rounded-lg border p-3 shadow-lg">
                     <p className="text-foreground font-semibold">{data.fullResponsable}</p>
+                    <p className="text-muted-foreground text-xs">ID: {data.idResponsable}</p>
                     <p className="text-muted-foreground text-sm">
-                        Total asignados: {data.total}
+                        Total asignados: {data.total} • Performance: {data.performance}%
                     </p>
                     <div className="mt-2 space-y-1">
                         <p className="text-sm">
@@ -235,7 +205,7 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
                 <div className="flex flex-col gap-4">
                     <div className="flex items-start justify-between">
                         <div>
-                            <CardTitle>Distribución de Estados por Responsable</CardTitle>
+                            <CardTitle>Distribución de Estados por Responsable de Cierre</CardTitle>
                             <CardDescription>
                                 {searchTerm ? <>Encontrados {filteredData.length} responsables • </> : null}
                                 Mostrando {currentPage * itemsPerPage + 1}-{Math.min((currentPage + 1) * itemsPerPage, filteredData.length)} de{' '}
@@ -274,8 +244,8 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="max-h-[600px] overflow-y-auto">
-                <ChartContainer config={chartConfig} className="w-full">
+            <CardContent >
+                <ChartContainer config={chartConfig} className="h-full w-full">
                     <BarChart
                         data={chartData}
                         layout="vertical"
@@ -326,7 +296,7 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
             </CardContent>
             <CardFooter className="flex-col items-start gap-2 text-sm">                <div className="flex gap-2 leading-none font-medium">
                     {topResponsible &&
-                        `${topResponsible.fullResponsable} lidera con ${topResponsible.total} reportes asignados`}
+                        `${topResponsible.fullResponsable} lidera con ${topResponsible.performance}% de cierre (${topResponsible.total} reportes)`}
                     <TrendingUp className="h-4 w-4" />
                 </div>
                 <div className="leading-none text-muted-foreground">

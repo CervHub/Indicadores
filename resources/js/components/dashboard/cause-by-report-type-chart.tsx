@@ -42,6 +42,19 @@ export default function CauseByReportTypeChart({ data = [] }: CauseByReportTypeC
         setCurrentPage(0);
     }, [searchTerm]);
 
+    const getReportTypeLabel = (type: string) => {
+        switch (type?.toLowerCase()) {
+            case 'actos':
+                return 'Actos Subestándar';
+            case 'condiciones':
+                return 'Condiciones Subestándar';
+            case 'incidentes':
+                return 'Incidentes';
+            default:
+                return type || 'N/A';
+        }
+    };
+
     const allChartData = useMemo(() => {
         // Filter reports that have both cause and report type
         const reportesConCausa = data.filter((report) =>
@@ -79,20 +92,23 @@ export default function CauseByReportTypeChart({ data = [] }: CauseByReportTypeC
         });
 
         return sortedEntries.map(([key, datos], globalIndex) => {
+            // Extract cause ID from key
+            const idCausa = key.split('-')[0];
+
             // Add prefix based on report type
             let prefix = '';
             let color = '';
             switch (datos.tipo) {
                 case 'actos':
-                    prefix = 'AS';
+                    prefix = 'ASE';
                     color = '#3b82f6'; // Blue
                     break;
                 case 'condiciones':
-                    prefix = 'CS';
+                    prefix = 'CSE';
                     color = '#f59e0b'; // Orange
                     break;
                 case 'incidentes':
-                    prefix = 'IS';
+                    prefix = 'I';
                     color = '#10b981'; // Green
                     break;
             }
@@ -104,8 +120,10 @@ export default function CauseByReportTypeChart({ data = [] }: CauseByReportTypeC
                 key,
                 causa: shortCauseName,
                 fullCausa: fullCauseName,
+                idCausa,
                 total: datos.total,
                 tipo: datos.tipo,
+                tipoLabel: getReportTypeLabel(datos.tipo),
                 color: color,
                 globalRank: globalIndex + 1,
             };
@@ -156,14 +174,15 @@ export default function CauseByReportTypeChart({ data = [] }: CauseByReportTypeC
             const data = payload[0].payload;
             return (
                 <div className="bg-background border-border rounded-lg border p-3 shadow-lg max-w-xs">
-                    <p className="text-foreground font-semibold w-[100px] break-words leading-tight mb-2">
+                    <p className="text-foreground font-semibold w-[300px] break-words leading-tight mb-2">
                         {data.fullCausa}
                     </p>
+                    <p className="text-muted-foreground text-xs">ID Causa: {data.idCausa}</p>
                     <p className="text-muted-foreground text-sm">
                         Total reportes: {data.total}
                     </p>
                     <p className="text-muted-foreground text-sm">
-                        Tipo: {data.tipo.charAt(0).toUpperCase() + data.tipo.slice(1)}
+                        Tipo: {data.tipoLabel}
                     </p>
                     <p className="text-muted-foreground text-sm mt-2">
                         Ranking: #{data.globalRank}
@@ -219,8 +238,8 @@ export default function CauseByReportTypeChart({ data = [] }: CauseByReportTypeC
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="max-h-[600px] overflow-y-auto">
-                <ChartContainer config={chartConfig} className="w-full">
+            <CardContent >
+                <ChartContainer config={chartConfig} className="h-full w-full">
                     <BarChart
                         data={chartData}
                         layout="vertical"
@@ -261,22 +280,22 @@ export default function CauseByReportTypeChart({ data = [] }: CauseByReportTypeC
                 </div>
                 <div className="leading-none text-muted-foreground">
                     Total reportes: {totalReports} •
-                    Actos: {totalByType.actos} •
-                    Condiciones: {totalByType.condiciones} •
+                    Actos Subestándar: {totalByType.actos} •
+                    Condiciones Subestándar: {totalByType.condiciones} •
                     Incidentes: {totalByType.incidentes}
                 </div>
                 <div className="flex gap-4 text-xs">
                     <div className="flex items-center gap-1">
                         <div className="w-3 h-3 bg-blue-500 rounded"></div>
-                        <span>Actos (AS)</span>
+                        <span>Actos Subestándar (ASE)</span>
                     </div>
                     <div className="flex items-center gap-1">
                         <div className="w-3 h-3 bg-orange-500 rounded"></div>
-                        <span>Condiciones (CS)</span>
+                        <span>Condiciones Subestándar (CSE)</span>
                     </div>
                     <div className="flex items-center gap-1">
                         <div className="w-3 h-3 bg-green-500 rounded"></div>
-                        <span>Incidentes (IS)</span>
+                        <span>Incidentes (I)</span>
                     </div>
                 </div>
             </CardFooter>

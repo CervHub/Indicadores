@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendingUp } from 'lucide-react';
@@ -35,7 +35,7 @@ export default function ReportsRaisedAndClosurePercentageByDateChart({ data = []
         const periodData: { [key: string]: { total: number; cerrados: number } } = {};
 
         data.forEach((report) => {
-            const date = new Date(report.fechaReporte);
+            const date = new Date(report.fechaEvento);
             const periodKey = groupBy === 'month'
                 ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
                 : `${date.getFullYear()}`;
@@ -50,24 +50,73 @@ export default function ReportsRaisedAndClosurePercentageByDateChart({ data = []
             }
         });
 
-        // Convertir a array y calcular porcentajes
-        return Object.entries(periodData)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .slice(groupBy === 'month' ? -6 : -5) // Últimos 6 meses o 5 años
-            .map(([period, counts]) => {
-                const percentage = counts.total > 0 ? (counts.cerrados / counts.total) * 100 : 0;
-                const displayPeriod = groupBy === 'month'
-                    ? new Date(period + '-01').toLocaleDateString('es-ES', { month: 'short', year: '2-digit' })
-                    : period;
+        // Generar todos los períodos en el rango de datos
+        const allPeriods: string[] = [];
 
-                return {
-                    period: displayPeriod,
-                    count: counts.cerrados,
-                    percentage: percentage,
-                    label: `${counts.cerrados}/${counts.total} (${percentage.toFixed(1)}%)`,
-                    fill: 'var(--color-cerrados)'
-                };
-            });
+        if (data.length === 0) {
+            // Si no hay datos, mostrar últimos períodos
+            const now = new Date();
+            if (groupBy === 'month') {
+                for (let i = 5; i >= 0; i--) {
+                    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                    const periodKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    allPeriods.push(periodKey);
+                }
+            } else {
+                for (let i = 4; i >= 0; i--) {
+                    const year = now.getFullYear() - i;
+                    allPeriods.push(year.toString());
+                }
+            }
+        } else {
+            // Encontrar el rango de fechas en los datos
+            const dates = data.map(report => new Date(report.fechaEvento));
+            const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
+            const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
+
+            if (groupBy === 'month') {
+                // Generar todos los meses desde la fecha mínima hasta la máxima
+                const startDate = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+                const endDate = new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
+
+                const currentDate = new Date(startDate);
+                while (currentDate <= endDate) {
+                    const periodKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+                    allPeriods.push(periodKey);
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                }
+            } else {
+                // Generar todos los años desde el año mínimo hasta el máximo
+                for (let year = minDate.getFullYear(); year <= maxDate.getFullYear(); year++) {
+                    allPeriods.push(year.toString());
+                }
+            }
+        }
+
+        // Convertir a array y calcular porcentajes, incluyendo períodos sin datos
+        return allPeriods.map((period) => {
+            const counts = periodData[period] || { total: 0, cerrados: 0 };
+            const percentage = counts.total > 0 ? (counts.cerrados / counts.total) * 100 : 0;
+            let displayPeriod;
+
+            if (groupBy === 'month') {
+                // Separar año y mes del período YYYY-MM
+                const [year, month] = period.split('-');
+                // Crear fecha usando año, mes-1 (porque los meses en JS van de 0-11), y día 1
+                const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+                displayPeriod = date.toLocaleDateString('es-ES', { month: 'short', year: '2-digit' });
+            } else {
+                displayPeriod = period;
+            }
+
+            return {
+                period: displayPeriod,
+                count: counts.cerrados,
+                percentage: percentage,
+                label: `${counts.cerrados}/${counts.total} (${percentage.toFixed(1)}%)`,
+                fill: 'var(--color-cerrados)'
+            };
+        });
     }, [data, groupBy]);
 
     const activeIndex = useMemo(() => {
@@ -95,32 +144,31 @@ export default function ReportsRaisedAndClosurePercentageByDateChart({ data = []
     return (
         <Card>
             <CardHeader>
-                <div className="flex items-center justify-between">
-                    <CardDescription>Reportes generados y porcentaje de cierre por fecha</CardDescription>
-                    <div className="flex gap-2">
-                        <Select value={groupBy} onValueChange={(value: 'month' | 'year') => setGroupBy(value)}>
-                            <SelectTrigger className="w-32">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="month">Por Meses</SelectItem>
-                                <SelectItem value="year">Por Años</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <Select value={lineType} onValueChange={(value: 'percentage' | 'value') => setLineType(value)}>
-                            <SelectTrigger className="w-32">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="percentage">Línea %</SelectItem>
-                                <SelectItem value="value">Línea Valor</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                <CardTitle>Reportes Generados y Porcentaje de Cierre por Fecha</CardTitle>
+                <CardDescription>Reportes generados y porcentaje de cierre por fecha</CardDescription>
+                <div className="flex gap-2">
+                    <Select value={groupBy} onValueChange={(value: 'month' | 'year') => setGroupBy(value)}>
+                        <SelectTrigger className="w-32">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="month">Por Meses</SelectItem>
+                            <SelectItem value="year">Por Años</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Select value={lineType} onValueChange={(value: 'percentage' | 'value') => setLineType(value)}>
+                        <SelectTrigger className="w-32">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="percentage">Línea %</SelectItem>
+                            <SelectItem value="value">Línea Valor</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={chartConfig} className="h-64 w-full">
+                <ChartContainer config={chartConfig} className="h-full w-full">
                     <ComposedChart
                         accessibilityLayer
                         data={chartData}

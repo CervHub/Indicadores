@@ -99,7 +99,7 @@ export default function ClosedByManagementChart({ data = [] }: ClosedByManagemen
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={chartConfig} className="h-64 w-full">
+                <ChartContainer config={chartConfig} className="h-full w-full">
                     <BarChart
                         accessibilityLayer
                         data={chartData}

@@ -134,7 +134,7 @@ export default function AverageClosureDaysByGravityChart({ data = [] }: AverageC
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={chartConfig} className="h-100 w-full">
+                <ChartContainer config={chartConfig} className="h-full w-full">
                     <BarChart
                         accessibilityLayer
                         data={chartData}

@@ -47,41 +47,13 @@ class DashboardController extends Controller
             ->leftJoin('entities as e', 'e.id', '=', 'm.entity_id')
             ->where('m.tipo_reporte', '!=', 'inspeccion');
 
-        // Apply filters
-        if ($request->has('fecha_inicio')) {
-            $query->whereDate('m.fecha_evento', '>=', $request->fecha_inicio);
+        // Apply filters - Only date filters
+        if ($request->has('startDate')) {
+            $query->whereDate('m.fecha_evento', '>=', $request->startDate);
         }
 
-        if ($request->has('fecha_fin')) {
-            $query->whereDate('m.fecha_evento', '<=', $request->fecha_fin);
-        }
-
-        if ($request->has('idCausa')) {
-            $query->where('m.category_company_id', $request->idCausa);
-        }
-
-        if ($request->has('idUsuarioReporta')) {
-            $query->where('m.user_id', $request->idUsuarioReporta);
-        }
-
-        if ($request->has('idEmpresaReporta')) {
-            $query->where('m.company_id', $request->idEmpresaReporta);
-        }
-
-        if ($request->has('idEmpresaReportada')) {
-            $query->where('m.company_report_id', $request->idEmpresaReportada);
-        }
-
-        if ($request->has('idUsuarioCierre')) {
-            $query->where('m.user_report_id', $request->idUsuarioCierre);
-        }
-
-        if ($request->has('idUsuarioReasignado')) {
-            $query->where('m.reassigned_user_id', $request->idUsuarioReasignado);
-        }
-
-        if ($request->has('idGerencia')) {
-            $query->where('m.entity_id', $request->idGerencia);
+        if ($request->has('endDate')) {
+            $query->whereDate('m.fecha_evento', '<=', $request->endDate);
         }
 
         $data = $query->get();

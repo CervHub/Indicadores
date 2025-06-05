@@ -73,7 +73,7 @@ const getReportTypeLabel = (type: string) => {
 export default function ReportsDetailTable({ data = [] }: ReportsDetailTableProps) {
     const [currentPage, setCurrentPage] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
-    const itemsPerPage = 10;
+    const itemsPerPage = 8;
 
     // Reset pagination when search changes
     useEffect(() => {

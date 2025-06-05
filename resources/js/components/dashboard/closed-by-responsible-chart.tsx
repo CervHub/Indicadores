@@ -35,33 +35,30 @@ export default function ClosedByResponsibleChart({ data = [] }: ClosedByResponsi
     }, [searchTerm]);
 
     const allChartData = useMemo(() => {
-        // Get all reports assigned to closure (both closed and open)
-        const reportesAsignados = data.filter((report) => report.nombreUsuarioCierre);
-        const reportesCerrados = data.filter((report) => report.estadoReporte?.toLowerCase() === 'cerrado');
-        const reportesSinResponsable = data.filter((report) => !report.nombreUsuarioCierre);
+        // Group by idUsuarioCierre and nombreUsuarioCierre pair
+        const responsableData: { [key: string]: { cerrados: number; noCerrados: number; total: number; idUsuario: string; nombre: string } } = {};
 
-        const responsableData: { [key: string]: { cerrados: number; total: number } } = {};
+        data.forEach((report) => {
+            const idUsuario = report.idUsuarioCierre || 'sin-id';
+            const nombre = report.nombreUsuarioCierre || 'Sin encargado de cierre';
+            const key = `${idUsuario}-${nombre}`;
 
-        // Count total assigned reports
-        reportesAsignados.forEach((report) => {
-            const responsable = report.nombreUsuarioCierre!;
-            if (!responsableData[responsable]) {
-                responsableData[responsable] = { cerrados: 0, total: 0 };
+            if (!responsableData[key]) {
+                responsableData[key] = {
+                    cerrados: 0,
+                    noCerrados: 0,
+                    total: 0,
+                    idUsuario,
+                    nombre
+                };
             }
-            responsableData[responsable].total += 1;
-        });
 
-        // Add reports without responsible person
-        if (reportesSinResponsable.length > 0) {
-            const sinResponsable = 'Sin encargado de cierre';
-            responsableData[sinResponsable] = { cerrados: 0, total: reportesSinResponsable.length };
-        }
+            responsableData[key].total += 1;
 
-        // Count closed reports
-        reportesCerrados.forEach((report) => {
-            const responsable = report.nombreUsuarioCierre || 'Sin encargado de cierre';
-            if (responsableData[responsable]) {
-                responsableData[responsable].cerrados += 1;
+            if (report.estadoReporte?.toLowerCase() === 'cerrado') {
+                responsableData[key].cerrados += 1;
+            } else {
+                responsableData[key].noCerrados += 1;
             }
         });
 
@@ -70,27 +67,23 @@ export default function ClosedByResponsibleChart({ data = [] }: ClosedByResponsi
 
         const totalEntries = sortedEntries.length;
 
-        // Función para generar color basado en la posición en el ranking
         const generateColor = (index: number, total: number) => {
-            // Calcular la intensidad basada en la posición (0 = más intenso, 1 = menos intenso)
             const intensity = index / Math.max(total - 1, 1);
-
-            // Interpolación entre rojo intenso (127, 29, 29) y rojo claro (254, 242, 242)
-            const startR = 127, startG = 29, startB = 29;    // #7f1d1d
-            const endR = 254, endG = 242, endB = 242;        // #fef2f2
-
+            const startR = 127, startG = 29, startB = 29;
+            const endR = 254, endG = 242, endB = 242;
             const r = Math.round(startR + (endR - startR) * intensity);
             const g = Math.round(startG + (endG - startG) * intensity);
             const b = Math.round(startB + (endB - startB) * intensity);
-
             return `rgb(${r}, ${g}, ${b})`;
         };
 
         return sortedEntries
-            .map(([responsable, datos], globalIndex) => ({
-                responsable: responsable.length > 10 ? responsable.substring(0, 10) + '...' : responsable,
-                fullResponsable: responsable,
+            .map(([key, datos], globalIndex) => ({
+                responsable: datos.nombre.length > 10 ? datos.nombre.substring(0, 10) + '...' : datos.nombre,
+                fullResponsable: datos.nombre,
+                idUsuario: datos.idUsuario,
                 cerrados: datos.cerrados,
+                noCerrados: datos.noCerrados,
                 total: datos.total,
                 ratio: `${datos.cerrados}/${datos.total}`,
                 porcentaje: datos.total > 0 ? Math.round((datos.cerrados / datos.total) * 100) : 0,
@@ -130,7 +123,7 @@ export default function ClosedByResponsibleChart({ data = [] }: ClosedByResponsi
     }, [allChartData]);
 
     const withoutResponsible = useMemo(() => {
-        const sinEncargado = allChartData.find((item) => item.fullResponsable === 'Sin encargado de cierre');
+        const sinEncargado = allChartData.find((item) => item.idUsuario === 'sin-id');
         return sinEncargado ? sinEncargado.total : 0;
     }, [allChartData]);
 
@@ -141,6 +134,7 @@ export default function ClosedByResponsibleChart({ data = [] }: ClosedByResponsi
             return (
                 <div className="bg-background border-border rounded-lg border p-3 shadow-lg">
                     <p className="text-foreground font-semibold">{data.fullResponsable}</p>
+                    <p className="text-muted-foreground text-xs">ID: {data.idUsuario}</p>
                     <p className="text-muted-foreground text-sm">
                         Cerrados: {data.cerrados} de {data.total} ({data.porcentaje}%)
                     </p>
@@ -199,11 +193,11 @@ export default function ClosedByResponsibleChart({ data = [] }: ClosedByResponsi
                 </div>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={chartConfig} className="h-100 w-full">
+                <ChartContainer config={chartConfig} className="h-full w-full">
                     <BarChart
                         data={chartData}
                         layout="vertical"
-                        height={Math.max(chartData.length * 80, 400)}
+                        // height={Math.max(chartData.length * 80, 400)}
                         margin={{ left: 0, right: 80, top: 0, bottom: 0 }}
                     >
                         <CartesianGrid horizontal={false} />

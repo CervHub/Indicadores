@@ -35,33 +35,29 @@ export default function ClosedByReporterChart({ data = [] }: ClosedByReporterCha
     }, [searchTerm]);
 
     const allChartData = useMemo(() => {
-        // Get all reports and group by reporter
-        const reporterData: { [key: string]: { cerrados: number; total: number } } = {};
+        // Group by idUsuarioReporta and nombreUsuarioReporta pair
+        const reporterData: { [key: string]: { cerrados: number; total: number; idUsuario: string; nombre: string } } = {};
 
-        // Count all reports by reporter
         data.forEach((report) => {
-            if (report.nombreUsuarioReporta) {
-                const reporter = report.nombreUsuarioReporta;
-                if (!reporterData[reporter]) {
-                    reporterData[reporter] = { total: 0, cerrados: 0 };
-                }
-                reporterData[reporter].total++;
+            const idUsuario = report.idUsuarioReporta || 'sin-id';
+            const nombre = report.nombreUsuarioReporta || 'Sin usuario reportante';
+            const key = `${idUsuario}-${nombre}`;
 
-                // Count closed reports
-                if (report.estadoReporte?.toLowerCase() === 'cerrado') {
-                    reporterData[reporter].cerrados++;
-                }
+            if (!reporterData[key]) {
+                reporterData[key] = {
+                    total: 0,
+                    cerrados: 0,
+                    idUsuario,
+                    nombre
+                };
+            }
+            reporterData[key].total++;
+
+            // Count closed reports
+            if (report.estadoReporte?.toLowerCase() === 'cerrado') {
+                reporterData[key].cerrados++;
             }
         });
-
-        // Add entry for reports without reporter
-        const reportesSinReporter = data.filter((report) => !report.nombreUsuarioReporta);
-        if (reportesSinReporter.length > 0) {
-            reporterData['Sin usuario reportante'] = {
-                total: reportesSinReporter.length,
-                cerrados: reportesSinReporter.filter((report) => report.estadoReporte?.toLowerCase() === 'cerrado').length
-            };
-        }
 
         // Sort by total reports (descending) then by closed reports (descending)
         const sortedEntries = Object.entries(reporterData).sort(([, a], [, b]) => {
@@ -73,24 +69,21 @@ export default function ClosedByReporterChart({ data = [] }: ClosedByReporterCha
 
         // Generate purple gradient colors
         const generateColor = (index: number, total: number) => {
-            if (total === 1) return '#8b5cf6'; // Single color if only one entry
-
-            // Purple gradient from light to dark
+            if (total === 1) return '#8b5cf6';
             const intensity = index / Math.max(1, total - 1);
-            const startR = 196, startG = 164, startB = 255; // Light purple
-            const endR = 109, endG = 40, endB = 217; // Dark purple
-
+            const startR = 196, startG = 164, startB = 255;
+            const endR = 109, endG = 40, endB = 217;
             const r = Math.round(startR + (endR - startR) * intensity);
             const g = Math.round(startG + (endG - startG) * intensity);
             const b = Math.round(startB + (endB - startB) * intensity);
-
             return `rgb(${r}, ${g}, ${b})`;
         };
 
         return sortedEntries
-            .map(([reporter, datos], globalIndex) => ({
-                reporter: reporter.length > 10 ? reporter.substring(0, 10) + '...' : reporter,
-                fullReporter: reporter,
+            .map(([key, datos], globalIndex) => ({
+                reporter: datos.nombre.length > 10 ? datos.nombre.substring(0, 10) + '...' : datos.nombre,
+                fullReporter: datos.nombre,
+                idUsuario: datos.idUsuario,
                 cerrados: datos.cerrados,
                 total: datos.total,
                 ratio: `${datos.cerrados}/${datos.total}`,
@@ -131,7 +124,7 @@ export default function ClosedByReporterChart({ data = [] }: ClosedByReporterCha
     }, [allChartData]);
 
     const withoutReporter = useMemo(() => {
-        const sinReporter = allChartData.find((item) => item.fullReporter === 'Sin usuario reportante');
+        const sinReporter = allChartData.find((item) => item.idUsuario === 'sin-id');
         return sinReporter ? sinReporter.total : 0;
     }, [allChartData]);    // Custom tooltip component
     const CustomTooltip = ({ active, payload }: any) => {
@@ -140,6 +133,7 @@ export default function ClosedByReporterChart({ data = [] }: ClosedByReporterCha
             return (
                 <div className="bg-background border-border rounded-lg border p-3 shadow-lg">
                     <p className="text-foreground font-semibold">{data.fullReporter}</p>
+                    <p className="text-muted-foreground text-xs">ID: {data.idUsuario}</p>
                     <p className="text-muted-foreground text-sm">
                         Reportados: {data.total} • Cerrados: {data.cerrados} ({data.porcentaje}%)
                     </p>
@@ -197,8 +191,8 @@ export default function ClosedByReporterChart({ data = [] }: ClosedByReporterCha
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="max-h-[600px] overflow-y-auto">
-                <ChartContainer config={chartConfig} className="w-full">
+            <CardContent >
+                <ChartContainer config={chartConfig} className="h-full w-full">
                     <BarChart
                         data={chartData}
                         layout="vertical"
