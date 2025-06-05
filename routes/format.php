@@ -5,7 +5,7 @@ use App\Http\Controllers\Format\FormatController;
 use App\Http\Controllers\Inspection\InspectionVehicleController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::prefix('vehicle')->group(function () {
         Route::get('/', [VehicleController::class, 'index'])->name('vehicle.index');
         Route::post('/', [VehicleController::class, 'store'])->name('vehicle.store');

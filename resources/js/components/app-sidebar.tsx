@@ -9,7 +9,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { getPermissionDescription } from '@/lib/utils';
 import { Link, usePage } from '@inertiajs/react';
 import {
     BarChart,

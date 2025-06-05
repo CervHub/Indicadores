@@ -12,6 +12,7 @@ class DashboardController extends Controller
     {
         $query = DB::table('modules as m')
             ->select([
+                'm.id as id', // Add module ID for debugging
                 'm.fecha_reporte as fechaReporte',
                 'm.fecha_evento as fechaEvento',
                 'm.descripcion as descripcionEvento',
@@ -28,6 +29,7 @@ class DashboardController extends Controller
                 'm.reassignment_reason as motivoReasignacion',
                 'm.deleted_at as eliminadoEn',
                 'm.entity_id as idGerencia',
+                'm.report_closed_at as reportClosedAt',
                 DB::raw("CONCAT(u.nombres, ' ', u.apellidos) as nombreUsuarioReporta"),
                 DB::raw("CONCAT(ur.nombres, ' ', ur.apellidos) as nombreUsuarioCierre"),
                 DB::raw("CONCAT(ru.nombres, ' ', ru.apellidos) as nombreUsuarioReasignado"),

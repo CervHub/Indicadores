@@ -3,7 +3,7 @@
 use App\Http\Controllers\Indicators\AnnexController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::prefix('annexes')->group(function () {
         Route::get('/', [AnnexController::class, 'index'])->name('annexes.index');
         Route::post('/', [AnnexController::class, 'store'])->name('annexes.store');

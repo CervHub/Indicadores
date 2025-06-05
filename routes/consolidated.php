@@ -3,7 +3,7 @@
 use App\Http\Controllers\Indicators\ConsolidatedController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'role.permission'])->group(function () {
     // Rutas para Consolidated
     Route::get('consolidated', [ConsolidatedController::class, 'index'])->name('consolidated.index');
     Route::post('consolidated', [ConsolidatedController::class, 'store'])->name('consolidated.store');

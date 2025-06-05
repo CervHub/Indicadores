@@ -1,8 +1,6 @@
-import LineChartComponent from '@/components/charts/line-chart';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Report } from '@/types';
@@ -10,8 +8,14 @@ import { Report } from '@/types';
 // Dashboard Components
 import ReportsSummaryCards from '@/components/dashboard/reports-summary-cards';
 import ReportsStatusChart from '@/components/dashboard/reports-status-chart';
-import FindingsByEventRiskChart from '@/components/dashboard/findings-by-event-risk-chart';
+import ReportsRaisedAndClosurePercentageByDateChart from '@/components/dashboard/reports-raised-and-closure-percentage-by-date-chart';
 import ClosedByManagementChart from '@/components/dashboard/closed-by-management-chart';
+import ClosedByResponsibleChart from '@/components/dashboard/closed-by-responsible-chart';
+import AverageClosureDaysByGravityChart from '@/components/dashboard/average-closure-days-by-gravity-chart';
+import ClosedByReporterChart from '@/components/dashboard/closed-by-reporter-chart';
+import ResponsibleStatusDistributionChart from '@/components/dashboard/responsible-status-distribution-chart';
+import CauseByReportTypeChart from '@/components/dashboard/cause-by-report-type-chart';
+import ReportsDetailTable from '@/components/dashboard/reports-detail-table';
 import DashboardFilter from '@/components/dashboard/dashboard-filter';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -115,14 +119,32 @@ export default function Dashboard({ companies, entities, titles }: DashboardProp
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                     <ReportsSummaryCards data={data.data} />
                     <div className='col-span-1 lg:col-span-3'>
-                        <ReportsStatusChart filters={filters} />
+                        <ReportsStatusChart data={data.data}/>
                     </div>
                 </div>
 
                 {/* Row 2: Findings by Event/Risk and Closed by Management */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <FindingsByEventRiskChart filters={filters} />
-                    <ClosedByManagementChart filters={filters} />
+                    <ReportsRaisedAndClosurePercentageByDateChart data={data.data} />
+                    <ClosedByManagementChart data={data.data} />
+                </div>
+
+                {/* Row 3: Closed by Responsible and Average Closure Days by Gravity */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <ClosedByResponsibleChart data={data.data} />
+                    <AverageClosureDaysByGravityChart data={data.data} />
+                </div>
+
+                {/* Row 4: Status Distribution by Responsible and Closed by Reporter */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <ResponsibleStatusDistributionChart data={data.data} />
+                    <ClosedByReporterChart data={data.data} />
+                </div>
+
+                {/* Row 5: Cause by Report Type and Reports Detail */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <CauseByReportTypeChart data={data.data} />
+                    <ReportsDetailTable data={data.data} />
                 </div>
             </div>
         </AppLayout>

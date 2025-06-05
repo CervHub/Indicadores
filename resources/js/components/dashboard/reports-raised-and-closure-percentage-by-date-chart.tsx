@@ -8,7 +8,7 @@ import { useMemo, useState } from 'react';
 import { Bar, CartesianGrid, ComposedChart, Line, Rectangle, XAxis, YAxis, LabelList } from 'recharts';
 import { Report } from '@/types';
 
-interface FindingsByEventRiskChartProps {
+interface ReportsRaisedAndClosurePercentageByDateChartProps {
     data?: Report[];
 }
 
@@ -26,7 +26,7 @@ const chartConfig: ChartConfig = {
     },
 } satisfies ChartConfig;
 
-export default function FindingsByEventRiskChart({ data = [] }: FindingsByEventRiskChartProps) {
+export default function ReportsRaisedAndClosurePercentageByDateChart({ data = [] }: ReportsRaisedAndClosurePercentageByDateChartProps) {
     const [groupBy, setGroupBy] = useState<'month' | 'year'>('month');
     const [lineType, setLineType] = useState<'percentage' | 'value'>('percentage');
 
@@ -96,7 +96,7 @@ export default function FindingsByEventRiskChart({ data = [] }: FindingsByEventR
         <Card>
             <CardHeader>
                 <div className="flex items-center justify-between">
-                    <CardDescription>Reportes cerrados y % de cierre por fecha</CardDescription>
+                    <CardDescription>Reportes generados y porcentaje de cierre por fecha</CardDescription>
                     <div className="flex gap-2">
                         <Select value={groupBy} onValueChange={(value: 'month' | 'year') => setGroupBy(value)}>
                             <SelectTrigger className="w-32">
@@ -120,7 +120,7 @@ export default function FindingsByEventRiskChart({ data = [] }: FindingsByEventR
                 </div>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={chartConfig} className="h-[200px] w-full">
+                <ChartContainer config={chartConfig} className="h-64 w-full">
                     <ComposedChart
                         accessibilityLayer
                         data={chartData}

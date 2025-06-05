@@ -24,6 +24,9 @@ return new class extends Migration
             $table->unsignedBigInteger('entity_id')->nullable();
             $table->foreign('entity_id')->references('id')->on('entities')->onDelete('no action');
 
+            // Agrega la columna de fecha de cierre del reporte
+            $table->timestamp('report_closed_at')->nullable();
+
             // Agrega la columna deleted_at para soft deletes
             $table->softDeletes();
         });
@@ -35,6 +38,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('modules', function (Blueprint $table) {
+            // Elimina la columna de fecha de cierre del reporte
+            $table->dropColumn('report_closed_at');
+
             // Elimina las columnas relacionadas con la reasignación
             $table->dropForeign(['reassigned_user_id']); // Elimina la clave foránea
             $table->dropColumn('reassigned_user_id');

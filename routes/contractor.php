@@ -3,7 +3,7 @@
 use App\Http\Controllers\Indicators\ContractorController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'role.permission'])->group(function () {
 
     // Redirigir 'contractor' a 'contractor'
     Route::redirect('contractor', 'contractor');

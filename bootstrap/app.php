@@ -3,6 +3,7 @@
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\OwnerMiddleware;
+use App\Http\Middleware\RolePermissionMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Alias para OwnerMiddleware (usar array asociativo)
         $middleware->alias([
             'owner' => OwnerMiddleware::class,
+            'role.permission' => RolePermissionMiddleware::class,
         ]);
 
         $middleware->web(append: [

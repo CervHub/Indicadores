@@ -55,6 +55,7 @@ export interface Report {
     nombreUsuarioReasignado: string;
     nombreUsuarioReporta: string;
     tipoReporte: string;
+    reportClosedAt?: string | null;
 }
 
 export interface User {

@@ -13,7 +13,7 @@ Route::get('/', function () {
     // return Inertia::render('welcome');
 })->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'role.permission'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('dashboard/{type}', [DashboardController::class, 'type'])->name('dashboard.type');
     Route::post('finish/{id}', [FinishController::class, 'store'])->name('finish.store');
@@ -39,7 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     require __DIR__ . '/legacy/admin.php';
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'role.permission'])->group(function () {
     Route::get('contrata/roles', [RoleController::class, 'index'])->name('contrata.roles.index');
     Route::post('contrata/roles/store', [RoleController::class, 'store'])->name('contrata.roles.store');
     Route::put('contrata/roles/update/{id}', [RoleController::class, 'update'])->name('contrata.roles.update');

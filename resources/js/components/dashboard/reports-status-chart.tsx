@@ -1,157 +1,161 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+'use client';
+
+import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { TrendingUp } from 'lucide-react';
+import { useMemo } from 'react';
+import { Bar, CartesianGrid, ComposedChart, Line, Rectangle, XAxis, YAxis, LabelList } from 'recharts';
 
 interface ReportsStatusChartProps {
-    filters?: {
-        status?: string;
-        company?: string;
-        reportType?: string;
-        startDate?: string;
-        endDate?: string;
-    };
+    data?: any[];
 }
 
 const chartConfig: ChartConfig = {
-    abiertos: {
-        label: 'Abiertos',
+    count: {
+        label: 'Reportes',
+    },
+    cumulative: {
+        label: 'Línea',
+        color: '#dc2626',
+    },
+    generado: {
+        label: 'GENERADO',
         color: 'hsl(var(--chart-1))',
     },
-    visualizados: {
-        label: 'Visualizados',
+    visualizado: {
+        label: 'VISUALIZADO',
         color: 'hsl(var(--chart-2))',
     },
-    cerrados: {
-        label: 'Cerrados',
+    cerrado: {
+        label: 'CERRADO',
         color: 'hsl(var(--chart-3))',
     },
-};
+} satisfies ChartConfig;
 
-export default function ReportsStatusChart({ filters }: ReportsStatusChartProps) {
-    // Synthetic data generation based on filters
-    const generateChartData = () => {
-        let baseData = [
+export default function ReportsStatusChart({ data = [] }: ReportsStatusChartProps) {
+    const chartData = useMemo(() => {
+        const counts = {
+            generado: 0,
+            visualizado: 0,
+            cerrado: 0,
+        };
+
+        data.forEach((report) => {
+            const status = report.estadoReporte?.toLowerCase();
+            if (status === 'generado') counts.generado++;
+            else if (status === 'visualizado') counts.visualizado++;
+            else if (status === 'cerrado') counts.cerrado++;
+        });
+
+        const total = counts.generado + counts.visualizado + counts.cerrado;
+
+        return [
             {
-                month: 'Ene',
-                abiertos: 45,
-                visualizados: 30,
-                cerrados: 65,
+                status: 'generado',
+                count: counts.generado,
+                cumulative: counts.generado,
+                label: total > 0 ? `${counts.generado} (${((counts.generado / total) * 100).toFixed(1)}%)` : '0 (0%)',
+                fill: 'var(--color-generado)'
             },
             {
-                month: 'Feb',
-                abiertos: 52,
-                visualizados: 35,
-                cerrados: 58,
+                status: 'visualizado',
+                count: counts.visualizado,
+                cumulative: counts.visualizado,
+                label: total > 0 ? `${counts.visualizado} (${((counts.visualizado / total) * 100).toFixed(1)}%)` : '0 (0%)',
+                fill: 'var(--color-visualizado)'
             },
             {
-                month: 'Mar',
-                abiertos: 38,
-                visualizados: 42,
-                cerrados: 70,
-            },
-            {
-                month: 'Abr',
-                abiertos: 61,
-                visualizados: 28,
-                cerrados: 55,
-            },
-            {
-                month: 'May',
-                abiertos: 49,
-                visualizados: 38,
-                cerrados: 62,
-            },
-            {
-                month: 'Jun',
-                abiertos: 55,
-                visualizados: 33,
-                cerrados: 68,
+                status: 'cerrado',
+                count: counts.cerrado,
+                cumulative: counts.cerrado,
+                label: total > 0 ? `${counts.cerrado} (${((counts.cerrado / total) * 100).toFixed(1)}%)` : '0 (0%)',
+                fill: 'var(--color-cerrado)'
             },
         ];
+    }, [data]);
 
-        // Apply filters to modify data
-        if (filters?.status) {
-            baseData = baseData.map(item => {
-                if (filters.status === 'abierto') {
-                    return { ...item, visualizados: 0, cerrados: 0 };
-                } else if (filters.status === 'visualizado') {
-                    return { ...item, abiertos: 0, cerrados: 0 };
-                } else if (filters.status === 'cerrado') {
-                    return { ...item, abiertos: 0, visualizados: 0 };
-                }
-                return item;
-            });
-        }
+    const activeIndex = useMemo(() => {
+        let maxCount = 0;
+        let maxIndex = 0;
+        chartData.forEach((item, index) => {
+            if (item.count > maxCount) {
+                maxCount = item.count;
+                maxIndex = index;
+            }
+        });
+        return maxIndex;
+    }, [chartData]);
 
-        if (filters?.company) {
-            baseData = baseData.map(item => ({
-                ...item,
-                abiertos: Math.floor(item.abiertos * 0.6),
-                visualizados: Math.floor(item.visualizados * 0.6),
-                cerrados: Math.floor(item.cerrados * 0.6),
-            }));
-        }
+    const totalReports = useMemo(() => {
+        return chartData.reduce((sum, item) => sum + item.count, 0);
+    }, [chartData]);
 
-        if (filters?.reportType) {
-            baseData = baseData.map(item => ({
-                ...item,
-                abiertos: Math.floor(item.abiertos * 0.4),
-                visualizados: Math.floor(item.visualizados * 0.4),
-                cerrados: Math.floor(item.cerrados * 0.4),
-            }));
-        }
-
-        return baseData;
-    };
-
-    const chartData = generateChartData();
+    const topStatus = useMemo(() => {
+        const maxItem = chartData[activeIndex];
+        return maxItem ? chartConfig[maxItem.status as keyof typeof chartConfig]?.label : '';
+    }, [chartData, activeIndex]);
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Estado de Reportes</CardTitle>
-                <CardDescription>
-                    Distribución mensual de reportes por estado
-                </CardDescription>
+                {/* <CardTitle>Estado de Reportes</CardTitle> */}
+                <CardDescription>Distribución de reportes por estado</CardDescription>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={chartConfig}>
-                    <ResponsiveContainer width="100%" height={350}>
-                        <BarChart data={chartData}>
-                            <XAxis 
-                                dataKey="month" 
-                                tickLine={false}
-                                axisLine={false}
-                                className="text-xs"
+                <ChartContainer config={chartConfig} className="h-[100px] w-full">
+                    <ComposedChart
+                        accessibilityLayer
+                        data={chartData}
+                        margin={{
+                            top: 20,
+                        }}
+                    >
+                        <CartesianGrid vertical={true} horizontal={false} />
+                        <XAxis
+                            dataKey="status"
+                            tickLine={false}
+                            tickMargin={10}
+                            axisLine={false}
+                            tickFormatter={(value) => value.toUpperCase()}
+                        />
+                        <YAxis hide />
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                        <Bar
+                            dataKey="count"
+                            strokeWidth={2}
+                            radius={8}
+                            activeIndex={activeIndex}
+                            activeBar={({ ...props }) => {
+                                return (
+                                    <Rectangle {...props} fillOpacity={0.8} stroke={props.payload.fill} strokeDasharray={4} strokeDashoffset={4} />
+                                );
+                            }}
+                        >
+                            <LabelList
+                                dataKey="label"
+                                position="top"
+                                offset={12}
+                                className="fill-foreground"
+                                fontSize={11}
                             />
-                            <YAxis
-                                tickLine={false}
-                                axisLine={false}
-                                className="text-xs"
-                            />
-                            <ChartTooltip
-                                cursor={false}
-                                content={<ChartTooltipContent indicator="dashed" />}
-                            />
-                            <Bar 
-                                dataKey="abiertos" 
-                                fill="var(--color-abiertos)" 
-                                radius={[0, 0, 4, 4]}
-                            />
-                            <Bar 
-                                dataKey="visualizados" 
-                                fill="var(--color-visualizados)" 
-                                radius={[0, 0, 4, 4]}
-                            />
-                            <Bar 
-                                dataKey="cerrados" 
-                                fill="var(--color-cerrados)" 
-                                radius={[4, 4, 0, 0]}
-                            />
-                        </BarChart>
-                    </ResponsiveContainer>
+                        </Bar>
+                        <Line
+                            type="linear"
+                            dataKey="cumulative"
+                            stroke="#dc2626"
+                            strokeWidth={3}
+                            dot={{ r: 6, fill: "#dc2626" }}
+                            activeDot={{ r: 8, stroke: "#dc2626", strokeWidth: 2, fill: "#dc2626" }}
+                        />
+                    </ComposedChart>
                 </ChartContainer>
             </CardContent>
+            <CardFooter className="flex-col items-start gap-2 text-sm">
+                <div className="flex gap-2 leading-none font-medium">
+                    {topStatus} es el estado más común <TrendingUp className="h-4 w-4" />
+                </div>
+                <div className="text-muted-foreground leading-none">Mostrando {totalReports} reportes en total</div>
+            </CardFooter>
         </Card>
     );
 }
