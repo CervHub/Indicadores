@@ -173,6 +173,13 @@ class UtilityController extends Controller
                 return response()->json(['error' => 'El acceso para este usuario ha sido deshabilitado.'], 400);
             }
 
+            // Verificar si el usuario tiene el rol de IS
+            $roleIS = Role::where('code', 'IS')->first();
+            if (!$roleIS || $user->role_id !== $roleIS->id) {
+                $this->putLog($request, 'authenticate', 'User', $user->id, 'failed', 'User does not have IS role');
+                return response()->json(['error' => 'El usuario no tiene el rol de Ingeniero de Seguridad.'], 400);
+            }
+
             $this->putLog($request, 'authenticate', 'User', $user->id, 'success', null);
             // Devolver los datos del usuario en la respuesta
             return response()->json(['success' => 'Conexión exitosa', 'user' => $user->data(), 'gerente' => 'Jorge Medina'], 200);
