@@ -175,10 +175,10 @@ class UtilityController extends Controller
 
             // Verificar si el usuario tiene el rol de IS
             $roleIS = Role::where('code', 'IS')->first();
-            if (!$roleIS || $user->role_id !== $roleIS->id) {
-                $this->putLog($request, 'authenticate', 'User', $user->id, 'failed', 'User does not have IS role');
-                return response()->json(['error' => 'El usuario no tiene el rol de Ingeniero de Seguridad.'], 400);
-            }
+            // if (!$roleIS || $user->role_id !== $roleIS->id) {
+            //     $this->putLog($request, 'authenticate', 'User', $user->id, 'failed', 'User does not have IS role');
+            //     return response()->json(['error' => 'El usuario no tiene el rol de Ingeniero de Seguridad.'], 400);
+            // }
 
             $this->putLog($request, 'authenticate', 'User', $user->id, 'success', null);
             // Devolver los datos del usuario en la respuesta
