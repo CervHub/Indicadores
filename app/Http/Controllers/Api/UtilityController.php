@@ -291,6 +291,7 @@ class UtilityController extends Controller
 
             if ($engineerSecurityCompanyReported->id == 1) {
                 $engineerSecurityReported = $engineerSecurity;
+                $data['user_report_id'] = $engineerSecurityReported->id;
             }
 
             $securityEnginnerSPCCs = User::where('company_id', 1)

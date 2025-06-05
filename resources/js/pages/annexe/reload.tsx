@@ -119,6 +119,7 @@ export default function Reload({ rules, selectedItem, isDialogOpen, setIsDialogO
                         <Label htmlFor="contractor_company_type_id">Tipo de Cliente</Label>
                         <Select
                             required
+                            disabled
                             onValueChange={(value) => setData('contractor_company_type_id', value)}
                             value={data.contractor_company_type_id}
                         >
@@ -140,7 +141,7 @@ export default function Reload({ rules, selectedItem, isDialogOpen, setIsDialogO
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="uea_id">UEA</Label>
-                        <Select onValueChange={(value) => setData('uea_id', value)} value={data.uea_id}>
+                        <Select disabled onValueChange={(value) => setData('uea_id', value)} value={data.uea_id}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Seleccione una UEA" />
                             </SelectTrigger>
@@ -159,7 +160,7 @@ export default function Reload({ rules, selectedItem, isDialogOpen, setIsDialogO
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="year">Año</Label>
-                        <Select onValueChange={(value) => setData('year', value)} value={data.year}>
+                        <Select disabled onValueChange={(value) => setData('year', value)} value={data.year}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Seleccione un año" />
                             </SelectTrigger>
@@ -178,7 +179,7 @@ export default function Reload({ rules, selectedItem, isDialogOpen, setIsDialogO
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="month">Mes</Label>
-                        <Select onValueChange={(value) => setData('month', value)} value={data.month}>
+                        <Select disabled onValueChange={(value) => setData('month', value)} value={data.month}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Seleccione un mes" />
                             </SelectTrigger>
