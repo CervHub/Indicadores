@@ -33,21 +33,18 @@ class CategoryController extends Controller
             $code = trim($request->code);
 
             // Verificar si ya existe una categoría con el mismo nombre para la empresa
-            $existingCategory = Category::whereRaw('UPPER(TRIM(nombre)) = ?', [strtoupper($nombre)])
-                ->where('company_id', $company_id)
-                ->first();
-
-            if ($existingCategory) {
-                return redirect()->back()->with('error', 'Ya existe una categoría con el mismo nombre.');
+            $existingCategories = Category::where('company_id', $company_id)->get();
+            foreach ($existingCategories as $existingCategory) {
+                if (strtoupper(trim($existingCategory->nombre)) === strtoupper($nombre)) {
+                    return redirect()->back()->with('error', 'Ya existe una categoría con el mismo nombre.');
+                }
             }
 
             // Verificar si ya existe una categoría con el mismo código para la empresa
-            $existingCode = Category::whereRaw('UPPER(TRIM(code)) = ?', [strtoupper($code)])
-                ->where('company_id', $company_id)
-                ->first();
-
-            if ($existingCode) {
-                return redirect()->back()->with('error', 'Ya existe una categoría con el mismo código.');
+            foreach ($existingCategories as $existingCategory) {
+                if (strtoupper(trim($existingCategory->code)) === strtoupper($code)) {
+                    return redirect()->back()->with('error', 'Ya existe una categoría con el mismo código.');
+                }
             }
 
             $category = Category::create([
@@ -85,13 +82,14 @@ class CategoryController extends Controller
             $nombre = trim($request->input('nombre'));
 
             // Verificar si ya existe una categoría de empresa con el mismo nombre para la misma empresa y categoría
-            $existingCategoryCompany = CategoryCompany::where('category_id', $category_id)
+            $existingCategoryCompanies = CategoryCompany::where('category_id', $category_id)
                 ->where('company_id', $company_id)
-                ->whereRaw('UPPER(TRIM(nombre)) = ?', [strtoupper($nombre)])
-                ->first();
-
-            if ($existingCategoryCompany) {
-                return redirect()->back()->with('error', 'Ya existe una categoría de empresa con el mismo nombre.');
+                ->get();
+            
+            foreach ($existingCategoryCompanies as $existingCategoryCompany) {
+                if (strtoupper(trim($existingCategoryCompany->nombre)) === strtoupper($nombre)) {
+                    return redirect()->back()->with('error', 'Ya existe una categoría de empresa con el mismo nombre.');
+                }
             }
 
             $category = Category::find($category_id);
@@ -145,25 +143,27 @@ class CategoryController extends Controller
             }
 
             // Verificar si ya existe otra categoría de empresa con el mismo nombre (ignorando el actual)
-            $exists = CategoryCompany::where('category_id', $categoryCompany->category_id)
+            $existingCategoryCompanies = CategoryCompany::where('category_id', $categoryCompany->category_id)
                 ->where('company_id', $company_id)
-                ->whereRaw('UPPER(TRIM(nombre)) = ?', [strtoupper($nombre)])
                 ->where('id', '!=', $category_id)
-                ->exists();
-
-            if ($exists) {
-                return redirect()->back()->with('error', 'Ya existe otra categoría de empresa con el mismo nombre.');
+                ->get();
+            
+            foreach ($existingCategoryCompanies as $existingCategoryCompany) {
+                if (strtoupper(trim($existingCategoryCompany->nombre)) === strtoupper($nombre)) {
+                    return redirect()->back()->with('error', 'Ya existe otra categoría de empresa con el mismo nombre.');
+                }
             }
 
             // Verificar si ya existe otra categoría con el mismo código (ignorando el actual)
             if ($code) {
-                $existsCode = Category::whereRaw('UPPER(TRIM(code)) = ?', [strtoupper($code)])
-                    ->where('company_id', $company_id)
+                $existingCategories = Category::where('company_id', $company_id)
                     ->where('id', '!=', $categoryCompany->category_id)
-                    ->exists();
-
-                if ($existsCode) {
-                    return redirect()->back()->with('error', 'Ya existe otra categoría con el mismo código.');
+                    ->get();
+                
+                foreach ($existingCategories as $existingCategory) {
+                    if (strtoupper(trim($existingCategory->code)) === strtoupper($code)) {
+                        return redirect()->back()->with('error', 'Ya existe otra categoría con el mismo código.');
+                    }
                 }
 
                 // Actualizar el código en la categoría principal si se proporciona
@@ -203,12 +203,11 @@ class CategoryController extends Controller
             $name = trim($request->input('name'));
 
             // Verificar si ya existe un grupo con el mismo nombre para la misma categoría
-            $existingGroup = Group::where('category_id', $category_id)
-                ->whereRaw('UPPER(TRIM(name)) = ?', [strtoupper($name)])
-                ->first();
-
-            if ($existingGroup) {
-                return redirect()->back()->with('error', 'Ya existe un grupo con el mismo nombre.');
+            $existingGroups = Group::where('category_id', $category_id)->get();
+            foreach ($existingGroups as $existingGroup) {
+                if (strtoupper(trim($existingGroup->name)) === strtoupper($name)) {
+                    return redirect()->back()->with('error', 'Ya existe un grupo con el mismo nombre.');
+                }
             }
 
             $group = Group::create([

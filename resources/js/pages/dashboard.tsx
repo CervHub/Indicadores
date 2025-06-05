@@ -99,8 +99,18 @@ export default function Dashboard({ companies, entities, titles }: DashboardProp
             setLoading(true);
             console.log('🔍 Aplicando filtros a la API:', filtersToApply);
 
+            // Preparar parámetros para la API
+            const { company, ...otherFilters } = filtersToApply;
+            const apiParams = {
+                ...otherFilters,
+                // Si hay company seleccionada, enviar como companyId
+                ...(company && { companyId: company })
+            };
+
+            console.log('📤 Parámetros enviados a la API:', apiParams);
+
             const response = await axios.get(route('api.dashboard.index'), {
-                params: filtersToApply
+                params: apiParams
             });
 
             console.log('📥 Respuesta de la API:', response.data);
@@ -130,17 +140,18 @@ export default function Dashboard({ companies, entities, titles }: DashboardProp
 
         const initialFilters = {
             status: '',
-            company: '',
+            company: companies.length === 1 ? companies[0].id?.toString() || '' : '',
             reportType: '',
             startDate: lastYear.toISOString().split('T')[0],
             endDate: now.toISOString().split('T')[0]
         };
 
         console.log('🚀 Inicializando Dashboard con filtros por defecto:', initialFilters);
+        console.log('🏢 Empresas disponibles:', companies.length, companies.length === 1 ? '(solo una empresa, seleccionada automáticamente)' : '');
         setFilters(initialFilters);
         // Cargar datos iniciales
         fetchDashboardData(initialFilters);
-    }, []);
+    }, [companies]);
 
     const handleFiltersChange = (newFilters: FilterFormData) => {
         const previousFilters = filters;

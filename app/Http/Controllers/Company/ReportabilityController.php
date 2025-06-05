@@ -253,27 +253,10 @@ class ReportabilityController extends Controller
             'canCloseReport' => $canCloseReport,
         ]);
     }
-
     public function download($reportability_id)
     {
-        // Verificar si el usuario está autenticado
-        if (!auth()->check()) {
-            abort(401, 'Debe iniciar sesión para acceder a esta función.');
-        }
 
-        $user = auth()->user();
         $reportability = Module::findOrFail($reportability_id);
-
-        // Si es de Southern (company_id == 1), puede ver todos los documentos
-        if ($user->company_id !== 1) {
-            // Si no es Southern, solo puede ver si es company_id o company_report_id
-            if (
-                $user->company_id != $reportability->company_id &&
-                $user->company_id != $reportability->company_report_id
-            ) {
-                abort(403, 'Usted no está habilitado para ver este reporte.');
-            }
-        }
 
         $name = "Reporte de reportabilidad {$reportability->fecha_reporte}.pdf";
 

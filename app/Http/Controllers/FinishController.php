@@ -18,6 +18,7 @@ class FinishController extends Controller
     {
         $module = Module::find($id);
         $module->estado = 'Finalizado';
+        $module->report_closed_at = now(); // Marcar como eliminado
         $module->save();
         $user = auth()->user();
 

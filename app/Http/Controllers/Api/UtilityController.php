@@ -232,161 +232,123 @@ class UtilityController extends Controller
 
     public function storeReport(Request $request, $company_id)
     {
-        $log = $request->all();
-        // return response()->json(['status' => true, 'message' => 'Insertado satisfactoriamente', 'data' => $request->all()] ,200);
-
-        $user = User::where($request->only('doi'))->first();
-        if (!$user) {
-            return response()->json(['status' => true, 'message' => 'Usuario no encontrado'], 404);
-        }
-        $user_id = $user->id;
-        $data = [
-            'fecha_reporte' => date('Y-m-d H:i:s', strtotime($request->fecha_reporte)),
-            'fecha_evento' => date('Y-m-d H:i:s', strtotime($request->fecha_evento)),
-            'company_id' => $company_id,
-            'tipo_inspeccion' => $request->tipo_inspeccion,
-            'estado' => 'Generado',
-            'tipo_reporte' => $request->tipo_reporte,
-            'descripcion' => $request->descripcion,
-            'correctiva' => $request->correctiva,
-            'gravedad' => $request->gravedad,
-            'probabilidad' => $request->probabilidad,
-            'exposicion' => $request->exposicion,
-            'otros' => $request->otros,
-            'mapa_cordenadas' => $request->mapa_cordenadas,
-            'user_id' => $user_id,
-            'reporte_usuarios_ids' => '{"jefe":3,"ingeniero_de_seguridad":16}',
-            'firma' => $request->firma,
-            'images' => $request->images,
-            'levels' => $request->levels,
-            'lugar' => $request->lugar,
-            'category_company_id' => $request->causa_id,
-            'comentario' => $request->comentario,
-            'details' => $request->details,
-            'company_report_id' => $request->company_report_id,
-            'device' => $request->device,
-            'user_report_id' => $request->user_report_id,
-        ];
-
-        $report = null; // replace with actual report
-        switch ($request->tipo_reporte) {
-            case 'actos':
-                $report = 'Actos subestandar';
-                break;
-            case 'condiciones':
-                $report = 'Condiciones Subestandar';
-                break;
-            case 'incidentes':
-                $report = 'Incidentes';
-                break;
-            case 'inspeccion':
-                $report = 'Inspección';
-                break;
-            default:
-                $report = ''; // replace with default value
-                break;
-        }
-        //Envio de correo electronico
-        //Solode la empresa de southern
-
-        $roleSecurityEngineer = Role::where('code', 'IS')->first();
-        $json = null;
-
-        $engineerSecurity = $user; //Ingeniero de Seguridad que genera el reporte -> doi
-        $engineerSecurityCompany = Company::find($company_id); // Empresa que genera el reporte, es la empresa del IS.
-
-        $engineerSecurityReported = User::find($request->user_report_id); // Ingeniero de Seguridad que cierra el reporte -> user_report_id
-        $engineerSecurityCompanyReported = Company::find($request->company_report_id); // Empresa que cierra el reporte, es la empresa del IS.
-
-        // Si la empresa reportada es SOUTHER con id 1 entonces el ingeniero que cierra el reporte debe ser el mismo ingeniero que genera el reporte
-        if ($engineerSecurityCompanyReported->id == 1) {
-            $engineerSecurityReported = $engineerSecurity;
-        }
-
-        // Ingenieros de seguridad de southern
-        $securityEnginnerSPCCs = User::where('company_id', 1)
-            ->where('role_id', $roleSecurityEngineer->id)
-            ->where('estado', 1) // Asegurarse de que el usuario esté activo
-            ->whereNotNull('email') // Excluir usuarios sin correo electrónico
-            ->where('email', '!=', '') // Excluir usuarios con correos vacíos
-            ->get();
-
-        // Verifica si el rol existe
-        if (!$roleSecurityEngineer) {
-            Log::warning('El rol con código "IS" no existe. No se enviarán correos electrónicos.');
-        } else {
-
-
-            // Verifica si hay ingenieros de seguridad disponibles
-            if ($securityEnginnerSPCCs->isEmpty()) {
-                Log::info('No hay ingenieros de seguridad disponibles para enviar correos.');
-            } else {
-                // Mapea los correos electrónicos
-                $json = $securityEnginnerSPCCs->map(function ($user) {
-                    return [
-                        'email' => $user->email,
-                        'nombre' => $user->nombres, // Asumiendo que el campo se llama 'nombres'
-                        'apellidos' => $user->apellidos, // Asumiendo que el campo se llama 'apellidos',
-                        'type' => 'SPCC',
-                    ];
-                });
-
-                // Aquí puedes agregar la lógica para enviar correos si es necesario
-                Log::info('Correos electrónicos preparados para envío.');
-            }
-
-            if ($engineerSecurityReported->email) {
-                // Agregar el ingeniero de seguridad que cerrará el reporte
-                $json->push([
-                    'email' => $engineerSecurityReported->email,
-                    'nombre' => $engineerSecurityReported->nombres,
-                    'apellidos' => $engineerSecurityReported->apellidos,
-                    'type' => 'IS',
-                ]);
-            } else {
-                Log::warning('Ingeniero de seguridad no encontrado para el ID proporcionado: ' . $request->user_report_id);
-            }
-            # code...
-            if ($engineerSecurityCompanyReported->email) {
-                // Agregar el correo de la empresa administradora
-                $json->push([
-                    'email' => $engineerSecurityCompanyReported->email,
-                    'nombre' => $engineerSecurityCompanyReported->nombre,
-                    'apellidos' => '',
-                    'type' => 'COMPANY',
-                ]);
-            } else {
-                Log::warning('Empresa administradora no tiene correo electrónico configurado.');
-            }
-        }
-
-        $data['send_email'] = $json->toJson();
-
-        $date = $request->fecha_reporte; // replace with actual date
-        $levels = json_decode($request->levels, true);
-        $data['entity_id'] = $levels['gerencia'] ?? null;
-
-
-        $generatedBy = $user->nombres . ' ' . $user->apellidos; // replace with actual generatedBy
-
         try {
-            $new_module = Module::create($data);
+            $log = $request->all();
 
+            $user = User::where($request->only('doi'))->first();
+            if (!$user) {
+                return response()->json(['status' => true, 'message' => 'Usuario no encontrado'], 404);
+            }
+            $user_id = $user->id;
+            $data = [
+                'fecha_reporte' => date('Y-m-d H:i:s', strtotime($request->fecha_reporte)),
+                'fecha_evento' => date('Y-m-d H:i:s', strtotime($request->fecha_evento)),
+                'company_id' => $company_id,
+                'tipo_inspeccion' => $request->tipo_inspeccion,
+                'estado' => 'Generado',
+                'tipo_reporte' => $request->tipo_reporte,
+                'descripcion' => $request->descripcion,
+                'correctiva' => $request->correctiva,
+                'gravedad' => $request->gravedad,
+                'probabilidad' => $request->probabilidad,
+                'exposicion' => $request->exposicion,
+                'otros' => $request->otros,
+                'mapa_cordenadas' => $request->mapa_cordenadas,
+                'user_id' => $user_id,
+                'reporte_usuarios_ids' => '{"jefe":3,"ingeniero_de_seguridad":16}',
+                'firma' => $request->firma,
+                'images' => $request->images,
+                'levels' => $request->levels,
+                'lugar' => $request->lugar,
+                'category_company_id' => $request->causa_id,
+                'comentario' => $request->comentario,
+                'details' => $request->details,
+                'company_report_id' => $request->company_report_id,
+                'device' => $request->device,
+                'user_report_id' => $request->user_report_id,
+            ];
+
+            $report = match ($request->tipo_reporte) {
+                'actos' => 'Actos subestandar',
+                'condiciones' => 'Condiciones Subestandar',
+                'incidentes' => 'Incidentes',
+                'inspeccion' => 'Inspección',
+                default => '',
+            };
+
+            $roleSecurityEngineer = Role::where('code', 'IS')->first();
+            $engineerSecurity = $user;
+            $engineerSecurityCompany = Company::find($company_id);
+            $engineerSecurityReported = User::find($request->user_report_id);
+            $engineerSecurityCompanyReported = Company::find($request->company_report_id);
+
+            if ($engineerSecurityCompanyReported->id == 1) {
+                $engineerSecurityReported = $engineerSecurity;
+            }
+
+            $securityEnginnerSPCCs = User::where('company_id', 1)
+                ->where('role_id', $roleSecurityEngineer->id)
+                ->where('estado', 1)
+                ->whereNotNull('email')
+                ->where('email', '!=', '')
+                ->get();
+
+            if (!$roleSecurityEngineer) {
+                Log::warning('El rol con código "IS" no existe. No se enviarán correos electrónicos.');
+            } else {
+                $json = collect();
+
+                if (!$securityEnginnerSPCCs->isEmpty()) {
+                    $json = $securityEnginnerSPCCs->map(fn($user) => [
+                        'email' => $user->email,
+                        'nombre' => $user->nombres,
+                        'apellidos' => $user->apellidos,
+                        'type' => 'SPCC',
+                    ]);
+
+                    Log::info('Correos electrónicos preparados para envío.');
+                }
+
+                if ($engineerSecurityReported->email) {
+                    $json->push([
+                        'email' => $engineerSecurityReported->email,
+                        'nombre' => $engineerSecurityReported->nombres,
+                        'apellidos' => $engineerSecurityReported->apellidos,
+                        'type' => 'IS',
+                    ]);
+                } else {
+                    Log::warning('Ingeniero de seguridad no encontrado para el ID proporcionado: ' . $request->user_report_id);
+                }
+
+                if ($engineerSecurityCompanyReported->email) {
+                    $json->push([
+                        'email' => $engineerSecurityCompanyReported->email,
+                        'nombre' => $engineerSecurityCompanyReported->nombre,
+                        'apellidos' => '',
+                        'type' => 'COMPANY',
+                    ]);
+                } else {
+                    Log::warning('Empresa administradora no tiene correo electrónico configurado.');
+                }
+            }
+
+            $data['send_email'] = $json->toJson();
+            $levels = json_decode($request->levels, true);
+            $data['entity_id'] = $levels['gerencia'] ?? null;
+
+            $generatedBy = $user->nombres . ' ' . $user->apellidos;
+
+            $new_module = Module::create($data);
             $reportLink = route('company.reportability.download', ['reportability_id' => $new_module->id]);
             $date = $data['fecha_evento'];
 
-            //envio de correo electronico
-
             if ($engineerSecurityReported) {
-                try {
-                    // SendReportMail::dispatch($user->email, $report, $date, $management, $generatedBy, $reportLink);
-                    $this->sendReportMail($engineerSecurityReported, $report, $date, $generatedBy, $reportLink, $engineerSecurityCompanyReported, $securityEnginnerSPCCs, $engineerSecurityCompany);
-                } catch (\Exception $emailException) {
-                    Log::error('Error al enviar correo a ' . $user->email . ': ' . $emailException->getMessage());
-                }
+                $this->sendReportMail($engineerSecurityReported, $report, $date, $generatedBy, $reportLink, $engineerSecurityCompanyReported, $securityEnginnerSPCCs, $engineerSecurityCompany);
             }
+
             return response()->json(['status' => true, 'message' => 'Insertado satisfactoriamente'], 200);
         } catch (\Exception $e) {
+            Log::error('Error en storeReport: ' . $e->getMessage());
             return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
     }

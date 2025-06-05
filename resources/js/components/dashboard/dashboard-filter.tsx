@@ -26,17 +26,18 @@ export default function DashboardFilter({ companies, titles, onFiltersChange }: 
         endDate: ''
     });
 
-    // Initialize with last year date range
+    // Initialize with last year date range and auto-select company if only one
     useEffect(() => {
         const now = new Date();
         const lastYear = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
 
         setFilters(prev => ({
             ...prev,
+            company: companies.length === 1 ? companies[0].id?.toString() || '' : '',
             startDate: lastYear.toISOString().split('T')[0],
             endDate: now.toISOString().split('T')[0]
         }));
-    }, []);
+    }, [companies]);
 
     const handleFilterChange = (key: keyof FilterFormData, value: string) => {
         setFilters(prev => ({
@@ -93,18 +94,22 @@ export default function DashboardFilter({ companies, titles, onFiltersChange }: 
                                 ))}
                             </SelectContent>
                         </Select>
-                    </div>
-
-                    <div className="space-y-1">
-                        <label className="text-sm font-medium">Empresa</label>
-                        <Combobox
-                            data={companyOptions}
-                            value={filters.company}
-                            onChange={(value) => handleFilterChange('company', value)}
-                            placeholder="Seleccionar empresa"
-                            className="w-full"
-                        />
                     </div>                    <div className="space-y-1">
+                        <label className="text-sm font-medium">Empresa</label>
+                        {companies.length === 1 ? (
+                            <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background">
+                                {companies[0].name || companies[0].nombre || 'Empresa'}
+                            </div>
+                        ) : (
+                            <Combobox
+                                data={companyOptions}
+                                value={filters.company}
+                                onChange={(value) => handleFilterChange('company', value)}
+                                placeholder="Seleccionar empresa"
+                                className="w-full"
+                            />
+                        )}
+                    </div><div className="space-y-1">
                         <label className="text-sm font-medium">Tipo de reporte</label>
                         <Select value={filters.reportType} onValueChange={(value) => handleFilterChange('reportType', value)}>
                             <SelectTrigger>
