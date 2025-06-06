@@ -17,7 +17,7 @@ class FinishController extends Controller
     public function store(Request $request, $id)
     {
         $module = Module::find($id);
-        $module->estado = 'Finalizado';
+        $module->estado = 'Cerrado';
         $module->report_closed_at = now(); // Marcar como eliminado
         $module->save();
         $user = auth()->user();

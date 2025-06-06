@@ -205,7 +205,7 @@ class ReportabilityController extends Controller
         // Si quieres que el estado cambie a 'Revisado' siempre que se cumpla alguna regla,
         // sin importar si es SecurityEngineer, puedes modificar así:
 
-        if ($module->estado !== 'Finalizado') {
+        if ($module->estado !== 'Cerrado') {
             if ($ruleOne || $ruleTwo) {
                 $module->estado = 'Revisado';
                 $module->save();

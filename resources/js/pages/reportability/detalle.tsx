@@ -29,6 +29,8 @@ export default function ReportabilityPage() {
         canCloseReport: boolean;
     }>().props;
 
+    console.log('ReportabilityPage', reportability_id, reportability, isSecurityEngineer, canCloseReport);
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -58,7 +60,7 @@ export default function ReportabilityPage() {
                 return 0;
             case 'Revisado':
                 return 1;
-            case 'Finalizado':
+            case 'Cerrado':
                 return 2;
             default:
                 return 0;
@@ -127,7 +129,7 @@ export default function ReportabilityPage() {
                                 variant="destructive"
                                 className="mt-4 w-auto"
                                 onClick={() => setIsDialogOpen(true)}
-                                disabled={!canCloseReport || reportability.estado === 'Finalizado' || !isSecurityEngineer}
+                                disabled={!canCloseReport || reportability.estado === 'Cerrado' || !isSecurityEngineer}
                             >
                                 Finalizar Reporte
                             </Button>
