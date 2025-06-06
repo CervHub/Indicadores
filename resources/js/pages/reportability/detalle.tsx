@@ -59,8 +59,10 @@ export default function ReportabilityPage() {
             case 'Generado':
                 return 0;
             case 'Revisado':
+            case 'Visualizado':
                 return 1;
             case 'Cerrado':
+            case 'Finalizado':
                 return 2;
             default:
                 return 0;
@@ -97,7 +99,7 @@ export default function ReportabilityPage() {
                             </CardHeader>
                             <br />
                             <CardContent className="flex flex-col gap-2 space-y-2">
-                                <Stepper currentStep={currentStep} />
+                                <Stepper currentStep={currentStep} currentState={reportability.estado} />
                                 <div className="space-y-2 d-none">
                                     <Label htmlFor="estado">Estado</Label>
                                     <Input id="estado" type="text" value={reportability.estado} disabled />
@@ -115,13 +117,15 @@ export default function ReportabilityPage() {
                                     <Input id="company_report_name" type="text" value={reportability.company_report_name} disabled />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="fecha_reporte">Fecha de Reporte</Label>
-                                    <Input id="fecha_reporte" type="text" value={formatDateTime(reportability.fecha_reporte)} disabled />
-                                </div>
-                                <div className="space-y-2">
                                     <Label htmlFor="fecha_evento">Fecha de Evento</Label>
                                     <Input id="fecha_evento" type="text" value={formatDateTime(reportability.fecha_evento)} disabled />
                                 </div>
+                                {reportability.report_closed_at && (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="fecha_cierre">Fecha de Cierre</Label>
+                                        <Input id="fecha_cierre" type="text" value={formatDateTime(reportability.report_closed_at)} disabled />
+                                    </div>
+                                )}
                             </CardContent>
                         </div>
                         <CardContent>
@@ -129,7 +133,7 @@ export default function ReportabilityPage() {
                                 variant="destructive"
                                 className="mt-4 w-auto"
                                 onClick={() => setIsDialogOpen(true)}
-                                disabled={!canCloseReport || reportability.estado === 'Cerrado' || !isSecurityEngineer}
+                                disabled={!canCloseReport || reportability.estado === 'Cerrado' || reportability.estado === 'Finalizado' || !isSecurityEngineer}
                             >
                                 Finalizar Reporte
                             </Button>

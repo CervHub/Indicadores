@@ -12,18 +12,15 @@ import { useState } from 'react';
 // Este tipo define la forma de nuestros datos.
 export type Reportability = {
     id: string;
-    nombres: string;
-    apellidos: string;
-    fecha_evento: string;
-    estado: string; // Cambiado a string para reflejar el estado literal
-    tipo_reporte: string;
     gerencia_name: string;
-    company_id: string;
-    company_name: string;
-    company_report_id: string;
-    company_report_name: string;
-    user_report_id: string;
+    tipo_reporte: string;
+    fecha_evento: string;
+    generado_por: string;
     encargado_cierre: string;
+    company_name: string;
+    company_report_name: string;
+    estado: string;
+    report_closed_at: string;
 };
 
 export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability>[] => [
@@ -96,23 +93,20 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
         enableHiding: true,
     },
     {
-        accessorKey: 'nombres',
+        accessorKey: 'generado_por',
         header: 'Generado por',
-        cell: ({ row }) => {
-            const nombreCompleto = `${row.original.nombres} ${row.original.apellidos}`.trim();
-            return (
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <span className="cursor-help">{nombreCompleto}</span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Generado por: {nombreCompleto}</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            );
-        },
+        cell: ({ row }) => (
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span className="cursor-help">{row.original.generado_por}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Generado por: {row.original.generado_por}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        ),
         enableHiding: true,
     },
     {
@@ -154,7 +148,7 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
     },
     {
         accessorKey: 'company_report_name',
-        header: 'Empresa Reportarada',
+        header: 'Empresa Reportada',
         cell: ({ row }) => (
             <TooltipProvider>
                 <Tooltip>
@@ -190,6 +184,10 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
                     badgeClass = 'bg-green-600 text-white';
                     badgeText = 'Finalizado';
                     break;
+                case 'Cerrado':
+                    badgeClass = 'bg-gray-600 text-white';
+                    badgeText = 'Cerrado';
+                    break;
                 default:
                     badgeClass = 'bg-gray-500 text-white';
                     badgeText = estado;
@@ -214,6 +212,28 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
         enableHiding: true,
     },
     {
+        accessorKey: 'report_closed_at',
+        header: 'Fecha de Cierre',
+        cell: ({ row }) => {
+            const fechaCierre = row.original.report_closed_at;
+            return (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="cursor-help">
+                                {fechaCierre ? formatDateTime(fechaCierre) : '-'}
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Fecha de cierre: {fechaCierre ? formatDateTime(fechaCierre) : 'No cerrado'}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            );
+        },
+        enableHiding: true,
+    },
+    {
         accessorKey: 'acciones',
         header: 'Acciones',
         cell: ({ row }) => {
@@ -230,24 +250,24 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
             };
 
             return (
-                <div className="flex flex-wrap space-x-2">
+                <div className="flex items-center space-x-1 min-w-max">
                     <Link href={urlDetalle} className="flex items-center">
                         <Button
                             variant="warning"
                             aria-label="Toggle detalle"
-                            className={`flex h-7 items-center p-2 text-xs text-white ${detalleClicked ? 'cursor-not-allowed opacity-50' : ''}`}
+                            className={`flex h-7 items-center p-2 text-xs text-white whitespace-nowrap ${detalleClicked ? 'cursor-not-allowed opacity-50' : ''}`}
                             onClick={handleDetalleClick}
                             disabled={detalleClicked}
                         >
-                            <Eye className="h-3 w-3" /> {isSecurityEngineer ? 'Revisar' : 'Detalle'}
+                            <Eye className="h-3 w-3 mr-1" /> {isSecurityEngineer ? 'Revisar' : 'Detalle'}
                         </Button>
                     </Link>
                     <Button
                         aria-label="Toggle pdf"
-                        className="h-7 bg-red-700 p-2 text-xs text-white hover:bg-red-900 dark:bg-red-600 dark:hover:bg-red-800"
+                        className="h-7 bg-red-700 p-2 text-xs text-white hover:bg-red-900 dark:bg-red-600 dark:hover:bg-red-800 whitespace-nowrap"
                         onClick={handlePdfClick}
                     >
-                        <FileText className="h-3 w-3" /> PDF
+                        <FileText className="h-3 w-3 mr-1" /> PDF
                     </Button>
                 </div>
             );

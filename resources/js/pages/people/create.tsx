@@ -59,9 +59,16 @@ export default function CreatePerson({ isOpen = false, onOpenChange, roles }: Cr
     }, [isOpen]);
 
     useEffect(() => {
-        // Check if required fields are filled
-        setIsFormValid(data.doi.trim() !== '' && data.nombres.trim() !== '' && data.apellidos.trim() !== '');
-    }, [data.doi, data.nombres, data.apellidos]);
+        // Check if required fields are filled (all except telefono)
+        setIsFormValid(
+            data.doi.trim() !== '' && 
+            data.email.trim() !== '' && 
+            data.nombres.trim() !== '' && 
+            data.apellidos.trim() !== '' && 
+            data.cargo.trim() !== '' && 
+            data.role_id.trim() !== ''
+        );
+    }, [data.doi, data.email, data.nombres, data.apellidos, data.cargo, data.role_id]);
 
     // Reset form when dialog closes
     const handleDialogChange = (open: boolean) => {
@@ -118,23 +125,23 @@ export default function CreatePerson({ isOpen = false, onOpenChange, roles }: Cr
                     </DialogHeader>
                     <form onSubmit={submit} className="space-y-3" method="post" action={route('contrata.personal.store')}>
                         <div className="grid gap-2">
-                            <Label htmlFor="doi">DOI</Label>
-                            <Input id="doi" value={data.doi} onChange={(e) => setData('doi', e.target.value)} />
+                            <Label htmlFor="doi">Documento Nacional de Identidad (DNI) *</Label>
+                            <Input id="doi" value={data.doi} onChange={(e) => setData('doi', e.target.value)} required />
                             <InputError message={errors.doi} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} />
+                            <Label htmlFor="email">Email *</Label>
+                            <Input id="email" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} required />
                             <InputError message={errors.email} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="nombres">Nombres</Label>
-                            <Input id="nombres" value={data.nombres} onChange={(e) => setData('nombres', e.target.value)} />
+                            <Label htmlFor="nombres">Nombres *</Label>
+                            <Input id="nombres" value={data.nombres} onChange={(e) => setData('nombres', e.target.value)} required />
                             <InputError message={errors.nombres} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="apellidos">Apellidos</Label>
-                            <Input id="apellidos" value={data.apellidos} onChange={(e) => setData('apellidos', e.target.value)} />
+                            <Label htmlFor="apellidos">Apellidos *</Label>
+                            <Input id="apellidos" value={data.apellidos} onChange={(e) => setData('apellidos', e.target.value)} required />
                             <InputError message={errors.apellidos} />
                         </div>
                         <div className="grid gap-2">
@@ -143,20 +150,20 @@ export default function CreatePerson({ isOpen = false, onOpenChange, roles }: Cr
                             <InputError message={errors.telefono} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="cargo">Cargo</Label>
-                            <Input id="cargo" value={data.cargo} onChange={(e) => setData('cargo', e.target.value)} />
+                            <Label htmlFor="cargo">Cargo *</Label>
+                            <Input id="cargo" value={data.cargo} onChange={(e) => setData('cargo', e.target.value)} required />
                             <InputError message={errors.cargo} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="role_id">Rol</Label>
-                            <Select value={data.role_id} onValueChange={(value) => setData('role_id', value)}>
+                            <Label htmlFor="role_id">Rol *</Label>
+                            <Select value={data.role_id} onValueChange={(value) => setData('role_id', value)} required>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Seleccionar rol" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {roles.map((role) => (
                                         <SelectItem key={role.id} value={role.id.toString()}>
-                                            {role.nombre} ({role.code})
+                                            {role.code === 'RU' ? 'Usuario' : role.nombre} ({role.code})
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

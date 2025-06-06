@@ -112,10 +112,10 @@ class ReportabilityController extends Controller
         $query = "
         SELECT
             m.id,
-            u.nombres,
-            u.apellidos,
+            CONCAT(u.nombres, ' ', u.apellidos) AS generado_por,
             m.fecha_evento,
             m.estado,
+            m.report_closed_at,
             CASE
                 WHEN m.tipo_reporte = 'actos' THEN 'Reporte de actos subestándar'
                 WHEN m.tipo_reporte = 'inspeccion' THEN 'Reporte de inspección'
@@ -231,6 +231,7 @@ class ReportabilityController extends Controller
             m.fecha_reporte,
             m.fecha_evento,
             m.user_report_id,
+            m.report_closed_at,
             COALESCE(CONCAT(ur.nombres, ' ', ur.apellidos), 'No asignado') AS encargado_cierre
         FROM
             modules AS m

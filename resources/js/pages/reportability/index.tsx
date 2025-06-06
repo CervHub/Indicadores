@@ -23,7 +23,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 
 export default function ReportabilityPage() {
-    const { reportabilities, isSecurityEngineer } = usePage<{ reportabilities: Reportability[] }>().props;
+    const { reportabilities, isSecurityEngineer, auth } = usePage<{
+        reportabilities: Reportability[],
+        isSecurityEngineer: boolean,
+        auth: { user: { role_code: string, company_id: number } }
+    }>().props;
 
     const [startDate, setStartDate] = useState<Date | undefined>(subMonths(new Date(), 1));
     const [endDate, setEndDate] = useState<Date | undefined>(new Date());
@@ -56,6 +60,8 @@ export default function ReportabilityPage() {
         }
     };
 
+    console.log('Reportabilities:', reportabilities);
+
     const renderDatePicker = (label: string, date: Date | undefined, setDate: (date: Date | undefined) => void) => (
         <div className="flex flex-col">
             <h3>{label}</h3>
@@ -84,35 +90,37 @@ export default function ReportabilityPage() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Reportabilidad" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <div className="grid grid-cols-12 gap-4">
-                    <Card className="col-span-12">
-                        <CardHeader>
-                            <CardTitle>Seleccionar Fechas</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex flex-col justify-between md:flex-row">
-                                <div className="flex flex-col gap-4 lg:flex-row">
-                                    {renderDatePicker('Desde', startDate, setStartDate)}
-                                    {renderDatePicker('Hasta', endDate, setEndDate)}
+                {(auth.user.role_code === 'SA' || auth.user.company_id == 1) && (
+                    <div className="grid grid-cols-12 gap-4">
+                        <Card className="col-span-12">
+                            <CardHeader>
+                                <CardTitle>Seleccionar Fechas</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex flex-col justify-between md:flex-row">
+                                    <div className="flex flex-col gap-4 lg:flex-row">
+                                        {renderDatePicker('Desde', startDate, setStartDate)}
+                                        {renderDatePicker('Hasta', endDate, setEndDate)}
+                                    </div>
+                                    <div className="mt-4 flex items-end md:mt-0">
+                                        <Button
+                                            onClick={handleDownload}
+                                            className="w-full bg-green-500 text-white md:w-auto"
+                                            disabled={isLoading}
+                                        >
+                                            {isLoading ? 'Generando...' : (
+                                                <>
+                                                    <FileTextIcon className="mr-2 h-4 w-4" />
+                                                    Descargar Excel
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
                                 </div>
-                                <div className="mt-4 flex items-end md:mt-0">
-                                    <Button
-                                        onClick={handleDownload}
-                                        className="w-full bg-green-500 text-white md:w-auto"
-                                        disabled={isLoading} // Deshabilitar botón durante la carga
-                                    >
-                                        {isLoading ? 'Generando...' : (
-                                            <>
-                                                <FileTextIcon className="mr-2 h-4 w-4" />
-                                                Descargar Excel
-                                            </>
-                                        )}
-                                    </Button>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
                 <DataTable columns={getColumns(isSecurityEngineer)} data={reportabilities} />
             </div>
         </AppLayout>

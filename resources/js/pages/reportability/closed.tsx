@@ -46,6 +46,14 @@ export default function CloseReport({ report_id, isDialogOpen, setIsDialogOpen }
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+        
+        // Validación: al menos una imagen es requerida
+        if (data.images.length === 0) {
+            setError('Debe subir al menos una imagen para cerrar el reporte.');
+            return;
+        }
+        
+        setError(null);
         post(route('finish.store', { id: report_id }), {
             onSuccess: (page) => {
                 const flash = page.props.flash;
@@ -117,7 +125,7 @@ export default function CloseReport({ report_id, isDialogOpen, setIsDialogOpen }
                                 </div>
                             )}
                         </div>
-                        <Button type="submit" className="mt-2 w-full" disabled={processing || !data.descripcion.trim()}>
+                        <Button type="submit" className="mt-2 w-full" disabled={processing || !data.descripcion.trim() || data.images.length === 0}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             Confirmar Cierre
                         </Button>

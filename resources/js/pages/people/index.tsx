@@ -19,7 +19,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function ReportabilityPage() {
-    const { people, roles } = usePage<{ people: Person[], roles: any[] }>().props;
+    const { people, roles, auth } = usePage<{ people: Person[], roles: any[], auth: { user: { role_code: string } } }>().props;
 
     const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -48,7 +48,7 @@ export default function ReportabilityPage() {
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex justify-between items-center">
                     <CreatePerson roles={roles} />
-                    <MassiveUpdate />
+                    {auth.user.role_code === 'SA' && <MassiveUpdate />}
                 </div>
                 <div className="w-full max-w-full overflow-x-auto">
                     <DataTable columns={getColumns(handleAction, roles)} data={people} roles={roles} />

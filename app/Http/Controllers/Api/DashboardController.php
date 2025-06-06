@@ -17,7 +17,12 @@ class DashboardController extends Controller
                 'm.fecha_evento as fechaEvento',
                 'm.descripcion as descripcionEvento',
                 'm.gravedad as nivelGravedad',
-                'm.estado as estadoReporte',
+                DB::raw("CASE 
+                    WHEN m.estado IS NULL OR m.estado = '' THEN 'Generado'
+                    WHEN m.estado IN ('Revisado', 'Visualizado') THEN 'Visualizado'
+                    WHEN m.estado IN ('Cerrado', 'Finalizado') THEN 'Cerrado'
+                    ELSE m.estado
+                END as estadoReporte"),
                 'm.category_company_id as idCausa',
                 'm.tipo_reporte as tipoReporte',
                 'm.user_id as idUsuarioReporta',

@@ -80,6 +80,52 @@ export default function ReportsDetailTable({ data = [] }: ReportsDetailTableProp
         setCurrentPage(0);
     }, [searchTerm]);
 
+    // Function to format date with time
+    const formatDateTime = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleString('es-PE', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+        });
+    };
+
+    // Function to calculate duration between event date and closure date
+    const calculateDuration = (eventDate: string, closeDate?: string) => {
+        const start = new Date(eventDate);
+        const end = closeDate ? new Date(closeDate) : new Date();
+        const diffTime = Math.abs(end.getTime() - start.getTime());
+        
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        const diffHours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const diffMinutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+
+        let result = '';
+        
+        // Always show days if > 0
+        if (diffDays > 0) {
+            result += `${diffDays}d `;
+        }
+        
+        // Always show hours (even if 0 when there are days)
+        if (diffDays > 0 || diffHours > 0) {
+            result += `${diffHours}h `;
+        }
+        
+        // Always show minutes
+        result += `${diffMinutes}m`;
+        
+        return result.trim();
+    };
+
+    // Function to check if report is closed
+    const isReportClosed = (status: string) => {
+        return status?.toLowerCase() === 'finalizado' || status?.toLowerCase() === 'cerrado';
+    };
+
     const filteredData = useMemo(() => {
         if (!searchTerm.trim()) return data;
 
@@ -156,6 +202,8 @@ export default function ReportsDetailTable({ data = [] }: ReportsDetailTableProp
                                 <TableHead className="w-32">Gravedad</TableHead>
                                 <TableHead className="w-32">Estado</TableHead>
                                 <TableHead className="w-32">Fecha Evento</TableHead>
+                                <TableHead className="w-40">Fecha Cierre</TableHead>
+                                <TableHead className="w-32">Duración</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -176,42 +224,96 @@ export default function ReportsDetailTable({ data = [] }: ReportsDetailTableProp
                                             <TableCell>
                                                 <Badge className={getStatusColor(report.estadoReporte || '')}>{report.estadoReporte || 'N/A'}</Badge>
                                             </TableCell>
-                                            <TableCell className="text-muted-foreground text-sm">
-                                                {report.fechaEvento ? new Date(report.fechaEvento).toLocaleDateString('es-PE') : 'N/A'}
+                                            <TableCell className="text-muted-foreground text-xs">
+                                                {report.fechaEvento ? formatDateTime(report.fechaEvento) : 'N/A'}
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground text-xs">
+                                                {isReportClosed(report.estadoReporte || '') && report.reportClosedAt
+                                                    ? formatDateTime(report.reportClosedAt)
+                                                    : '-'}
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground text-xs">
+                                                {report.fechaEvento
+                                                    ? calculateDuration(report.fechaEvento, report.reportClosedAt)
+                                                    : '-'}
                                             </TableCell>
                                         </TableRow>
                                     </TooltipTrigger>
-                                    <TooltipContent className="max-w-sm p-4">
+                                    <TooltipContent className="max-w-md p-4">
                                         <div className="space-y-2 text-sm">
                                             <div>
-                                                <strong>ID:</strong> {report.id || 'N/A'}
+                                                <strong>ID del Reporte:</strong> {report.id || 'N/A'}
                                             </div>
                                             <div>
-                                                <strong>Tipo:</strong> {getReportTypeLabel(report.tipoReporte || '')}
+                                                <strong>Tipo de Reporte:</strong> {getReportTypeLabel(report.tipoReporte || '')}
                                             </div>
                                             <div>
-                                                <strong>Descripción:</strong> {report.descripcionEvento || 'Sin descripción'}
+                                                <strong>Descripción del Evento:</strong> {report.descripcionEvento || 'Sin descripción'}
                                             </div>
                                             <div>
-                                                <strong>Gravedad:</strong> {report.nivelGravedad || 'N/A'}
+                                                <strong>Nivel de Gravedad:</strong> {report.nivelGravedad || 'N/A'}
                                             </div>
                                             <div>
-                                                <strong>Estado:</strong> {report.estadoReporte || 'N/A'}
+                                                <strong>Estado del Reporte:</strong> {report.estadoReporte || 'N/A'}
                                             </div>
                                             <div>
-                                                <strong>Fecha:</strong>{' '}
-                                                {report.fechaEvento ? new Date(report.fechaEvento).toLocaleDateString('es-PE') : 'N/A'}
+                                                <strong>Fecha del Evento:</strong>{' '}
+                                                {report.fechaEvento ? formatDateTime(report.fechaEvento) : 'N/A'}
+                                            </div>
+                                            {isReportClosed(report.estadoReporte || '') && report.reportClosedAt && (
+                                                <div>
+                                                    <strong>Fecha de Cierre:</strong>{' '}
+                                                    {formatDateTime(report.reportClosedAt)}
+                                                </div>
+                                            )}
+                                            <div>
+                                                <strong>Tiempo de Resolución:</strong>{' '}
+                                                {report.fechaEvento
+                                                    ? calculateDuration(report.fechaEvento, report.reportClosedAt)
+                                                    : 'N/A'}
                                             </div>
                                             <div>
-                                                <strong>Causa:</strong> {report.causaReporte || 'N/A'}
+                                                <strong>Causa del Reporte:</strong> {report.causaReporte || 'N/A'}
                                             </div>
+                                            <div>
+                                                <strong>Empresa que Reporta:</strong> {report.nombreEmpresaReporta || 'N/A'}
+                                            </div>
+                                            <div>
+                                                <strong>Empresa Reportada:</strong> {report.nombreEmpresaReportada || 'N/A'}
+                                            </div>
+                                            <div>
+                                                <strong>Gerencia Responsable:</strong> {report.nombreGerencia || 'N/A'}
+                                            </div>
+                                            {report.areaInvolucrada && (
+                                                <div>
+                                                    <strong>Área Involucrada:</strong> {report.areaInvolucrada}
+                                                </div>
+                                            )}
+                                            <div>
+                                                <strong>Usuario que Reporta:</strong> {report.nombreUsuarioReporta || 'N/A'}
+                                            </div>
+                                            {report.nombreUsuarioCierre && (
+                                                <div>
+                                                    <strong>Usuario Encargado de Cierre:</strong> {report.nombreUsuarioCierre}
+                                                </div>
+                                            )}
+                                            {report.nombreUsuarioReasignado && report.nombreUsuarioReasignado.trim() && (
+                                                <div>
+                                                    <strong>Usuario Reasignado:</strong> {report.nombreUsuarioReasignado}
+                                                </div>
+                                            )}
+                                            {report.motivoReasignacion && (
+                                                <div>
+                                                    <strong>Motivo de Reasignación:</strong> {report.motivoReasignacion}
+                                                </div>
+                                            )}
                                         </div>
                                     </TooltipContent>
                                 </Tooltip>
                             ))}
                             {paginatedData.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="py-8 text-center">
+                                    <TableCell colSpan={9} className="py-8 text-center">
                                         No se encontraron reportes
                                     </TableCell>
                                 </TableRow>
