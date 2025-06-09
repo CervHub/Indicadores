@@ -45,7 +45,7 @@ export default function ReportsRaisedAndClosurePercentageByDateChart({ data = []
             }
 
             periodData[periodKey].total++;
-            if (report.estadoReporte?.toLowerCase() === 'cerrado') {
+            if (report.estadoReporte?.toLowerCase() === 'cerrado' || report.estadoReporte?.toLowerCase() === 'finalizado') {
                 periodData[periodKey].cerrados++;
             }
         });
@@ -113,7 +113,7 @@ export default function ReportsRaisedAndClosurePercentageByDateChart({ data = []
                 period: displayPeriod,
                 count: counts.cerrados,
                 percentage: percentage,
-                label: `${counts.cerrados}/${counts.total} (${percentage.toFixed(1)}%)`,
+                label: `${counts.cerrados}/${counts.total} (${percentage.toFixed(2)}%)`,
                 fill: 'var(--color-cerrados)'
             };
         });
@@ -137,15 +137,25 @@ export default function ReportsRaisedAndClosurePercentageByDateChart({ data = []
 
     const avgPercentage = useMemo(() => {
         if (chartData.length === 0) return 0;
-        const totalPercentage = chartData.reduce((sum, item) => sum + item.percentage, 0);
-        return (totalPercentage / chartData.length).toFixed(1);
+        
+        // Calcular totales acumulados para regla de 3 simple
+        const totalCerrados = chartData.reduce((sum, item) => sum + item.count, 0);
+        const totalReportes = chartData.reduce((sum, item) => {
+            // Extraer el total de reportes del label "cerrados/total (porcentaje%)"
+            const match = item.label.match(/(\d+)\/(\d+)/);
+            return sum + (match ? parseInt(match[2]) : 0);
+        }, 0);
+        
+        // Regla de 3 simple: si totalReportes -> 100%, entonces totalCerrados -> x%
+        const percentage = totalReportes > 0 ? (totalCerrados / totalReportes) * 100 : 0;
+        return percentage.toFixed(2);
     }, [chartData]);
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Reportes Generados y Porcentaje de Cierre por Fecha</CardTitle>
-                <CardDescription>Reportes generados y porcentaje de cierre por fecha</CardDescription>
+                <CardTitle>Reportes Abiertos y Porcentaje de Cierre por Fecha</CardTitle>
+                <CardDescription>Reportes abiertos y porcentaje de cierre por fecha</CardDescription>
                 <div className="flex gap-2">
                     <Select value={groupBy} onValueChange={(value: 'month' | 'year') => setGroupBy(value)}>
                         <SelectTrigger className="w-32">

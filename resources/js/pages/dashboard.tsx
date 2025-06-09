@@ -6,11 +6,11 @@ import axios from 'axios';
 import { Report } from '@/types';
 
 // Dashboard Components
-import ReportsSummaryCards from '@/components/dashboard/reports-summary-cards';
-import ReportsStatusChart from '@/components/dashboard/reports-status-chart';
+import ReportsOverviewCombined from '@/components/dashboard/reports-overview-combined';
 import ReportsRaisedAndClosurePercentageByDateChart from '@/components/dashboard/reports-raised-and-closure-percentage-by-date-chart';
 import ClosedByManagementChart from '@/components/dashboard/closed-by-management-chart';
 import ClosedByResponsibleChart from '@/components/dashboard/closed-by-responsible-chart';
+import ClosedByCompanyChart from '@/components/dashboard/closed-by-company-chart';
 import AverageClosureDaysByGravityChart from '@/components/dashboard/average-closure-days-by-gravity-chart';
 import ClosedByReporterChart from '@/components/dashboard/closed-by-reporter-chart';
 import ResponsibleStatusDistributionChart from '@/components/dashboard/responsible-status-distribution-chart';
@@ -195,17 +195,10 @@ export default function Dashboard({ companies, entities, titles }: DashboardProp
                     titles={titles}
                     onFiltersChange={handleFiltersChange}
                 />
-
-                {/* Row 1: Reports Summary Cards and Status Chart */}
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                    <ReportsSummaryCards data={filteredData} />
-                    <div className='col-span-1 lg:col-span-3'>
-                        <ReportsStatusChart data={filteredData} />
-                    </div>
-                </div>
-
                 {/* Row 4: Status Distribution by Responsible and Closed by Reporter */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <ReportsOverviewCombined data={filteredData} />
+                    <ClosedByCompanyChart data={filteredData} />
                     <ReportsRaisedAndClosurePercentageByDateChart data={filteredData} />
                     <ClosedByManagementChart data={filteredData} />
                     <ClosedByResponsibleChart data={filteredData} />

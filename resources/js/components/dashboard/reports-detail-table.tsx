@@ -16,15 +16,36 @@ interface ReportsDetailTableProps {
 }
 
 const getStatusColor = (status: string) => {
-    switch (status?.toLowerCase()) {
+    const normalizedStatus = status?.toLowerCase();
+    switch (normalizedStatus) {
         case 'generado':
+        case 'abierto':
             return 'bg-red-100 text-red-800 hover:bg-red-200';
         case 'visualizado':
+        case 'revisado':
             return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+        case 'finalizado':
         case 'cerrado':
             return 'bg-green-100 text-green-800 hover:bg-green-200';
         default:
             return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+    }
+};
+
+const getStatusLabel = (status: string) => {
+    const normalizedStatus = status?.toLowerCase();
+    switch (normalizedStatus) {
+        case 'generado':
+        case 'abierto':
+            return 'Abierto';
+        case 'visualizado':
+        case 'revisado':
+            return 'Revisado';
+        case 'finalizado':
+        case 'cerrado':
+            return 'Cerrado';
+        default:
+            return status || 'N/A';
     }
 };
 
@@ -123,7 +144,8 @@ export default function ReportsDetailTable({ data = [] }: ReportsDetailTableProp
 
     // Function to check if report is closed
     const isReportClosed = (status: string) => {
-        return status?.toLowerCase() === 'finalizado' || status?.toLowerCase() === 'cerrado';
+        const normalizedStatus = status?.toLowerCase();
+        return normalizedStatus === 'finalizado' || normalizedStatus === 'cerrado';
     };
 
     const filteredData = useMemo(() => {
@@ -222,7 +244,7 @@ export default function ReportsDetailTable({ data = [] }: ReportsDetailTableProp
                                                 <Badge className={getGravityColor(report.nivelGravedad || '')}>{report.nivelGravedad || 'N/A'}</Badge>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge className={getStatusColor(report.estadoReporte || '')}>{report.estadoReporte || 'N/A'}</Badge>
+                                                <Badge className={getStatusColor(report.estadoReporte || '')}>{getStatusLabel(report.estadoReporte || '')}</Badge>
                                             </TableCell>
                                             <TableCell className="text-muted-foreground text-xs">
                                                 {report.fechaEvento ? formatDateTime(report.fechaEvento) : 'N/A'}
@@ -254,7 +276,7 @@ export default function ReportsDetailTable({ data = [] }: ReportsDetailTableProp
                                                 <strong>Nivel de Gravedad:</strong> {report.nivelGravedad || 'N/A'}
                                             </div>
                                             <div>
-                                                <strong>Estado del Reporte:</strong> {report.estadoReporte || 'N/A'}
+                                                <strong>Estado del Reporte:</strong> {getStatusLabel(report.estadoReporte || '')}
                                             </div>
                                             <div>
                                                 <strong>Fecha del Evento:</strong>{' '}

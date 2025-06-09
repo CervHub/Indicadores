@@ -114,15 +114,21 @@ class ReportabilityController extends Controller
             m.id,
             CONCAT(u.nombres, ' ', u.apellidos) AS generado_por,
             m.fecha_evento,
-            m.estado,
-            m.report_closed_at,
             CASE
-                WHEN m.tipo_reporte = 'actos' THEN 'Reporte de actos subestándar'
-                WHEN m.tipo_reporte = 'inspeccion' THEN 'Reporte de inspección'
-                WHEN m.tipo_reporte = 'incidentes' THEN 'Reporte de incidentes'
-                WHEN m.tipo_reporte = 'condiciones' THEN 'Reporte de condiciones subestándar'
-                WHEN m.tipo_reporte = 'vehicular' THEN CONCAT('Inspección Vehicular - ', m.tipo_inspeccion)
-                ELSE m.tipo_reporte
+            WHEN m.estado IN ('Generado', 'Abierto') THEN 'Abierto'
+            WHEN m.estado IN ('Visualizado', 'Revisado') THEN 'Revisado'
+            WHEN m.estado IN ('Finalizado', 'Cerrado') THEN 'Cerrado'
+            ELSE m.estado
+            END AS estado,
+            m.report_closed_at,
+            m.deleted_at,
+            CASE
+            WHEN m.tipo_reporte = 'actos' THEN 'Reporte de actos subestándar'
+            WHEN m.tipo_reporte = 'inspeccion' THEN 'Reporte de inspección'
+            WHEN m.tipo_reporte = 'incidentes' THEN 'Reporte de incidentes'
+            WHEN m.tipo_reporte = 'condiciones' THEN 'Reporte de condiciones subestándar'
+            WHEN m.tipo_reporte = 'vehicular' THEN CONCAT('Inspección Vehicular - ', m.tipo_inspeccion)
+            ELSE m.tipo_reporte
             END AS tipo_reporte,
             COALESCE(e.nombre, 'No existe') AS gerencia_name,
             c.id AS company_id,
@@ -139,30 +145,30 @@ class ReportabilityController extends Controller
             users AS ur ON ur.id = m.user_report_id
         LEFT JOIN
             entities AS e ON e.id =
-                CASE
-                    WHEN CHARINDEX('\"gerencia\":', m.levels) > 0 THEN
-                        CAST(
-                            LTRIM(RTRIM(
-                                SUBSTRING(
-                                    m.levels,
-                                    CHARINDEX('\"gerencia\":', m.levels) + LEN('\"gerencia\":'),
-                                    CASE
-                                        WHEN CHARINDEX(',', m.levels + ',', CHARINDEX('\"gerencia\":', m.levels) + LEN('\"gerencia\":')) > 0 THEN
-                                            CHARINDEX(',', m.levels + ',', CHARINDEX('\"gerencia\":', m.levels) + LEN('\"gerencia\":')) - (CHARINDEX('\"gerencia\":', m.levels) + LEN('\"gerencia\":'))
-                                        ELSE
-                                            LEN(m.levels) - (CHARINDEX('\"gerencia\":', m.levels) + LEN('\"gerencia\":'))
-                                    END
-                                )
-                            )) AS INT
-                        )
-                    ELSE
-                        NULL
-                END
+            CASE
+                WHEN CHARINDEX('\"gerencia\":', m.levels) > 0 THEN
+                CAST(
+                    LTRIM(RTRIM(
+                    SUBSTRING(
+                        m.levels,
+                        CHARINDEX('\"gerencia\":', m.levels) + LEN('\"gerencia\":'),
+                        CASE
+                        WHEN CHARINDEX(',', m.levels + ',', CHARINDEX('\"gerencia\":', m.levels) + LEN('\"gerencia\":')) > 0 THEN
+                            CHARINDEX(',', m.levels + ',', CHARINDEX('\"gerencia\":', m.levels) + LEN('\"gerencia\":')) - (CHARINDEX('\"gerencia\":', m.levels) + LEN('\"gerencia\":'))
+                        ELSE
+                            LEN(m.levels) - (CHARINDEX('\"gerencia\":', m.levels) + LEN('\"gerencia\":'))
+                        END
+                    )
+                    )) AS INT
+                )
+                ELSE
+                NULL
+            END
         INNER JOIN
             companies AS c ON c.id = m.company_id
         INNER JOIN
             companies AS cr ON cr.id = m.company_report_id
-    ";
+        ";
 
         // Agrega condiciones según el valor de company_id
         if (!empty($companyId)) {
@@ -286,5 +292,14 @@ class ReportabilityController extends Controller
     {
         $pdf = PDF::loadView($view, $data)->setPaper('a4');
         return $pdf->stream($name);
+    }
+
+    public function destroy(Request $request, $reportability_id)
+    {
+        $module = Module::findOrFail($reportability_id);
+        $module->delete_reason = $request->input('motivo');
+        $module->save();
+        $module->delete();
+        return redirect()->back()->with('success', 'Reporte eliminado correctamente.');
     }
 }

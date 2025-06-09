@@ -50,7 +50,8 @@ class DashboardController extends Controller
             ->leftJoin('companies as er', 'er.id', '=', 'm.company_report_id')
             ->leftJoin('category_companies as cc', 'cc.id', '=', 'm.category_company_id')
             ->leftJoin('entities as e', 'e.id', '=', 'm.entity_id')
-            ->where('m.tipo_reporte', '!=', 'inspeccion');
+            ->where('m.tipo_reporte', '!=', 'inspeccion')
+            ->whereNull('m.deleted_at'); // Ignore records with deleted_at not null
 
         // Apply filters - Only date filters
         if ($request->has('startDate')) {

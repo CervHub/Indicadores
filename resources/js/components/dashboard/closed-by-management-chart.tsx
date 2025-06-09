@@ -3,22 +3,29 @@
 import { TrendingUp } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts";
 import { Report } from '@/types';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card";
 import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
+    ChartConfig,
+    ChartContainer,
+    ChartTooltip,
+    ChartTooltipContent,
 } from "@/components/ui/chart";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 interface ClosedByManagementChartProps {
     data?: Report[];
@@ -35,6 +42,8 @@ const chartConfig: ChartConfig = {
 } satisfies ChartConfig;
 
 export default function ClosedByManagementChart({ data = [] }: ClosedByManagementChartProps) {
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
     const chartData = useMemo(() => {
         // Agrupar reportes por gerencia (todos los reportes y cerrados)
         const gerenciaData: { [key: string]: { total: number; cerrados: number } } = {};
@@ -46,7 +55,7 @@ export default function ClosedByManagementChart({ data = [] }: ClosedByManagemen
                     gerenciaData[gerencia] = { total: 0, cerrados: 0 };
                 }
                 gerenciaData[gerencia].total++;
-                if (report.estadoReporte?.toLowerCase() === 'cerrado') {
+                if (report.estadoReporte?.toLowerCase() === 'cerrado' || report.estadoReporte?.toLowerCase() === 'finalizado') {
                     gerenciaData[gerencia].cerrados++;
                 }
             }
@@ -74,29 +83,46 @@ export default function ClosedByManagementChart({ data = [] }: ClosedByManagemen
                 percentage: counts.total > 0 ? ((counts.cerrados / counts.total) * 100).toFixed(1) : '0',
                 fill: blueColors[index % blueColors.length]
             }))
-            .sort((a, b) => b.cerrados - a.cerrados)
+            .sort((a, b) => sortOrder === 'desc' ? b.cerrados - a.cerrados : a.cerrados - b.cerrados)
             .slice(0, 8); // Limitar a las 8 gerencias con más reportes cerrados
-    }, [data]);
+    }, [data, sortOrder]);
 
     const totalClosed = useMemo(() => {
-        return chartData.reduce((sum, item) => sum + item.cerrados, 0);
-    }, [chartData]);
+        return data.filter(report => report.estadoReporte?.toLowerCase() === 'cerrado').length;
+    }, [data]);
 
     const totalGenerated = useMemo(() => {
-        return chartData.reduce((sum, item) => sum + item.total, 0);
-    }, [chartData]);
+        return data.length;
+    }, [data]);
 
     const topManagement = useMemo(() => {
         return chartData.length > 0 ? chartData[0] : null;
     }, [chartData]);
 
+    // Calcular el porcentaje total real (operación, no sumatoria)
+    const totalPercentage = totalGenerated > 0 ? ((totalClosed / totalGenerated) * 100).toFixed(1) : 0;
+
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Reportes Cerrados por Gerencia</CardTitle>
-                <CardDescription>
-                    Cantidad de reportes cerrados por cada gerencia
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <CardTitle>Reportes Cerrados por Gerencia</CardTitle>
+                        <CardDescription>
+                            Cantidad de reportes cerrados por cada gerencia
+                        </CardDescription>
+                    </div>
+
+                </div>
+                <Select value={sortOrder} onValueChange={(value: 'asc' | 'desc') => setSortOrder(value)}>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Ordenar por" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="desc">Descendente</SelectItem>
+                        <SelectItem value="asc">Ascendente</SelectItem>
+                    </SelectContent>
+                </Select>
             </CardHeader>
             <CardContent>
                 <ChartContainer config={chartConfig} className="h-full w-full">
@@ -155,7 +181,7 @@ export default function ClosedByManagementChart({ data = [] }: ClosedByManagemen
                     {topManagement && `${topManagement.fullGerencia} lidera: ${topManagement.ratio} (${topManagement.percentage}%)`} <TrendingUp className="h-4 w-4" />
                 </div>
                 <div className="text-muted-foreground leading-none">
-                    Total: {totalClosed}/{totalGenerated} reportes cerrados ({totalGenerated > 0 ? ((totalClosed / totalGenerated) * 100).toFixed(1) : 0}%)
+                    Total: {totalClosed}/{totalGenerated} reportes cerrados ({totalPercentage}%)
                 </div>
             </CardFooter>
         </Card>

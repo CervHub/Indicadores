@@ -56,6 +56,8 @@ Route::post('group/store/{category_id}', [CategoryController::class, 'groupStore
 Route::get('admin/reportability', [ReportabilityController::class, 'index'])->name('admin.reportability');
 Route::get('admin/reportability/detalle/{reportability_id}', [ReportabilityController::class, 'detalle'])->name('admin.reportability.detalle');
 Route::get('reportability/download/{start_date}/{end_date}', [ReportabilityController::class, 'downloadRange'])->name('reportability.download');
+// Eliminar reportabilidad
+Route::post('admin/reportability/delete/{reportability_id}', [ReportabilityController::class, 'destroy'])->name('admin.reportability.delete');
 
 
 //Analiticas

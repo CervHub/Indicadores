@@ -1,6 +1,12 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Eye, CheckCircle } from 'lucide-react';
+import { FileText, CheckCircle, BarChart3 } from 'lucide-react';
 import { useMemo } from 'react';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface ReportsSummaryCardsProps {
     data?: any[];
@@ -20,54 +26,72 @@ export default function ReportsSummaryCards({ data = [] }: ReportsSummaryCardsPr
                     counts.generados++;
                     break;
                 case 'Visualizado':
+                case 'Revisado':
                     counts.visualizados++;
                     break;
                 case 'Cerrado':
+                case 'Finalizado':
                     counts.cerrados++;
                     break;
             }
         });
 
-        return counts;
+        return {
+            ...counts,
+            abierto: counts.generados + counts.visualizados,
+            total: counts.generados + counts.visualizados + counts.cerrados
+        };
     }, [data]);
 
     return (
-        <div className="flex flex-col gap-3 h-[200px]">
-            <Card className="flex-1 flex flex-col justify-center">
-                <CardContent className="">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-blue-500" />
-                            <span className="text-xs font-medium text-muted-foreground">Generados</span>
+        <TooltipProvider>
+            <div className="flex flex-col gap-3 h-[200px]">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Card className="flex-1 flex flex-col justify-center cursor-help">
+                            <CardContent className="">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <FileText className="h-4 w-4 text-orange-500" />
+                                        <span className="text-xs font-medium text-muted-foreground">Abierto</span>
+                                    </div>
+                                    <div className="text-lg font-bold">{reportCounts.abierto}</div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <div className="text-sm">
+                            <p>Sin revisar: {reportCounts.generados} (No vistos ni cerrados por Ing. de Seguridad)</p>
+                            <p>Revisados: {reportCounts.visualizados} (Visualizados por Ing. de Seguridad)</p>
                         </div>
-                        <div className="text-lg font-bold">{reportCounts.generados}</div>
-                    </div>
-                </CardContent>
-            </Card>
+                    </TooltipContent>
+                </Tooltip>
 
-            <Card className="flex-1 flex flex-col justify-center">
-                <CardContent className="">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Eye className="h-4 w-4 text-orange-500" />
-                            <span className="text-xs font-medium text-muted-foreground">Visualizados</span>
+                <Card className="flex-1 flex flex-col justify-center">
+                    <CardContent className="">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <span className="text-xs font-medium text-muted-foreground">Cerrados</span>
+                            </div>
+                            <div className="text-lg font-bold" title="Reportes donde el Ing. de Seguridad ya tomó cartas en el asunto">{reportCounts.cerrados}</div>
                         </div>
-                        <div className="text-lg font-bold">{reportCounts.visualizados}</div>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
 
-            <Card className="flex-1 flex flex-col justify-center">
-                <CardContent className="">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                            <span className="text-xs font-medium text-muted-foreground">Cerrados</span>
+                <Card className="flex-1 flex flex-col justify-center">
+                    <CardContent className="">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <BarChart3 className="h-4 w-4 text-blue-500" />
+                                <span className="text-xs font-medium text-muted-foreground">Total Reportes</span>
+                            </div>
+                            <div className="text-lg font-bold" title="Todos los reportes en el rango de fecha seleccionado">{reportCounts.total}</div>
                         </div>
-                        <div className="text-lg font-bold">{reportCounts.cerrados}</div>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </TooltipProvider>
     );
 }

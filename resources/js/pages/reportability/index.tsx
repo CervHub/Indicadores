@@ -1,4 +1,4 @@
-import { Reportability, getColumns } from '@/components/reportability/columns';
+import { Reportability, getColumns, ColumnHandlers } from '@/components/reportability/columns';
 import { DataTable } from '@/components/reportability/data-table';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -6,13 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import axios from 'axios'; // Import axios
 import { format, subMonths } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CalendarIcon, FileTextIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner'; // Import toast
+import CloseReport from './closed';
+import DeleteReport from './delete';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -32,6 +34,10 @@ export default function ReportabilityPage() {
     const [startDate, setStartDate] = useState<Date | undefined>(subMonths(new Date(), 1));
     const [endDate, setEndDate] = useState<Date | undefined>(new Date());
     const [isLoading, setIsLoading] = useState(false); // Estado de carga
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [selectedReportId, setSelectedReportId] = useState<string>('');
+    const [selectedReportData, setSelectedReportData] = useState<Reportability | null>(null);
 
     const handleDownload = async () => {
         if (startDate && endDate) {
@@ -60,7 +66,22 @@ export default function ReportabilityPage() {
         }
     };
 
-    console.log('Reportabilities:', reportabilities);
+    const columnHandlers: ColumnHandlers = {
+        onDetailClick: (id: string) => {
+            const url = route('admin.reportability.detalle', { reportability_id: id });
+            router.visit(url);
+        },
+        onPdfClick: (id: string) => {
+            const url = route('company.reportability.download', { reportability_id: id });
+            window.open(url, '_blank');
+        },
+        onDeleteClick: (id: string) => {
+            const reportData = reportabilities.find(report => report.id === id);
+            setSelectedReportId(id);
+            setSelectedReportData(reportData || null);
+            setDeleteDialogOpen(true);
+        }
+    };
 
     const renderDatePicker = (label: string, date: Date | undefined, setDate: (date: Date | undefined) => void) => (
         <div className="flex flex-col">
@@ -121,7 +142,13 @@ export default function ReportabilityPage() {
                         </Card>
                     </div>
                 )}
-                <DataTable columns={getColumns(isSecurityEngineer)} data={reportabilities} />
+                <DataTable columns={getColumns(isSecurityEngineer, columnHandlers, auth.user.role_code)} data={reportabilities} />
+                <DeleteReport 
+                    report_id={selectedReportId}
+                    reportData={selectedReportData}
+                    isDialogOpen={deleteDialogOpen}
+                    setIsDialogOpen={setDeleteDialogOpen}
+                />
             </div>
         </AppLayout>
     );

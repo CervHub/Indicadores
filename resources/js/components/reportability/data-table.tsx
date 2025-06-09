@@ -41,6 +41,7 @@ export function DataTable<TData extends {
     company_report_name?: string;
     estado?: string;
     report_closed_at?: string;
+    deleted_at?: string | null;
 }, TValue>({
     columns,
     data,
@@ -58,6 +59,7 @@ export function DataTable<TData extends {
         company_report_name: false,
         estado: true,
         report_closed_at: true,
+        deleted_at: false,
         acciones: true,
     });
     const [idReporteFilter, setIdReporteFilter] = React.useState('');
@@ -68,6 +70,7 @@ export function DataTable<TData extends {
     const [empresaGeneradoraFilter, setEmpresaGeneradoraFilter] = React.useState('');
     const [empresaReportadaFilter, setEmpresaReportadaFilter] = React.useState('');
     const [estadoFilter, setEstadoFilter] = React.useState<string>('__all__');
+    const [showDeleted, setShowDeleted] = React.useState('activos');
     const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 });
 
     // Filtros de rango de fechas
@@ -82,12 +85,13 @@ export function DataTable<TData extends {
         gerencia_name: 'Gerencia',
         tipo_reporte: 'Tipo de reporte',
         fecha_evento: 'Fecha de evento',
-        generado_por: 'Generado por',
+        generado_por: 'Reportado por',
         encargado_cierre: 'Encargado de cierre',
         company_name: 'Empresa que reporta',
         company_report_name: 'Empresa reportada',
         estado: 'Estado del reporte',
         report_closed_at: 'Fecha de cierre',
+        deleted_at: 'Fecha de eliminación',
         acciones: 'Acciones',
     };
 
@@ -153,6 +157,16 @@ export function DataTable<TData extends {
     // Filtro personalizado por todos los campos
     const filteredData = React.useMemo(() => {
         let filtered = data;
+        
+        // Filtro por estado de eliminación
+        filtered = filtered.filter(row => {
+            const isDeleted = row.deleted_at !== null && row.deleted_at !== undefined;
+            if (showDeleted === 'eliminados') {
+                return isDeleted;
+            } else {
+                return !isDeleted;
+            }
+        });
         
         if (idReporteFilter) {
             filtered = filtered.filter(row =>
@@ -235,7 +249,7 @@ export function DataTable<TData extends {
         }
         
         return filtered;
-    }, [data, idReporteFilter, gerenciaFilter, tipoReporteFilter, generadoPorFilter, encargadoCierreFilter, empresaGeneradoraFilter, empresaReportadaFilter, estadoFilter, fechaEventoDesde, fechaEventoHasta, fechaCierreDesde, fechaCierreHasta]);
+    }, [data, showDeleted, idReporteFilter, gerenciaFilter, tipoReporteFilter, generadoPorFilter, encargadoCierreFilter, empresaGeneradoraFilter, empresaReportadaFilter, estadoFilter, fechaEventoDesde, fechaEventoHasta, fechaCierreDesde, fechaCierreHasta]);
 
     const table = useReactTable({
         data: filteredData,
@@ -276,6 +290,20 @@ export function DataTable<TData extends {
         <div className='grid grid-cols-1 gap-4 p-4'>
             {/* Filtros en flex para responsive */}
             <div className="flex flex-wrap gap-4 py-4 w-full">
+                {/* Select para mostrar eliminados o activos */}
+                <div className="flex flex-col gap-1 min-w-[150px]">
+                    <label className="text-sm mb-1">Activos/Eliminados</label>
+                    <Select value={showDeleted} onValueChange={setShowDeleted}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Activos" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="activos">Activos</SelectItem>
+                            <SelectItem value="eliminados">Eliminados</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
                 {/* ID Reporte */}
                 {columnVisibility.id !== false && (
                     <div className="flex flex-col gap-1 min-w-[150px]">
@@ -328,12 +356,12 @@ export function DataTable<TData extends {
                 {/* Generado por */}
                 {columnVisibility.generado_por !== false && (
                     <div className="flex flex-col gap-1 min-w-[200px]">
-                        <label className="text-sm mb-1">Generado por</label>
+                        <label className="text-sm mb-1">Reportado por</label>
                         <Combobox
                             data={generadoPorOptions}
                             value={generadoPorFilter}
                             onChange={setGeneradoPorFilter}
-                            placeholder="Seleccione quien generó..."
+                            placeholder="Seleccione quien reportó..."
                             onInputChange={value => {
                                 if (!value) setGeneradoPorFilter('');
                             }}

@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { formatDateTime } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { Eye, FileText } from 'lucide-react';
+import { Eye, FileText, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 // Este tipo define la forma de nuestros datos.
@@ -21,9 +21,16 @@ export type Reportability = {
     company_report_name: string;
     estado: string;
     report_closed_at: string;
+    deleted_at?: string | null;
 };
 
-export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability>[] => [
+export interface ColumnHandlers {
+    onDetailClick: (id: string) => void;
+    onPdfClick: (id: string) => void;
+    onDeleteClick: (id: string) => void;
+}
+
+export const getColumns = (isSecurityEngineer: boolean, handlers: ColumnHandlers, userRoleCode: string): ColumnDef<Reportability>[] => [
     {
         accessorKey: 'id',
         header: 'ID',
@@ -173,19 +180,18 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
 
             switch (estado) {
                 case 'Generado':
-                    badgeClass = 'bg-blue-500 text-white';
-                    badgeText = 'Generado';
+                case 'Abierto':
+                    badgeClass = 'bg-red-500 text-white';
+                    badgeText = 'Abierto';
                     break;
+                case 'Visualizado':
                 case 'Revisado':
                     badgeClass = 'bg-orange-500 text-white';
                     badgeText = 'Revisado';
                     break;
                 case 'Finalizado':
-                    badgeClass = 'bg-green-600 text-white';
-                    badgeText = 'Finalizado';
-                    break;
                 case 'Cerrado':
-                    badgeClass = 'bg-gray-600 text-white';
+                    badgeClass = 'bg-green-600 text-white';
                     badgeText = 'Cerrado';
                     break;
                 default:
@@ -234,41 +240,103 @@ export const getColumns = (isSecurityEngineer: boolean): ColumnDef<Reportability
         enableHiding: true,
     },
     {
+        accessorKey: 'deleted_at',
+        header: 'Fecha de Eliminación',
+        cell: ({ row }) => {
+            const fechaEliminacion = row.original.deleted_at;
+            return (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="cursor-help">
+                                {fechaEliminacion ? formatDateTime(fechaEliminacion) : '-'}
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Fecha de eliminación: {fechaEliminacion ? formatDateTime(fechaEliminacion) : 'No eliminado'}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            );
+        },
+        enableHiding: true,
+    },
+    {
         accessorKey: 'acciones',
         header: 'Acciones',
         cell: ({ row }) => {
             const [detalleClicked, setDetalleClicked] = useState(false);
-            const urlDetalle = route('admin.reportability.detalle', { reportability_id: row.original.id });
-            const urlPdf = route('company.reportability.download', { reportability_id: row.original.id });
+            const isDeleted = row.original.deleted_at !== null && row.original.deleted_at !== undefined;
 
             const handleDetalleClick = () => {
                 setDetalleClicked(true);
+                handlers.onDetailClick(row.original.id);
             };
 
             const handlePdfClick = () => {
-                window.open(urlPdf, '_blank');
+                handlers.onPdfClick(row.original.id);
+            };
+
+            const handleDeleteClick = () => {
+                handlers.onDeleteClick(row.original.id);
             };
 
             return (
                 <div className="flex items-center space-x-1 min-w-max">
-                    <Link href={urlDetalle} className="flex items-center">
-                        <Button
-                            variant="warning"
-                            aria-label="Toggle detalle"
-                            className={`flex h-7 items-center p-2 text-xs text-white whitespace-nowrap ${detalleClicked ? 'cursor-not-allowed opacity-50' : ''}`}
-                            onClick={handleDetalleClick}
-                            disabled={detalleClicked}
-                        >
-                            <Eye className="h-3 w-3 mr-1" /> {isSecurityEngineer ? 'Revisar' : 'Detalle'}
-                        </Button>
-                    </Link>
-                    <Button
-                        aria-label="Toggle pdf"
-                        className="h-7 bg-red-700 p-2 text-xs text-white hover:bg-red-900 dark:bg-red-600 dark:hover:bg-red-800 whitespace-nowrap"
-                        onClick={handlePdfClick}
-                    >
-                        <FileText className="h-3 w-3 mr-1" /> PDF
-                    </Button>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="warning"
+                                    aria-label="Ver detalle"
+                                    className={`flex h-7 w-7 items-center justify-center p-0 ${detalleClicked ? 'cursor-not-allowed opacity-50' : ''}`}
+                                    onClick={handleDetalleClick}
+                                    disabled={detalleClicked}
+                                >
+                                    <Eye className="h-3 w-3" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{isSecurityEngineer ? 'Revisar' : 'Ver detalle'}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    aria-label="Descargar PDF"
+                                    className="h-7 w-7 bg-red-700 p-0 hover:bg-red-900 dark:bg-red-600 dark:hover:bg-red-800"
+                                    onClick={handlePdfClick}
+                                >
+                                    <FileText className="h-3 w-3" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Descargar PDF</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+
+                    {userRoleCode === 'SA' && !isDeleted && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        aria-label="Eliminar"
+                                        className="h-7 w-7 bg-red-500 p-0 hover:bg-red-700 dark:bg-red-400 dark:hover:bg-red-600"
+                                        onClick={handleDeleteClick}
+                                    >
+                                        <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Eliminar reporte</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
                 </div>
             );
         },
