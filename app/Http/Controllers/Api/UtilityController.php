@@ -273,6 +273,7 @@ class UtilityController extends Controller
                 'company_report_id' => $request->company_report_id,
                 'device' => $request->device,
                 'user_report_id' => $request->user_report_id,
+                'other_managements' => $request->other_managements,
             ];
 
             $report = match ($request->tipo_reporte) {

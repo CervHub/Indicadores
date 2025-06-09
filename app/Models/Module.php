@@ -45,7 +45,8 @@ class Module extends Model
         'reassignment_reason',
         'deleted_at',
         'entity_id',
-        'report_closed_at'
+        'report_closed_at',
+        'other_managements'
     ];
 
     public function getGerenciaIdAttribute()
