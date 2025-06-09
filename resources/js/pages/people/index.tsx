@@ -47,11 +47,16 @@ export default function ReportabilityPage() {
             <Head title="Personal" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex justify-between items-center">
-                    <CreatePerson roles={roles} />
+                    {auth.user.role_code !== 'SA' && <CreatePerson roles={roles} />}
                     {auth.user.role_code === 'SA' && <MassiveUpdate />}
                 </div>
                 <div className="w-full max-w-full overflow-x-auto">
-                    <DataTable columns={getColumns(handleAction, roles)} data={people} roles={roles} />
+                    <DataTable 
+                        columns={getColumns(handleAction, roles, auth.user.role_code)} 
+                        data={people} 
+                        roles={roles} 
+                        userRoleCode={auth.user.role_code}
+                    />
                 </div>
             </div>
             {selectedPerson && (

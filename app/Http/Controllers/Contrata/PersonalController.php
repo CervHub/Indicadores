@@ -28,30 +28,33 @@ class PersonalController extends Controller
         }
         $roles = $rolesQuery->get();
 
-        $peopleQuery = DB::table('users')->select([
-            'id',
-            'doi',
-            'email',
-            'nombres',
-            'apellidos',
-            'telefono',
-            'cargo',
-            'company_id',
-            'role_id',
-            'estado',
-            'created_at',
-            'updated_at',
-        ]);
+        $peopleQuery = DB::table('users')
+            ->select([
+                'users.id',
+                'users.doi',
+                'users.email',
+                'users.nombres',
+                'users.apellidos',
+                'users.telefono',
+                'users.cargo',
+                'users.company_id',
+                'users.role_id',
+                'users.estado',
+                'users.created_at',
+                'users.updated_at',
+                'companies.nombre as company_name',
+                'companies.ruc as company_ruc',
+            ])
+            ->leftJoin('companies', 'users.company_id', '=', 'companies.id');
 
         if ($roleCode === 'SA') {
-            $peopleQuery->whereNotIn('role_id', $excludedRoles);
+            $peopleQuery->whereNotIn('users.role_id', $excludedRoles);
         } elseif ($roleCode === 'CA') {
-            $peopleQuery->whereNotIn('role_id', $excludedRoles)
-                ->where('company_id', $company_id);
+            $peopleQuery->whereNotIn('users.role_id', $excludedRoles)
+                ->where('users.company_id', $company_id);
         }
 
-        $people = $peopleQuery->orderBy('updated_at', 'desc')->get();
-
+        $people = $peopleQuery->orderBy('users.updated_at', 'desc')->get();
         return Inertia::render('people/index', [
             'people' => $people,
             'roles' => $roles,

@@ -15,11 +15,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Combobox } from '@/components/ui/combobox';
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
     roles: any[];
+    userRoleCode?: string;
 }
 
 export function DataTable<TData extends {
@@ -32,15 +34,20 @@ export function DataTable<TData extends {
     estado?: string;
     role_id?: number;
     doi?: string;
+    company_name?: string;
+    company_ruc?: string;
 }, TValue>({
     columns,
     data,
     roles,
+    userRoleCode,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = React.useState('');
     const [roleFilter, setRoleFilter] = React.useState<string>('__all__');
     const [estadoFilter, setEstadoFilter] = React.useState<string>('__all__');
+    const [rucFilter, setRucFilter] = React.useState<string>('');
+    const [companyFilter, setCompanyFilter] = React.useState<string>('');
     const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 });
 
     // Opciones únicas para los selects
@@ -60,6 +67,25 @@ export function DataTable<TData extends {
         return Array.from(set);
     }, [data]);
 
+    // Opciones únicas para RUC y empresa (solo para SA)
+    const rucOptions = React.useMemo(() => {
+        if (userRoleCode !== 'SA') return [];
+        const set = new Set<string>();
+        data.forEach(row => {
+            if (row.company_ruc) set.add(row.company_ruc);
+        });
+        return Array.from(set).map(ruc => ({ value: ruc, label: ruc }));
+    }, [data, userRoleCode]);
+
+    const companyOptions = React.useMemo(() => {
+        if (userRoleCode !== 'SA') return [];
+        const set = new Set<string>();
+        data.forEach(row => {
+            if (row.company_name) set.add(row.company_name);
+        });
+        return Array.from(set).map(company => ({ value: company, label: company }));
+    }, [data, userRoleCode]);
+
     // Filtro personalizado
     const filteredData = React.useMemo(() => {
         let filtered = data;
@@ -68,14 +94,23 @@ export function DataTable<TData extends {
             const filter = globalFilter.toLowerCase();
             filtered = filtered.filter((row) => {
                 const role = roles.find(r => r.id === row.role_id);
-                return (
-                    (row.nombres && row.nombres.toLowerCase().includes(filter)) ||
-                    (row.apellidos && row.apellidos.toLowerCase().includes(filter)) ||
-                    (row.email && row.email.toLowerCase().includes(filter)) ||
-                    (row.telefono && row.telefono.toLowerCase().includes(filter)) ||
-                    (row.cargo && row.cargo.toLowerCase().includes(filter)) ||
-                    (role?.nombre && role.nombre.toLowerCase().includes(filter)) ||
-                    (row.doi && row.doi.toLowerCase().includes(filter))
+                const searchFields = [
+                    row.nombres,
+                    row.apellidos,
+                    row.email,
+                    row.telefono,
+                    row.cargo,
+                    role?.nombre,
+                    row.doi,
+                ];
+
+                // Add company fields to search if user is SA
+                if (userRoleCode === 'SA') {
+                    searchFields.push(row.company_name, row.company_ruc);
+                }
+
+                return searchFields.some(field => 
+                    field && field.toLowerCase().includes(filter)
                 );
             });
         }
@@ -92,9 +127,22 @@ export function DataTable<TData extends {
         if (estadoFilter !== '__all__') {
             filtered = filtered.filter(row => row.estado === estadoFilter);
         }
+
+        // Filtros adicionales para SA
+        if (userRoleCode === 'SA') {
+            // Filtro por RUC
+            if (rucFilter) {
+                filtered = filtered.filter(row => row.company_ruc === rucFilter);
+            }
+            
+            // Filtro por empresa
+            if (companyFilter) {
+                filtered = filtered.filter(row => row.company_name === companyFilter);
+            }
+        }
         
         return filtered;
-    }, [data, globalFilter, roleFilter, estadoFilter, roles]);
+    }, [data, globalFilter, roleFilter, estadoFilter, rucFilter, companyFilter, roles, userRoleCode]);
 
     const table = useReactTable({
         data: filteredData,
@@ -132,7 +180,7 @@ export function DataTable<TData extends {
     return (
         <div>
             {/* Filtros en grid para responsive */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 py-4 w-full">
+            <div className={`grid gap-4 py-4 w-full ${userRoleCode === 'SA' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5'}`}>
                 <div className="flex flex-col gap-1">
                     <label className="text-sm mb-1">Mostrar</label>
                     <Select value={pagination.pageSize.toString()} onValueChange={handlePageSizeChange}>
@@ -187,6 +235,36 @@ export function DataTable<TData extends {
                         </SelectContent>
                     </Select>
                 </div>
+                {userRoleCode === 'SA' && (
+                    <>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm mb-1">RUC</label>
+                            <Combobox
+                                data={rucOptions}
+                                value={rucFilter}
+                                onChange={setRucFilter}
+                                onInputChange={value => {
+                                    if (!value) setRucFilter('');
+                                }}
+                                placeholder="Seleccione RUC..."
+                                className="w-full"
+                            />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm mb-1">Empresa</label>
+                            <Combobox
+                                data={companyOptions}
+                                value={companyFilter}
+                                onChange={setCompanyFilter}
+                                onInputChange={value => {
+                                    if (!value) setCompanyFilter('');
+                                }}
+                                placeholder="Seleccione empresa..."
+                                className="w-full"
+                            />
+                        </div>
+                    </>
+                )}
             </div>
 
             <div className="grid grid-cols-1 rounded-md border">
