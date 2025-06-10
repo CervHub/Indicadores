@@ -316,17 +316,21 @@
             </thead>
             <tbody>
                 @php
-                    $engineers = json_decode($reportability->send_email);
+                    $engineers = json_decode($reportability->send_email) ?? [];
                 @endphp
 
-                @foreach ($engineers as $index => $engineer)
+                @forelse ($engineers as $index => $engineer)
                     <tr>
                         <td class="cell" style="width: 5%">{{ $index + 1 }}</td>
                         <td class="cell" style="width: {{ $cellWidth }}">{{ $engineer->nombre }}
                             {{ $engineer->apellidos }}</td>
                         <td class="cell" style="width: {{ $cellWidth }}">{{ $engineer->email }}</td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td class="cell text-center" colspan="3">No hay ingenieros de seguridad notificados.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </section>
@@ -352,19 +356,21 @@
         @endphp
 
         <section class="datos_reporte mt-3">
-            <h1 style="text-align: left;">Reporte Finalizado</h1>
-
             <table style="width: 100%; border-collapse: collapse;">
-
                 <tr>
                     <td style="border: 1px solid">
-                        <span style="font-size: 1em; ">Finalizado por: {{ $user->nomres }}
+                        <strong style="font-size: 1.2em;">Reporte Finalizado</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid">
+                        <span style="font-size: 1em;">Finalizado por: {{ $user->nomres }}
                             {{ $user->apellidos }}</span>
                     </td>
                 </tr>
                 <tr>
                     <td style="border: 1px solid">
-                        <span style="font-size: 1em; ">Comentario: {{ $finalizado->comentario }}</span>
+                        <span style="font-size: 1em;">Comentario: {{ $finalizado->comentario }}</span>
                     </td>
                 </tr>
             </table>
@@ -373,11 +379,22 @@
                 style="font-size: 1.1em; color: black; margin-top: 20px; margin-bottom:20px; display: block;">ANEXOS:</strong>
             <table style="width: 100%; border-collapse: collapse;">
                 @foreach ($fotos as $foto)
-                    <tr style="margin-bottom: 10px;">
-                        <td style="text-align: center; border: none;">
-                            <img src="{{ $url . '/' . $foto }}" alt="Foto del reporte" class="fixed-height-img">
-                        </td>
-                    </tr>
+                    @if (Str::endsWith($foto, ['.png', '.jpg', '.jpeg']))
+                        <tr style="margin-bottom: 10px;">
+                            <td style="text-align: center; border: none;">
+                                <img src="{{ $url . '/' . $foto }}" alt="Foto del reporte" class="fixed-height-img">
+                            </td>
+                        </tr>
+                    @else
+                        <tr style="margin-bottom: 10px;">
+                            <td style="text-align: left; border: none;">
+                                <a href="{{ url($foto) }}" target="_blank"
+                                    style="text-decoration: none; color: blue;">
+                                    {{ basename($foto) }}
+                                </a>
+                            </td>
+                        </tr>
+                    @endif
                 @endforeach
             </table>
         </section>

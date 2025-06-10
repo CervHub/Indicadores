@@ -92,12 +92,37 @@ export default function ReportabilityPage() {
                             />
                         </CardContent>
                     </Card>
-                    <Card className="col-span-12 flex h-full flex-col justify-between md:col-span-4">
-                        <div>
+                    <div className="col-span-12 flex h-full flex-col gap-4 md:col-span-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Acciones del Reporte</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground mb-4">
+                                    Una vez cerrado el reporte, no podrá ser modificado. Asegúrese de que toda la información esté correcta antes de proceder.
+                                </p>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => {/* Add edit functionality */}}
+                                        disabled={reportability.estado === 'Cerrado' || reportability.estado === 'Finalizado'}
+                                    >
+                                        Editar Reporte
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        onClick={() => setIsDialogOpen(true)}
+                                        disabled={!canCloseReport || reportability.estado === 'Cerrado' || reportability.estado === 'Finalizado' || !isSecurityEngineer}
+                                    >
+                                        Cerrar Reporte
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="flex flex-1 flex-col">
                             <CardHeader>
                                 <CardTitle>Detalles del reporte</CardTitle>
                             </CardHeader>
-                            <br />
                             <CardContent className="flex flex-col gap-2 space-y-2">
                                 <Stepper currentStep={currentStep} currentState={reportability.estado} />
                                 <div className="space-y-2 d-none">
@@ -127,18 +152,8 @@ export default function ReportabilityPage() {
                                     </div>
                                 )}
                             </CardContent>
-                        </div>
-                        <CardContent>
-                            <Button
-                                variant="destructive"
-                                className="mt-4 w-auto"
-                                onClick={() => setIsDialogOpen(true)}
-                                disabled={!canCloseReport || reportability.estado === 'Cerrado' || reportability.estado === 'Finalizado' || !isSecurityEngineer}
-                            >
-                                Finalizar Reporte
-                            </Button>
-                        </CardContent>
-                    </Card>
+                        </Card>
+                    </div>
                 </div>
             </div>
             <CloseReport report_id={reportability_id} isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />

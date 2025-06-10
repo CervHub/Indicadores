@@ -18,31 +18,74 @@ class FinishController extends Controller
     {
         $module = Module::find($id);
         $module->estado = 'Cerrado';
-        $module->report_closed_at = now(); // Marcar como eliminado
+        $module->report_closed_at = now();
         $module->save();
         $user = auth()->user();
 
-        $fotos = [];
+        $archivos = [
+            'images' => [],
+            'files' => []
+        ];
 
-        // Obtener las imágenes del request
-        $imagenes = $request->file('images', []);
+        $fotosRutas = []; // Array simple de rutas para el campo fotos
 
-        // Crear la carpeta si no existe
-        $destinationPath = public_path('modules_fotos');
-        if (!file_exists($destinationPath)) {
-            mkdir($destinationPath, 0755, true);
+        // Obtener los archivos del request
+        $files = $request->file('files', []);
+
+        // Crear las carpetas base si no existen
+        $moduleDir = $module->id;
+        $imagesPath = public_path("modules_fotos/{$moduleDir}");
+        $filesPath = public_path("modules_files/{$moduleDir}");
+
+        if (!file_exists($imagesPath)) {
+            mkdir($imagesPath, 0755, true);
         }
 
-        // Procesar cada imagen
-        foreach ($imagenes as $imagen) {
-            // Crear un nombre único para la imagen
-            $uniqueImageName = uniqid() . '_' . $imagen->getClientOriginalName();
+        if (!file_exists($filesPath)) {
+            mkdir($filesPath, 0755, true);
+        }
 
-            // Guardar la imagen en la carpeta
-            $imagen->move($destinationPath, $uniqueImageName);
+        // Procesar cada archivo
+        foreach ($files as $file) {
+            $originalName = $file->getClientOriginalName();
+            $mimeType = $file->getMimeType();
+            $size = $file->getSize();
+            $uniqueName = uniqid() . '_' . $originalName;
 
-            // Agregar la ruta de la imagen al array $fotos
-            $fotos[] = 'modules_fotos/' . $uniqueImageName;
+            // Determinar si es imagen o archivo general
+            if (str_starts_with($mimeType, 'image/')) {
+                // Es una imagen
+                $file->move($imagesPath, $uniqueName);
+                $rutaCompleta = "modules_fotos/{$moduleDir}/{$uniqueName}";
+                
+                $archivos['images'][] = [
+                    'original_name' => $originalName,
+                    'stored_name' => $uniqueName,
+                    'path' => $rutaCompleta,
+                    'mime_type' => $mimeType,
+                    'size' => $size,
+                    'uploaded_at' => now()->toISOString()
+                ];
+                
+                // Agregar solo la ruta al array simple
+                $fotosRutas[] = $rutaCompleta;
+            } else {
+                // Es otro tipo de archivo
+                $file->move($filesPath, $uniqueName);
+                $rutaCompleta = "modules_files/{$moduleDir}/{$uniqueName}";
+                
+                $archivos['files'][] = [
+                    'original_name' => $originalName,
+                    'stored_name' => $uniqueName,
+                    'path' => $rutaCompleta,
+                    'mime_type' => $mimeType,
+                    'size' => $size,
+                    'uploaded_at' => now()->toISOString()
+                ];
+                
+                // Agregar solo la ruta al array simple
+                $fotosRutas[] = $rutaCompleta;
+            }
         }
 
         // Crear Module review
@@ -50,7 +93,7 @@ class FinishController extends Controller
             'module_id' => $module->id,
             'user_id' => $user->id,
             'comentario' => $request->input('descripcion'),
-            'fotos' => json_encode($fotos) // Guardar las rutas de las fotos como JSON
+            'fotos' => json_encode($fotosRutas) // Guardar solo las rutas como strings
         ]);
 
         // Envío de notificación por correo electrónico
