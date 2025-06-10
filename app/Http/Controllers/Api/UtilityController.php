@@ -102,22 +102,24 @@ class UtilityController extends Controller
                 ];
             })->values()->toArray();
 
-            // Ordenar alfabeticamente y mover "Otros" al final
-            usort($items, function ($a, $b) {
-                if ($a['nombre'] === 'Otros') {
-                    return 1;
-                }
-                if ($b['nombre'] === 'Otros') {
-                    return -1;
-                }
-                return strcmp($a['nombre'], $b['nombre']);
-            });
-
             $grouped_entities[] = [
                 'nombre' => $level_name,
                 'orden' => $level_order,
                 'items' => $items
             ];
+        }
+
+        // Ordenar los internos alfabeticamente y mover "Otros" al final
+        foreach ($grouped_entities as &$group) {
+            usort($group['items'], function ($a, $b) {
+                if (strtoupper($a['nombre']) === 'OTROS') {
+                    return 1;
+                }
+                if (strtoupper($b['nombre']) === 'OTROS') {
+                    return -1;
+                }
+                return strcmp($a['nombre'], $b['nombre']);
+            });
         }
 
         return $grouped_entities;
