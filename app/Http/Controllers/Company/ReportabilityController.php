@@ -197,26 +197,14 @@ class ReportabilityController extends Controller
 
         $canCloseReport = false; // Variable para determinar si el usuario puede cerrar el reporte
 
-        // Regla 1: El reporte pertenece a mi empresa y la empresa reportada es Southern (ID 1), además estoy asignado para cerrarlo (user_report_id)
-        $ruleOne = $module->company_id == $user->company_id && $module->company_report_id == 1 && $module->user_report_id == $user->id;
+        // Regla: El usuario debe ser ingeniero de seguridad y la empresa debe coincidir
+        $isSecurityEngineer = $user->isSecurityEngineer();
+        $belongsToCompany = $module->company_id == $user->company_id || $module->company_report_id == $user->company_id;
 
-        // Regla 2: La empresa reportada es igual a mi empresa y estoy asignado para cerrarlo
-        $ruleTwo = $module->company_report_id == $user->company_id && $module->user_report_id == $user->id;
-
-        // El código actual solo cambia el estado a 'Revisado' si el usuario es SecurityEngineer
-        // y cumple con las reglas, pero esto ocurre solo cuando se accede al método detalle.
-        // Si recargas la página, el estado ya es 'Revisado' y no vuelve a entrar al if.
-        // Además, si el usuario no es SecurityEngineer, nunca cambia el estado.
-
-        // Si quieres que el estado cambie a 'Revisado' siempre que se cumpla alguna regla,
-        // sin importar si es SecurityEngineer, puedes modificar así:
-
-        if ($module->estado !== 'Cerrado') {
-            if ($ruleOne || $ruleTwo) {
-                $module->estado = 'Revisado';
-                $module->save();
-                $canCloseReport = true;
-            }
+        if ($module->estado !== 'Cerrado' && $isSecurityEngineer && $belongsToCompany) {
+            $module->estado = 'Revisado';
+            $module->save();
+            $canCloseReport = true;
         }
 
         $query = "
@@ -256,10 +244,11 @@ class ReportabilityController extends Controller
         return Inertia::render('reportability/detalle', [
             'reportability' => $reportability,
             'reportability_id' => $reportability_id,
-            'isSecurityEngineer' => $user->isSecurityEngineer(),
+            'isSecurityEngineer' => $isSecurityEngineer,
             'canCloseReport' => $canCloseReport,
         ]);
     }
+
     public function download($reportability_id)
     {
 
@@ -277,12 +266,13 @@ class ReportabilityController extends Controller
         };
 
         // Convertir el logo a base64
-        $logoPath = public_path('logos/grupomexico.png');
+        $logoPath = public_path('logos/logo-souther-grupomexico.png');
         $logoBase64 = base64_encode(file_get_contents($logoPath));
         $logo = "data:image/png;base64,{$logoBase64}";
 
         return $this->generatePDF($view, [
             'reportability' => $reportability,
+            'dni' => $reportability->user->doi ?? '',
             'logo' => $logo,
             'url' => public_path('/'),
         ], $name);

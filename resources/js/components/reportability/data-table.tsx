@@ -74,8 +74,14 @@ export function DataTable<TData extends {
     const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 });
 
     // Filtros de rango de fechas
-    const [fechaEventoDesde, setFechaEventoDesde] = React.useState('');
-    const [fechaEventoHasta, setFechaEventoHasta] = React.useState('');
+    const [fechaEventoDesde, setFechaEventoDesde] = React.useState(() => {
+        const currentYear = new Date().getFullYear();
+        return `${currentYear}-01-01`;
+    });
+    const [fechaEventoHasta, setFechaEventoHasta] = React.useState(() => {
+        const today = new Date();
+        return today.toISOString().split('T')[0];
+    });
     const [fechaCierreDesde, setFechaCierreDesde] = React.useState('');
     const [fechaCierreHasta, setFechaCierreHasta] = React.useState('');
 

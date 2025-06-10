@@ -16,6 +16,8 @@ Route::get('/dashboard/admin', [CompanyController::class, 'index'])->name('admin
 
 // Rutas para la gestion de empresas o management
 Route::get('admin/management', [ManagementController::class, 'index'])->name('admin.management');
+Route::post('admin/management/store', [ManagementController::class, 'store'])->name('admin.management.store');
+Route::put('admin/management/{entity}', [ManagementController::class, 'update'])->name('admin.management.update');
 
 //Crear niveles
 Route::post('admin/management/level/store', [LevelController::class, 'store'])->name('admin.management.level.store');

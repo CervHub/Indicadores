@@ -11,13 +11,13 @@ const Stepper: React.FC<StepperProps> = ({ currentStep, currentState }) => {
     const getStepLabel = (index: number) => {
         switch (index) {
             case 0:
-                return 'Generado';
+                return 'Abierto';
             case 1:
                 // Show the actual state if it's one of the review states
                 if (currentState === 'Revisado' || currentState === 'Visualizado') {
                     return currentState;
                 }
-                return 'Visualizado';
+                return 'Revisado';
             case 2:
                 // Show the actual state if it's one of the closed states
                 if (currentState === 'Cerrado' || currentState === 'Finalizado') {

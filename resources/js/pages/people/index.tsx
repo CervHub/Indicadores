@@ -1,7 +1,7 @@
 import { getColumns, Person } from '@/components/person/columns';
 import { DataTable } from '@/components/person/data-table';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, Company } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import ActivatePerson from './activate';
@@ -11,6 +11,8 @@ import EditPerson from './edit';
 import ResetPassword from './reset';
 import MassiveUpdate from './update';
 
+
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Personal',
@@ -19,7 +21,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function ReportabilityPage() {
-    const { people, roles, auth } = usePage<{ people: Person[], roles: any[], auth: { user: { role_code: string } } }>().props;
+    const { people, roles, companies, auth } = usePage<{
+        people: Person[],
+        roles: any[],
+        companies: Company[],
+        auth: { user: { role_code: string } }
+    }>().props;
 
     const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -47,21 +54,21 @@ export default function ReportabilityPage() {
             <Head title="Personal" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex justify-between items-center">
-                    {auth.user.role_code !== 'SA' && <CreatePerson roles={roles} />}
+                    {auth.user.role_code !== 'S' && <CreatePerson roles={roles} />}
                     {auth.user.role_code === 'SA' && <MassiveUpdate />}
                 </div>
                 <div className="w-full max-w-full overflow-x-auto">
-                    <DataTable 
-                        columns={getColumns(handleAction, roles, auth.user.role_code)} 
-                        data={people} 
-                        roles={roles} 
+                    <DataTable
+                        columns={getColumns(handleAction, roles, auth.user.role_code)}
+                        data={people}
+                        roles={roles}
                         userRoleCode={auth.user.role_code}
                     />
                 </div>
             </div>
             {selectedPerson && (
                 <>
-                    <EditPerson isOpen={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} person={selectedPerson} roles={roles} />
+                    <EditPerson isOpen={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} person={selectedPerson} roles={roles} companies={companies} userRoleCode={auth.user.role_code} />
                     <DeletePerson isOpen={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen} selectedItem={selectedPerson} />
                     <ActivatePerson isOpen={isActivateDialogOpen} onOpenChange={setIsActivateDialogOpen} selectedItem={selectedPerson} />
                     <ResetPassword isOpen={isResetDialogOpen} onOpenChange={setIsResetDialogOpen} selectedItem={selectedPerson} />

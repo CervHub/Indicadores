@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, CheckCircle, Edit, Key, Trash2 } from 'lucide-react';
-
+import { formatDateTime } from '@/lib/utils';
 export type Person = {
     id: number;
     doi: string;
@@ -143,8 +143,7 @@ export const getColumns = (handleAction: (action: string, id: number) => void, r
                 );
             },
             cell: ({ row }) => {
-                const date = new Date(row.original.updated_at);
-                return date.toLocaleString('es-ES');
+                return formatDateTime(row.original.updated_at);
             },
         },
         {
@@ -162,7 +161,7 @@ export const getColumns = (handleAction: (action: string, id: number) => void, r
                 const id = row.original.id;
                 const estado = row.original.estado;
                 return (
-                    <div className="flex flex-wrap space-x-2">
+                    <div className="flex space-x-1">
                         <Button
                             aria-label="Restablecer Contraseña"
                             className="h-7 bg-blue-700 p-2 text-xs text-white hover:bg-blue-900 dark:bg-blue-600 dark:hover:bg-blue-800"

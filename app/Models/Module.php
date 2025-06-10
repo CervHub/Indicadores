@@ -59,6 +59,10 @@ class Module extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function userReport()
+    {
+        return $this->belongsTo(User::class, 'user_report_id');
+    }
     public function company()
     {
         return $this->belongsTo(Company::class);
@@ -273,6 +277,11 @@ class Module extends Model
     public function moduleReview()
     {
         return $this->hasOne(ModuleReview::class);
+    }
+
+    public function moduleReviews()
+    {
+        return $this->hasMany(ModuleReview::class);
     }
 
     public function imagenes()

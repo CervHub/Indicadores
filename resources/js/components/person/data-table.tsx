@@ -109,12 +109,12 @@ export function DataTable<TData extends {
                     searchFields.push(row.company_name, row.company_ruc);
                 }
 
-                return searchFields.some(field => 
+                return searchFields.some(field =>
                     field && field.toLowerCase().includes(filter)
                 );
             });
         }
-        
+
         // Filtro por rol
         if (roleFilter !== '__all__') {
             const selectedRole = roles.find(r => r.nombre === roleFilter);
@@ -122,7 +122,7 @@ export function DataTable<TData extends {
                 filtered = filtered.filter(row => row.role_id === selectedRole.id);
             }
         }
-        
+
         // Filtro por estado
         if (estadoFilter !== '__all__') {
             filtered = filtered.filter(row => row.estado === estadoFilter);
@@ -134,13 +134,13 @@ export function DataTable<TData extends {
             if (rucFilter) {
                 filtered = filtered.filter(row => row.company_ruc === rucFilter);
             }
-            
+
             // Filtro por empresa
             if (companyFilter) {
                 filtered = filtered.filter(row => row.company_name === companyFilter);
             }
         }
-        
+
         return filtered;
     }, [data, globalFilter, roleFilter, estadoFilter, rucFilter, companyFilter, roles, userRoleCode]);
 
@@ -181,21 +181,7 @@ export function DataTable<TData extends {
         <div>
             {/* Filtros en grid para responsive */}
             <div className={`grid gap-4 py-4 w-full ${userRoleCode === 'SA' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5'}`}>
-                <div className="flex flex-col gap-1">
-                    <label className="text-sm mb-1">Mostrar</label>
-                    <Select value={pagination.pageSize.toString()} onValueChange={handlePageSizeChange}>
-                        <SelectTrigger className="w-full">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="25">25</SelectItem>
-                            <SelectItem value="50">50</SelectItem>
-                            <SelectItem value="100">100</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <span className="text-xs text-muted-foreground mt-1">registros</span>
-                </div>
+
                 <div className="flex flex-col gap-1">
                     <label className="text-sm mb-1">Buscar</label>
                     <Input
@@ -265,6 +251,20 @@ export function DataTable<TData extends {
                         </div>
                     </>
                 )}
+                <div className="flex flex-col gap-1">
+                    <label className="text-sm mb-1">Mostrar</label>
+                    <Select value={pagination.pageSize.toString()} onValueChange={handlePageSizeChange}>
+                        <SelectTrigger className="w-full">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="10">10</SelectItem>
+                            <SelectItem value="25">25</SelectItem>
+                            <SelectItem value="50">50</SelectItem>
+                            <SelectItem value="100">100</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 rounded-md border">

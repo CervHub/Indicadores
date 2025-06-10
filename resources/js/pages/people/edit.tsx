@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Combobox } from '@/components/ui/combobox';
 
 import { toast } from 'sonner';
 
@@ -20,6 +21,7 @@ type PersonForm = {
     telefono: string;
     cargo: string;
     role_id: number;
+    company_id?: string;
 };
 
 type Role = {
@@ -32,14 +34,44 @@ type Role = {
     updated_at: string;
 };
 
+type Company = {
+    id: string;
+    nombre: string;
+    ruc: string;
+    email: string;
+    descripcion: string;
+    estado: string;
+    created_at: string;
+    updated_at: string;
+    contractor_company_type_id: string | null;
+    situation: string | null;
+    code: string;
+};
+
 type EditPersonProps = {
     isOpen?: boolean;
     onOpenChange?: (isOpen: boolean) => void;
-    person?: PersonForm & { role_id: number };
+    person?: PersonForm & { role_id: number; company_id?: string };
     roles: Role[];
+    companies: Company[];
+    userRoleCode: string;
 };
 
-export default function EditPerson({ isOpen = false, onOpenChange, person, roles }: EditPersonProps) {
+export default function EditPerson({ isOpen = false, onOpenChange, person, roles, companies, userRoleCode }: EditPersonProps) {
+    console.log('EditPerson component rendered with person:', person);
+    
+    // Prepare company options for Combobox
+    const companyOptions = companies.map(company => ({
+        value: company.id,
+        label: `${company.nombre} (${company.ruc})`
+    }));
+
+    // Prepare role options for Combobox
+    const roleOptions = roles.map(role => ({
+        value: role.id.toString(),
+        label: `${role.nombre} (${role.code})`
+    }));
+
     const { data, setData, put, processing, errors, reset, clearErrors } = useForm<PersonForm>({
         id: person?.id || 0,
         doi: person?.doi || '',
@@ -49,6 +81,7 @@ export default function EditPerson({ isOpen = false, onOpenChange, person, roles
         telefono: person?.telefono || '',
         cargo: person?.cargo || '',
         role_id: person?.role_id || 0,
+        company_id: person?.company_id || '',
     });
 
     const [isDialogOpen, setIsDialogOpen] = useState(isOpen);
@@ -69,6 +102,7 @@ export default function EditPerson({ isOpen = false, onOpenChange, person, roles
                 telefono: person.telefono,
                 cargo: person.cargo,
                 role_id: person.role_id || 0,
+                company_id: person.company_id || '',
             });
         }
     }, [person, setData]);
@@ -80,6 +114,7 @@ export default function EditPerson({ isOpen = false, onOpenChange, person, roles
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+        
         put(route('contrata.personal.update', person?.id), {
             onSuccess: (page) => {
                 const flash = page.props.flash;
@@ -155,7 +190,7 @@ export default function EditPerson({ isOpen = false, onOpenChange, person, roles
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="role_id">Rol</Label>
-                            <Select value={data.role_id} onValueChange={(value) => setData('role_id', value)}>
+                            <Select value={data.role_id.toString()} onValueChange={(value) => setData('role_id', parseInt(value))}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Seleccionar rol" />
                                 </SelectTrigger>
@@ -169,6 +204,21 @@ export default function EditPerson({ isOpen = false, onOpenChange, person, roles
                             </Select>
                             <InputError message={errors.role_id} />
                         </div>
+                        {userRoleCode === 'SA' && (
+                            <div className="grid gap-2">
+                                <Label htmlFor="company_id">Empresa</Label>
+                                <Combobox
+                                    data={companyOptions}
+                                    value={data.company_id || ''}
+                                    onChange={(value) => {
+                                        setData('company_id', value);
+                                    }}
+                                    placeholder="Seleccione una empresa..."
+                                    className="w-full"
+                                />
+                                <InputError message={errors.company_id} />
+                            </div>
+                        )}
                         <Button type="submit" className="mt-2" disabled={processing || !isFormValid}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             Actualizar

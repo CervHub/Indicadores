@@ -46,18 +46,19 @@ class PersonalController extends Controller
                 'companies.ruc as company_ruc',
             ])
             ->leftJoin('companies', 'users.company_id', '=', 'companies.id');
-
+        $companies = []; // Inicializar como vacío
         if ($roleCode === 'SA') {
             $peopleQuery->whereNotIn('users.role_id', $excludedRoles);
+            $companies = DB::table('companies')->get(); // Obtener todas las empresas si es SA
         } elseif ($roleCode === 'CA') {
             $peopleQuery->whereNotIn('users.role_id', $excludedRoles)
                 ->where('users.company_id', $company_id);
         }
-
         $people = $peopleQuery->orderBy('users.updated_at', 'desc')->get();
         return Inertia::render('people/index', [
             'people' => $people,
             'roles' => $roles,
+            'companies' => $companies,
         ]);
     }
 
@@ -135,6 +136,12 @@ class PersonalController extends Controller
             $person->telefono = $request->telefono;
             $person->cargo = $request->cargo;
             $person->role_id = $request->role_id; // Actualizar el rol en la tabla users
+
+            // actualizar company_id si es necesario
+            if ($request->has('company_id')) {
+                $person->company_id = $request->company_id;
+            }
+
             $person->save();
 
             // Actualizar o crear el registro en role_users
@@ -269,7 +276,7 @@ class PersonalController extends Controller
 
         // Procesar filas de datos (omitir la fila de encabezados y respetar el límite)
         $totalRowsToProcess = min(count($data) - 1, $maxRecords);
-        
+
         for ($i = 1; $i <= $totalRowsToProcess; $i++) {
             $row = $data[$i];
 
@@ -292,7 +299,7 @@ class PersonalController extends Controller
             try {
                 // Buscar la empresa por RUC
                 $company = DB::table('companies')->where('ruc', $userData['ruc'])->first();
-                
+
                 if (!$company) {
                     $errors[] = "Fila " . ($i + 1) . ": No se encontró la empresa con RUC: {$userData['ruc']}";
                     continue;
@@ -315,7 +322,7 @@ class PersonalController extends Controller
 
                         // Eliminar todos los roles existentes del usuario
                         RoleUser::where('user_id', $user->id)->delete();
-                        
+
                         // Crear el nuevo rol de Ingeniero de Seguridad
                         RoleUser::create([
                             'user_id' => $user->id,
@@ -361,7 +368,7 @@ class PersonalController extends Controller
         $message .= "Creados: {$createdCount}, ";
         $message .= "Actualizados: {$updatedCount}, ";
         $message .= "Ignorados: {$ignoredCount}. ";
-        
+
         if ($totalRowsToProcess < (count($data) - 1)) {
             $message .= "Se procesaron solo {$maxRecords} registros del total. ";
         }

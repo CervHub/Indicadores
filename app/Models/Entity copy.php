@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Entity extends Model
 {
     protected $table = 'entities';
-    protected $fillable = ['nombre', 'parent_id', 'company_id', 'nivel'];
+    protected $fillable = ['nombre', 'parent_id', 'company_id', 'nivel', 'estado'];
     use HasFactory;
 
     public function company()
@@ -28,5 +28,4 @@ class Entity extends Model
     {
         return $this->belongsToMany(User::class, 'entity_users');
     }
-
 }

@@ -22,7 +22,19 @@ export interface NavItem {
     isActive?: boolean;
     roles: string[];
 }
-
+export interface Company = {
+    id: string;
+    nombre: string;
+    ruc: string;
+    email: string;
+    descripcion: string;
+    estado: string;
+    created_at: string;
+    updated_at: string;
+    contractor_company_type_id: string | null;
+    situation: string | null;
+    code: string;
+};
 export interface SharedData {
     name: string;
     quote: { message: string; author: string };

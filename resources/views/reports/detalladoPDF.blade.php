@@ -9,469 +9,313 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 10px;
+            padding: 0;
+            font-size: 14px;
+            line-height: 1.2;
         }
 
         table {
             border-collapse: collapse;
+            width: 100%;
+            margin: 0;
         }
 
-        /* Estilos de cabecera */
         .header {
             width: 100%;
-            height: 40px;
+            margin-bottom: 8px;
         }
 
         .header td {
-            width: 50%;
             vertical-align: middle;
-            padding: 0px;
-            margin: 0px;
+            padding: 2px;
         }
 
         .header img {
-            max-width: 120px;
+            max-width: 100px;
             height: auto;
         }
 
         .header .text {
             text-align: right;
-            font-size: 11px; // Añade esta línea
-            font-family: Arial, sans-serif; // Añade esta línea
-        }
-
-        .negrita {
+            font-size: 12px;
             font-weight: bold;
         }
 
         .text-center {
-            text-align: center !important;
+            text-align: center;
         }
 
-        .mt-0 {
-            margin-top: 0 !important;
-        }
-
-        .mb-0 {
-            margin-bottom: 0 !important;
-        }
-
-        .mb-1 {
-            margin-bottom: 5px !important;
-        }
-
-        /* Estilos de cuerpo */
         h1 {
-            font-size: 25px;
+            font-size: 18px;
             font-weight: bold;
             text-align: center;
-            margin-top: 20px;
+            margin: 10px 0 8px 0;
+        }
+
+        h4 {
+            font-size: 14px;
+            font-weight: bold;
+            margin: 8px 0 3px 0;
         }
 
         .cell {
             border: 1px solid black;
-            height: 20px;
-            width: 20px;
+            height: 25px;
+            width: 25px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 18px;
+            font-weight: bold;
         }
 
-        .tipo_actos table td {
-            height: 50px;
+        .data-cell {
+            border: 1px solid black;
+            padding: 4px 6px;
+            vertical-align: top;
+            font-size: 13px;
         }
 
-        .header-content-table {
-            padding-left: 30px;
-        }
-
-        .mt-3 {
-            margin-top: 20px;
-        }
-
-        .firma {
-            width: 130px;
-            height: 50px;
-            position: relative;
+        .fecha-cell {
+            border: 1px solid black;
+            width: 25px;
+            height: 22px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 13px;
+            font-weight: bold;
         }
 
         .border {
             border: 1px solid black;
-            padding: 5px;
+            padding: 6px;
+            margin: 3px 0 8px 0;
+            font-size: 13px;
+            min-height: 80px;
         }
 
-        .text-jusify {
-            text-align: justify;
-        }
-
-        .evaluacion td,
-        .evaluacion th {
-            text-align: center;
-            height: 40px;
-            padding: 5px;
-        }
-
-        .x-centered {
-            font-size: 30px;
-            font-weight: bold;
-        }
-
-        /* Nueva clase para imágenes */
         .fixed-height-img {
-            max-height: 300px;
-            max-width: 900px;
+            max-height: 200px;
+            max-width: 100%;
             display: block;
-            margin-left: auto;
-            margin-right: auto;
-            margin-bottom: 20px;
-            /* Añade esta línea para el gap */
+            margin: 5px auto;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 5px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        .compact-section {
+            margin: 8px 0;
+        }
+
+        .no-padding {
+            padding: 0;
+        }
+
+        .small-text {
+            font-size: 10px;
+        }
+
+        .finalized-table td {
+            border: 1px solid black;
+            padding: 6px;
+            font-size: 13px;
+        }
+
+        .page-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            margin-top: 70px;
         }
     </style>
 </head>
 
 <body>
-    <table class="header">
-        <tr>
-            <td><img src="{{ $logo }}" alt="Logo"></td>
-            <td class="text negrita text-center">
-                "Un acto/condición sub estándar o un incidente reportado es un ACCIDENTE EVITADO"
-            </td>
-        </tr>
-    </table>
-    <h1 class="text-center mt-0">ESTOY REPORTANDO UN(A)</h1>
-    <section class="tipo_actos">
-        <table style="width: 100%;">
+    <div class="page-header">
+        <table class="header">
             <tr>
-                <td style="width: 30%;" class="header-content-table">
-                    Acto subestándar
-                </td>
-                <td class="cell x-centered text-center" style="width: 10%;">
-                    {{ $reportability->tipo_reporte == 'actos' ? 'X' : '' }}
-                </td>
-                <td style="width: 30%;" class="header-content-table">
-                    Condición subestándar
-                </td>
-                <td class="cell x-centered text-center" style="width: 10%;">
-                    {{ $reportability->tipo_reporte == 'condiciones' ? 'X' : '' }}
-                </td>
-                <td style="width: 30%;" class="header-content-table">
-                    Incidente
-                </td>
-                <td class="cell x-centered text-center" style="width: 10%;">
-                    {{ $reportability->tipo_reporte == 'incidentes' ? 'X' : '' }}
-                </td>
+                <td style="width: 70%;"><img src="{{ $logo }}" alt="Logo"></td>
+                <td class="text">GPS-PG-18. F.01</td>
             </tr>
         </table>
-    </section>
-    <section class="fechas_reportes mt-3">
-        <table style="width: 100%;">
-            <tr>
-                <td style="width: 30%;" class="header-content-table">
-                    Fecha del Evento
-                </td>
-                <td class="cell text-center">
-                    {{ \Carbon\Carbon::parse($reportability->fecha_evento)->format('d') }}
-                </td>
-                <td class="cell text-center">
-                    {{ \Carbon\Carbon::parse($reportability->fecha_evento)->format('m') }}
-                </td>
-                <td class="cell text-center">
-                    {{ \Carbon\Carbon::parse($reportability->fecha_evento)->format('Y') }}
-                </td>
-                <td></td>
-                <td style="width: 30%;" class="header-content-table">
-                    Fecha del Reporte
-                </td>
-                <td class="cell text-center">
-                    {{ \Carbon\Carbon::parse($reportability->fecha_reporte)->format('d') }}
-                </td>
-                <td class="cell text-center">
-                    {{ \Carbon\Carbon::parse($reportability->fecha_reporte)->format('m') }}
-                </td>
-                <td class="cell text-center">
-                    {{ \Carbon\Carbon::parse($reportability->fecha_reporte)->format('Y') }}
-                </td>
-            </tr>
-            <tr>
-                <td style="width: 30%;" class="header-content-table">
-                    Hora del Evento
-                </td>
-                <td class="cell text-center">
-                    {{ \Carbon\Carbon::parse($reportability->fecha_evento)->format('H') }}
-                </td>
-                <td class="cell text-center">
-                    {{ \Carbon\Carbon::parse($reportability->fecha_evento)->format('i') }}
-                </td>
-                <td class="cell text-center">
-                    {{ \Carbon\Carbon::parse($reportability->fecha_evento)->format('A') }}
-                </td>
-                <td></td>
-                <td style="width: 30%;" class="header-content-table">
-                    Hora del Reporte
-                </td>
-                <td class="cell text-center">
-                    {{ \Carbon\Carbon::parse($reportability->fecha_reporte)->format('H') }}
-                </td>
-                <td class="cell text-center">
-                    {{ \Carbon\Carbon::parse($reportability->fecha_reporte)->format('i') }}
-                </td>
-                <td class="cell text-center">
-                    {{ \Carbon\Carbon::parse($reportability->fecha_reporte)->format('A') }}
-                </td>
-            </tr>
-        </table>
-    </section>
-    <section class="datos_reporte mt-3">
-        <table style="width: 100%;">
-            <tr>
-                <td style="width: 50%;" class="cell">
-                    <strong>Reportado por:</strong>
-                    <br>
-                    {{ $reportability->reportado() }}
-                </td>
-                <td style="width: 50%;" class="cell text-center">
-                    <img src="data:image/png;base64,{{ $reportability->firma }}" class="firma" alt="Firma">
-                </td>
-            </tr>
-        </table>
-        {{-- <table style="width: 100%; margin-top:-1.5px;">
-            <tr>
-                @foreach ($reportability->levels() as $key => $names)
-                    @php
-                        $key = ucfirst($key);
-                        $key = str_replace('Taller_seccion', 'Taller/Sección', $key);
-                    @endphp
-                    <td style="width:33%;" class="cell">
-                        <strong>{{ $key }}:</strong>
-                        <br>
-                        {{ $names }}
-                    </td>
-                @endforeach
-            </tr>
-        </table> --}}
-        <table style="width: 100%; margin-top:-1.5px;">
-            <tr>
-                <td style="width: 33%;" class="cell">
-                    <strong>Empresa:</strong>
-                    <br>
-                    {{ strtoupper($reportability->user->company->nombre) }}
-                </td>
-            </tr>
-            <tr>
-                @foreach ($reportability->levels() as $key => $names)
-                    @if ($key == 'gerencia')
-                        @php
-                            $key = ucfirst($key);
-                            $key = str_replace('Taller_seccion', 'Taller/Sección', $key);
-                        @endphp
-                        <td style="width:33%;" class="cell">
-                            <strong>{{ $key }}:</strong>
-                            <br>
-                            {{ $names }}
-                        </td>
-                    @endif
-                @endforeach
-            </tr>
+    </div>
 
-        </table>
-        <table style="width: 100%; margin-top:-1.5px;">
-            <tr>
-                <td style="width: 33%;" class="cell">
-                    <strong>Estado:</strong>
-                    <br>
-                    {{ strtoupper($reportability->estado) }}
-                </td>
-            </tr>
-        </table>
-    </section>
+    <div class="footer" style="font-size: 11px; color: rgba(255, 0, 0, 0.7);">
+        Un acto/condición subestándar reportado es un ACCIDENTE EVITADO
+    </div>
 
-    <section>
-        <h4 class="mb-1">LUGAR</h4>
-        <div style="width: 100%; border: 1px solid black; padding:2px;">
-            {{ ucfirst(strtolower($reportability->lugar ?? 'No especificado')) }}
-        </div>
-    </section>
-
-    <section>
-        <h4 class="mb-1">DESCRIPCIÓN DEL EVENTO</h4>
-        <div style="min-height: 50px; width: 98.5%;" class="border text-justify">
-            {{ $reportability->descripcion ?? 'No se ha proporcionado una descripción del evento.' }}
-        </div>
-    </section>
-
-    <section>
-        <h4 class="mb-1">ACCIONES CORRECTIVAS (Realizadas o sugeridas)</h4>
-        <div style="min-height: 50px; width: 98.5%;" class="border text-justify">
-            {{ $reportability->correctiva ?? 'No se han especificado acciones correctivas.' }}
-        </div>
-    </section>
-
-    <section class="evaluacion">
-        <h4 class="mb-1">NIVEL DE RIESGO</h4>
-        <table style="width: 100%;">
-            <tr>
-                {{-- <td style="width: 10%; text-align: left;" class="cell">Nivel de Riesgo</td>
-                <td style="width: 2%"></td> --}}
-                <td style="width: 6%" class="cell">Alto</td>
-                <td class="cell x-centered" style="width: 5%">{{ $reportability->gravedad == 'Alto' ? 'X' : '' }}</td>
-                <td style="width: 2%"></td>
-                <td style="width: 6%" class="cell">Medio</td>
-                <td class="cell x-centered" style="width: 5%">{{ $reportability->gravedad == 'Medio' ? 'X' : '' }}</td>
-                <td style="width: 2%"></td>
-                <td style="width: 6%" class="cell">Bajo</td>
-                <td class="cell x-centered" style="width: 5%">{{ $reportability->gravedad == 'Bajo' ? 'X' : '' }}</td>
-            </tr>
-            {{-- <tr>
-                <td style="width: 10%; text-align: left;" class="cell">Probabilidad de ocurrencia</td>
-                <td style="width: 2%"></td>
-                <td style="width: 6%" class="cell">Alta</td>
-                <td class="cell x-centered" style="width: 5%">{{ $reportability->probabilidad == 'Alta' ? 'X' : '' }}
-                </td>
-                <td style="width: 2%"></td>
-                <td style="width: 6%" class="cell">Moderada</td>
-                <td class="cell x-centered" style="width: 5%">
-                    {{ $reportability->probabilidad == 'Moderada' ? 'X' : '' }}</td>
-                <td style="width: 2%"></td>
-                <td style="width: 6%" class="cell">Rara Vez</td>
-                <td class="cell x-centered" style="width: 5%">{{ $reportability->probabilidad == 'Rara Vez' ? 'X' : '' }}</td>
-            </tr>
-            <tr>
-                <td style="width: 10%; text-align: left;" class="cell">Nivel de exposición</td>
-                <td style="width: 2%"></td>
-                <td style="width: 6%" class="cell">Extensivo</td>
-                <td class="cell x-centered" style="width: 5%">
-                    {{ $reportability->exposicion == 'Extensivo' ? 'X' : '' }}</td>
-                <td style="width: 2%"></td>
-                <td style="width: 6%" class="cell">Moderado</td>
-                <td class="cell x-centered" style="width: 5%">
-                    {{ $reportability->exposicion == 'Moderado' ? 'X' : '' }}</td>
-                <td style="width: 2%"></td>
-                <td style="width: 6%" class="cell">Bajo</td>
-                <td class="cell x-centered" style="width: 5%">{{ $reportability->exposicion == 'Bajo' ? 'X' : '' }}</td>
-            </tr> --}}
-        </table>
-    </section>
-    <section>
-
-        <h4 class="mb-1">DE ACUERDO AL ANÁLISIS, LAS CAUSAS FUERON:</h4>
-        @if ($reportability->categoryCompanyName() == 'Otros')
-            <div style="width: 100%; border: 1px solid black; padding-left: 2px;">
-                <p class="" style="padding-left: 5px;">Otros: {{ $reportability->otros }}</p>
-            </div>
-        @else
-            <div style="width: 100%; border: 1px solid black; padding:2px;">
-                {{ ucfirst(strtolower($reportability->categoryCompanyName())) }}
-            </div>
-        @endif
-    </section>
-
-    <section>
-        <h4 class="negrita mb-1">INGENIEROS DE SEGURIDAD NOTIFICADOS:</h4>
-        @php
-            $cellWidth = 'auto';
-        @endphp
-        <table class="table" style="width: 100%;">
-            <thead>
+    <div class="content">
+        <h1 style="font-size: 30px; text-decoration: underline; text-align: center;">ESTOY REPORTANDO UN(A)</h1>
+        <br><br>
+        <section class="compact-section">
+            <table>
                 <tr>
-                    <th class="cell" style="width: 5%">#</th>
-                    <th class="cell" style="width: {{ $cellWidth }}">Nombre</th>
-                    <th class="cell" style="width: {{ $cellWidth }}">Correo</th>
+                    <td style="width: 25%;"></td>
+                    <td style="width: 15%; text-align: left; font-size: 14px; padding-left: 10px;">
+                        Acto<br>subestándar
+                    </td>
+                    <td class="cell" style="width: 5%;">
+                        {{ $reportability->tipo_reporte == 'actos' ? 'X' : '' }}
+                    </td>
+                    <td style="width: 5%;"></td>
+                    <td style="width: 15%; text-align: left; font-size: 14px; padding-left: 10px;">
+                        Condición<br>subestándar
+                    </td>
+                    <td class="cell" style="width: 5%;">
+                        {{ $reportability->tipo_reporte == 'condiciones' ? 'X' : '' }}
+                    </td>
+                    <td style="width: 25%;"></td>
                 </tr>
-            </thead>
-            <tbody>
-                @php
-                    $engineers = json_decode($reportability->send_email) ?? [];
-                @endphp
+            </table>
+        </section>
+        <br>
+        <section class="compact-section">
+            <table>
+                <tr>
+                    <td style="width: 10%; padding-left: 10px; font-size: 14px;">Fecha del <br> Reporte</td>
+                    <td class="fecha-cell">{{ \Carbon\Carbon::parse($reportability->fecha_evento)->format('d') }}</td>
+                    <td class="fecha-cell">{{ \Carbon\Carbon::parse($reportability->fecha_evento)->format('m') }}</td>
+                    <td class="fecha-cell" style="margin-left: 5px; padding: 5px;">
+                        {{ \Carbon\Carbon::parse($reportability->fecha_evento)->format('Y') }}</td>
+                    <td style="width: 70%;"></td>
+                </tr>
+            </table>
+        </section>
+        <br>
+        <section class="compact-section">
+            <table style="margin-top: 5px;">
+                <tr>
+                    <td style="width: 25%;" class="data-cell">
+                        <strong>Hora:</strong><br>{{ \Carbon\Carbon::parse($reportability->fecha_evento)->format('H:i A') }}
+                    </td>
+                    <td style="width: 75%;" class="data-cell">
+                        <strong>Lugar:</strong><br>{{ ucfirst(strtolower($reportability->lugar ?? 'No especificado')) }}
+                    </td>
+                </tr>
+            </table>
+            <table style="margin-top: -1px;">
+                <tr>
+                    <td class="data-cell">
+                        <strong>Gerencia:</strong><br>
+                        @foreach ($reportability->levels() as $key => $names)
+                            @if ($key == 'gerencia')
+                                {{ $names }}
+                                @break
+                            @endif
+                        @endforeach
+                    </td>
+                </tr>
+            </table>
+            <table style="margin-top: -1px;">
+                <tr>
+                    <td style="width: 50%;" class="data-cell">
+                        <strong>Reportado por:</strong><br>{{ $reportability->reportado() }}
+                    </td>
+                    <td style="width: 50%;" class="data-cell">
+                        <strong>Registro:</strong><br>{{ $dni ?? '' }}
+                    </td>
+                </tr>
+            </table>
+        </section>
 
-                @forelse ($engineers as $index => $engineer)
-                    <tr>
-                        <td class="cell" style="width: 5%">{{ $index + 1 }}</td>
-                        <td class="cell" style="width: {{ $cellWidth }}">{{ $engineer->nombre }}
-                            {{ $engineer->apellidos }}</td>
-                        <td class="cell" style="width: {{ $cellWidth }}">{{ $engineer->email }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td class="cell text-center" colspan="3">No hay ingenieros de seguridad notificados.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </section>
-
-    <section>
-        <h4 class="mb-1">ANEXOS</h4>
-        @php
-            $images = $reportability->imagenes();
-        @endphp
-
-        @foreach ($images as $image)
-            <div style="width: 100%; text-align: center;">
-                <img src="data:image/png;base64,{{ $image['img'] }}" alt="{{ $key }}"
-                    class="fixed-height-img">
+        <section class="compact-section">
+            <h4>DESCRIPCIÓN DEL ACTO O CONDICIÓN</h4>
+            <div class="border">
+                {{ $reportability->descripcion ?? 'No se ha proporcionado una descripción del evento.' }}
             </div>
-        @endforeach
-    </section>
+        </section>
 
-    @php
-        $finalizado = $reportability->moduleReview;
-    @endphp
+        <section class="compact-section">
+            <h4>ACCIONES CORRECTIVAS (Realizadas o sugeridas)</h4>
+            <div class="border">
+                {{ $reportability->correctiva ?? 'No se han especificado acciones correctivas.' }}
+            </div>
+        </section>
+
+        <section class="compact-section">
+            <h4>ARCHIVO FOTOGRÁFICO</h4>
+            @php
+                $images = $reportability->imagenes();
+            @endphp
+
+            @foreach ($images as $image)
+                <img src="data:image/png;base64,{{ $image['img'] }}" alt="Imagen" class="fixed-height-img">
+            @endforeach
+        </section>
+    </div>
 
     @php
         $finalizado = $reportability->moduleReview;
     @endphp
 
     @if ($finalizado)
-
-
-        {{-- Siguiente pagina --}}
         <div style="page-break-before: always;"></div>
 
+        <div class="content">
+            @php
+                $user = $finalizado->user;
+                $fotos = json_decode($finalizado->fotos);
+            @endphp
 
-        @php
-            $user = $finalizado->user;
-            $fotos = json_decode($finalizado->fotos);
-        @endphp
+            <h1 style="font-size: 24px; text-decoration: underline; text-align: center; margin-bottom: 20px;">REPORTE CERRADO
+            </h1>
 
-        <section class="datos_reporte mt-3">
-            <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                    <td style="border: 1px solid">
-                        <strong style="font-size: 1.2em;">Reporte Finalizado</strong>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid">
-                        <span style="font-size: 1em;">Finalizado por: {{ $user->nomres }}
-                            {{ $user->apellidos }}</span>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid">
-                        <span style="font-size: 1em;">Comentario: {{ $finalizado->comentario }}</span>
-                    </td>
-                </tr>
-            </table>
+            <section class="compact-section">
+                <table style="margin-top: 5px;">
+                    <tr>
+                        <td style="width: 50%;" class="data-cell">
+                            <strong>Cerrado por:</strong><br>{{ $user->nombres }} {{ $user->apellidos }}
+                        </td>
+                        <td style="width: 50%;" class="data-cell">
+                            <strong>Fecha de cierre:</strong><br>{{ \Carbon\Carbon::parse($finalizado->created_at)->setTimezone('America/Lima')->format('d/m/Y H:i A') }}
+                        </td>
+                    </tr>
+                </table>
+            </section>
 
-            <strong
-                style="font-size: 1.1em; color: black; margin-top: 20px; margin-bottom:20px; display: block;">ANEXOS:</strong>
-            <table style="width: 100%; border-collapse: collapse;">
-                @foreach ($fotos as $foto)
-                    @if (Str::endsWith($foto, ['.png', '.jpg', '.jpeg']))
-                        <tr style="margin-bottom: 10px;">
-                            <td style="text-align: center; border: none;">
-                                <img src="{{ $url . '/' . $foto }}" alt="Foto del reporte" class="fixed-height-img">
-                            </td>
-                        </tr>
-                    @else
-                        <tr style="margin-bottom: 10px;">
-                            <td style="text-align: left; border: none;">
-                                <a href="{{ url($foto) }}" target="_blank"
-                                    style="text-decoration: none; color: blue;">
-                                    {{ basename($foto) }}
+            <section class="compact-section">
+                <h4>COMENTARIOS DE CIERRE</h4>
+                <div class="border">
+                    {{ $finalizado->comentario ?? 'Sin comentarios adicionales.' }}
+                </div>
+            </section>
+
+            <section class="compact-section">
+                <h4>ANEXOS</h4>
+                @if($fotos && count($fotos) > 0)
+                    @foreach ($fotos as $foto)
+                        @if (Str::endsWith($foto, ['.png', '.jpg', '.jpeg']))
+                            <img src="{{ $url . '/' . $foto }}" alt="Anexo" class="fixed-height-img">
+                        @else
+                            <div style="margin: 3px 0;">
+                                <a href="{{ url($foto) }}" target="_blank" style="color: blue; text-decoration: none;">
+                                     {{ basename($foto) }}
                                 </a>
-                            </td>
-                        </tr>
-                    @endif
-                @endforeach
-            </table>
-        </section>
+                            </div>
+                        @endif
+                    @endforeach
+                @else
+                    <div class="border" style="min-height: 40px;">
+                        No se adjuntaron anexos adicionales.
+                    </div>
+                @endif
+            </section>
+        </div>
     @endif
 </body>
 
