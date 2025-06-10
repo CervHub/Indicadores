@@ -211,13 +211,6 @@ class UtilityController extends Controller
 
             $grouped_entities = $this->getEntities($entities, $levels);
 
-            // Mover "Otros" al final si existe
-            foreach ($grouped_entities as &$group) {
-                $group['items'] = collect($group['items'])->sortBy(function ($item) {
-                    return strtolower($item['nombre']) === 'otros' ? PHP_INT_MAX : $item['orden'];
-                })->values()->toArray();
-            }
-
             if (empty($grouped_entities)) {
                 return response()->json(['success' => false, 'message' => 'Entidades agrupadas no encontradas'], 200);
             }
