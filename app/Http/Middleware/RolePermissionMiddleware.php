@@ -27,6 +27,7 @@ class RolePermissionMiddleware
         'contrata.personal' => ['CA', 'SA'], // Personal
         'admin.security-engineer' => [], // Ingeniero de Seguridad
         'contrata.roles' => [], // Roles
+        'assignments' => ['SA'], // Asignaciones
     ];
 
     /**
@@ -232,6 +233,12 @@ class RolePermissionMiddleware
             'contrata.roles.edit' => 'contrata.roles',
             'contrata.roles.update' => 'contrata.roles',
             'contrata.roles.destroy' => 'contrata.roles',
+
+            // Asignaciones
+            'assignments.index' => 'assignments',
+            'assignments.store' => 'assignments',
+            'assignments.update' => 'assignments',
+            'assignments.destroy' => 'assignments',
         ];
 
         return $routeMapping[$routeName] ?? null;

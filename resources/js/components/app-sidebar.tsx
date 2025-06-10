@@ -39,6 +39,7 @@ const roles: Record<string, string[]> = {
     Personal: ['CA', 'SA'],
     'Ingeniero de Seguridad': [],
     Roles: [],
+    Asignaciones: ['SA'],
 };
 
 function getRolesForItem(title: string): string[] {
@@ -54,6 +55,7 @@ const groupedNavItems = [
             { title: 'Gerencias', url: '/admin/management', icon: Users },
             { title: 'Gestión de SSO', url: '/admin/category', icon: ShieldAlert },
             { title: 'Vehículos', url: '/vehicle', icon: Truck },
+            { title: 'Asignaciones', url: '/assignments', icon: Users }, // Assuming Assignments is accessible by SA and CA
         ],
     },
     {

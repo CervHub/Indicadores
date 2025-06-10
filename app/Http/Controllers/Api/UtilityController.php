@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\TestEmail;
 use App\Jobs\SendReportMail;
+use App\Models\Assignment;
 use App\Models\Log as LogModel;
 use App\Models\Role;
 use Carbon\Carbon;
@@ -317,6 +318,27 @@ class UtilityController extends Controller
                 ->whereNotNull('email')
                 ->where('email', '!=', '')
                 ->get();
+
+            if ($securityEnginnerSPCCs){
+                //Validamos que ingenierio de seguridad de SPCCs estan en Assignment
+                $assignments = Assignment::all();
+
+                //estos tienen alguna clausula entonces saquemos a los ingenieros con clausula y sin clausula
+                $engineerSecuritySPCCsWithClause = $securityEnginnerSPCCs->filter(function ($user) use ($assignments) {
+                    return $assignments->contains('user_id', $user->id);
+                });
+                $engineerSecuritySPCCsWithoutClause = $securityEnginnerSPCCs->filter(function ($user) use ($assignments) {
+                    return !$assignments->contains('user_id', $user->id);
+                });
+
+                // Los ingenieros con clausura tenemos que validar si la asignaacion contiene la empresa company_report_id
+                $assignmentsWithClause = Assignment::where('company_id', $request->company_report_id)
+                    ->whereIn('user_id', $engineerSecuritySPCCsWithClause->pluck('id'))
+                    ->get();
+                
+                // Filtramos los ingenieros de seguridad de SPCCs con clausula que tienen asignacion a la empresa
+                
+            }
 
             if (!$roleSecurityEngineer) {
                 Log::warning('El rol con código "IS" no existe. No se enviarán correos electrónicos.');

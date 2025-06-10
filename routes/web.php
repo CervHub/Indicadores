@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinishController;
 use App\Http\Controllers\Contrata\RoleController;
 use App\Http\Controllers\UpdateUserController;
+use App\Http\Controllers\AssignmentController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -44,4 +45,13 @@ Route::middleware(['auth', 'verified', 'role.permission'])->group(function () {
     Route::post('contrata/roles/store', [RoleController::class, 'store'])->name('contrata.roles.store');
     Route::put('contrata/roles/update/{id}', [RoleController::class, 'update'])->name('contrata.roles.update');
     Route::delete('contrata/roles/destroy/{id}', [RoleController::class, 'destroy'])->name('contrata.roles.destroy');
+});
+
+
+// asginments
+Route::middleware(['auth', 'verified', 'role.permission'])->group(function () {
+    Route::get('assignments', [AssignmentController::class, 'index'])->name('assignments.index');
+    Route::post('assignments/store', [AssignmentController::class, 'store'])->name('assignments.store');
+    Route::put('assignments/update/{assignment}', [AssignmentController::class, 'update'])->name('assignments.update');
+    Route::post('assignments/destroy/{assignment}', [AssignmentController::class, 'destroy'])->name('assignments.destroy');
 });
