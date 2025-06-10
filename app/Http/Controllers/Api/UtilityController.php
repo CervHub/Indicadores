@@ -93,17 +93,30 @@ class UtilityController extends Controller
                 return $entity->nivel == $level_order;
             });
 
+            $items = $filtered_entities->map(function ($entity) {
+                return [
+                    'parent_id' => $entity->parent_id,
+                    'id' => $entity->id,
+                    'nombre' => $entity->nombre,
+                    'nivel' => $entity->nivel
+                ];
+            })->values()->toArray();
+
+            // Ordenar alfabeticamente y mover "Otros" al final
+            usort($items, function ($a, $b) {
+                if ($a['nombre'] === 'Otros') {
+                    return 1;
+                }
+                if ($b['nombre'] === 'Otros') {
+                    return -1;
+                }
+                return strcmp($a['nombre'], $b['nombre']);
+            });
+
             $grouped_entities[] = [
                 'nombre' => $level_name,
                 'orden' => $level_order,
-                'items' => $filtered_entities->map(function ($entity) {
-                    return [
-                        'parent_id' => $entity->parent_id,
-                        'id' => $entity->id,
-                        'nombre' => $entity->nombre,
-                        'nivel' => $entity->nivel
-                    ];
-                })->values()->toArray()
+                'items' => $items
             ];
         }
 
