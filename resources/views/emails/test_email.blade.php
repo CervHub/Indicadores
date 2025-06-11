@@ -74,39 +74,6 @@
             font-weight: bold;
             text-align: center;
         }
-
-        .module-details {
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            text-align: left;
-        }
-
-        .module-details h3 {
-            color: #800020;
-            margin-top: 0;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .detail-item {
-            margin-bottom: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .detail-item:last-child {
-            border-bottom: none;
-        }
-
-        .detail-label {
-            font-weight: bold;
-            color: #333;
-            display: inline-block;
-            min-width: 120px;
-        }
     </style>
 </head>
 
@@ -124,33 +91,33 @@
             <p>SE HA GENERADO UN REPORTE DE : "{{ strtoupper($report) }}" EL DÍA DE {{ strtoupper($date) }}.</p>
             <p><strong>EMPRESA REPORTADA:</strong> {{ strtoupper($empresaReportada) }}</p>
             <p><strong>EMPRESA QUE REPORTA:</strong> {{ strtoupper($empresaQueReporta) }}</p>
-            <p><strong>GENERADO POR:</strong> {{ strtoupper($generatedBy) }}</p>
-
-            @if($module)
-            <div class="module-details">
-                <h3>DETALLES DEL MÓDULO</h3>
-                <div class="detail-item">
-                    <span class="detail-label">DESCRIPCIÓN:</span>
-                    {{ strtoupper($module->descripcion) }}
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">CORRECTIVA:</span>
-                    {{ strtoupper($module->correctiva) }}
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">GRAVEDAD:</span>
-                    {{ strtoupper($module->gravedad) }}
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">CAUSA:</span>
-                    {{ strtoupper($module->categoryCompanyName()) }}
-                </div>
-            </div>
-            @endif
-
+            <p><strong>GENERADO POR:</strong> {{ strtoupper($generatedBy) }}</p> <!-- Updated text -->
             <div class="report-id">
                 ID DEL REPORTE: {{ last(explode('/', $reportLink)) }}
             </div>
+
+            @if ($module)
+                <div class="module-details">
+                    <h3>DETALLES DEL MÓDULO</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">DESCRIPCIÓN:</span>
+                        {{ strtoupper($module->descripcion) }}
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">CORRECTIVA:</span>
+                        {{ strtoupper($module->correctiva) }}
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">GRAVEDAD:</span>
+                        {{ strtoupper($module->gravedad) }}
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">CAUSA:</span>
+                        {{ strtoupper($module->categoryCompanyName()) }}
+                    </div>
+                </div>
+            @endif
+
             <a href="{{ $reportLink }}" class="button">DESCARGAR REPORTE</a>
 
         </div>
