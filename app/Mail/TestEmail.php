@@ -19,11 +19,12 @@ class TestEmail extends Mailable
     public $empresaQueReporta;
     public $emailView;
     public $status;
+    public $module;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($report, $date, $generatedBy, $reportLink, $empresaReportada, $empresaQueReporta, $emailView = 'emails.test_email', $status = 'ABIERTO')
+    public function __construct($report, $date, $generatedBy, $reportLink, $empresaReportada, $empresaQueReporta, $emailView = 'emails.test_email', $status = 'ABIERTO', $module)
     {
         $this->report = $report;
         $this->date = $date;
@@ -33,6 +34,7 @@ class TestEmail extends Mailable
         $this->empresaQueReporta = $empresaQueReporta;
         $this->emailView = $emailView;
         $this->status = $status;
+        $this->module = $module;
     }
 
     /**
@@ -55,6 +57,7 @@ class TestEmail extends Mailable
                 'empresaQueReporta' => $this->empresaQueReporta,
                 'logoUrl' => $logoPath,
                 'status' => $this->status,
+                'module' => $this->module,
             ]);
     }
 }

@@ -373,7 +373,7 @@ class UtilityController extends Controller
             $date = $data['fecha_evento'];
 
             if ($engineerSecurityReported) {
-                $this->sendReportMail($engineerSecurityReported, $report, $date, $generatedBy, $reportLink, $engineerSecurityCompanyReported, $securityEnginnerSPCCs, $engineerSecurityCompany);
+                $this->sendReportMail($engineerSecurityReported, $report, $date, $generatedBy, $reportLink, $engineerSecurityCompanyReported, $securityEnginnerSPCCs, $engineerSecurityCompany, $new_module);
             }
 
             return response()->json(['status' => true, 'message' => 'Insertado satisfactoriamente'], 200);
@@ -644,7 +644,7 @@ class UtilityController extends Controller
      * @param Collection $securityEngineerSPCCs Ingenieros de seguridad de SPCC.
      * @param Company $company Empresa que genera el reporte.
      */
-    public function sendReportMail($securityEngineerReported, $report, $date, $generatedBy, $reportLink, $companyReported, $securityEngineerSPCCs, $company)
+    public function sendReportMail($securityEngineerReported, $report, $date, $generatedBy, $reportLink, $companyReported, $securityEngineerSPCCs, $company, $module)
     {
         $recipients = collect();
 
@@ -675,7 +675,7 @@ class UtilityController extends Controller
         // Enviar el correo electrónico
         Mail::to($securityEngineerReported->email)
             ->cc($recipients->toArray())
-            ->send(new TestEmail($report, $date, $generatedBy, $reportLink, $empresaReportada, $empresaQueReporta));
+            ->send(new TestEmail($report, $date, $generatedBy, $reportLink, $empresaReportada, $empresaQueReporta, 'emails.test_email', 'ABIERTO', $module));
     }
 
     public function showCredentials(Request $request)
