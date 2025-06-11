@@ -41,6 +41,8 @@ export interface SharedData {
     auth: Auth;
     ziggy: Config & { location: string };
     [key: string]: unknown;
+    nombres: string;
+    apellidos: string;
 }
 
 export interface Report {

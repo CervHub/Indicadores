@@ -230,7 +230,7 @@
                         <strong>Reportado por:</strong><br>{{ $reportability->reportado() }}
                     </td>
                     <td style="width: 50%;" class="data-cell">
-                        <strong>Registro:</strong><br>{{ $dni ?? '' }}
+                        <strong>Registro/DNI:</strong><br>{{ $dni ?? '' }}
                     </td>
                 </tr>
             </table>

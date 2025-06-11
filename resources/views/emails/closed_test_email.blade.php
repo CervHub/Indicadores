@@ -96,8 +96,8 @@
                 ID DEL REPORTE: {{ last(explode('/', $reportLink)) }}
             </div>
             @if ($module ?? false)
-                <div class="module-details">
-                    <p><strong>DETALLES DEL MÓDULO:</strong></p>
+                <div class="module-details" style="margin-top: 20px; text-align: left;">
+                    <p style="font-size: 20px; font-weight: bold; text-decoration: underline;">DETALLES DEL REPORTE:</p>
                     <p><strong>DESCRIPCIÓN:</strong> {{ strtoupper($module->descripcion ?? '-') }}</p>
                     <p><strong>ACCIÓN CORRECTIVA:</strong> {{ strtoupper($module->correctiva ?? '-') }}</p>
                     <p><strong>GRAVEDAD:</strong> {{ strtoupper($module->gravedad ?? '-') }}</p>

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Settings\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,9 +26,29 @@ class ProfileController extends Controller
     /**
      * Update the user's profile settings.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $validated = $request->validate([
+            'email' => ['required', 'email'],
+            'nombres' => ['nullable', 'string'],
+            'apellidos' => ['nullable', 'string'],
+        ]);
+
+        // Concatenar nombres y apellidos para el campo name
+        $validated['name'] = trim(($validated['nombres'] ?? '') . ' ' . ($validated['apellidos'] ?? ''));
+        
+        // Si name queda vacío, usar el email como fallback
+        if (empty($validated['name'])) {
+            $validated['name'] = $validated['email'];
+        }
+
+        // Actualizar todos los campos incluyendo nombres y apellidos
+        $request->user()->fill([
+            'email' => $validated['email'],
+            'name' => $validated['name'],
+            'nombres' => $validated['nombres'],
+            'apellidos' => $validated['apellidos'],
+        ]);
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;

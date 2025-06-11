@@ -193,7 +193,8 @@ class ReportabilityController extends Controller
     public function detalle($reportability_id)
     {
         $user = auth()->user();
-        $module = Module::findOrFail($reportability_id);
+        $module = Module::withTrashed()->findOrFail($reportability_id);
+        $moduleReview = $module->moduleReview()->with('user')->first();
 
         $canCloseReport = false; // Variable para determinar si el usuario puede cerrar el reporte
 
@@ -246,13 +247,15 @@ class ReportabilityController extends Controller
             'reportability_id' => $reportability_id,
             'isSecurityEngineer' => $isSecurityEngineer,
             'canCloseReport' => $canCloseReport,
+            'module' => $module,
+            'moduleReview' => $moduleReview,
         ]);
     }
 
     public function download($reportability_id)
     {
 
-        $reportability = Module::findOrFail($reportability_id);
+        $reportability = Module::withTrashed()->findOrFail($reportability_id);
 
         $name = "Reporte de reportabilidad {$reportability->fecha_reporte}.pdf";
 

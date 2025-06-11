@@ -98,21 +98,21 @@ class FinishController extends Controller
 
         // Envío de notificación por correo electrónico
         try {
-            $this->sendModuleFinishedMail($module, $user, $moduleReview);
+            $this->sendReportFinishedMail($module, $user, $moduleReview);
         } catch (\Exception $emailException) {
-            Log::error('Error al enviar correo de módulo finalizado: ' . $emailException->getMessage());
+            Log::error('Error al enviar correo de reporte finalizado: ' . $emailException->getMessage());
         }
 
-        return redirect()->back()->with('success', 'Módulo finalizado correctamente');
+        return redirect()->back()->with('success', 'Reporte finalizado correctamente');
     }
 
-    private function sendModuleFinishedMail($module, $finishedBy, $moduleReview)
+    private function sendReportFinishedMail($module, $finishedBy, $moduleReview)
     {
-        // Usuario principal que debe ser notificado (dueño del módulo)
+        // Usuario principal que debe ser notificado (dueño del reporte)
         $moduleOwner = User::find($module->user_id);
 
         if (!$moduleOwner || !$moduleOwner->email) {
-            Log::warning('Usuario del módulo no encontrado o sin email: ' . $module->user_id);
+            Log::warning('Usuario del reporte no encontrado o sin email: ' . $module->user_id);
             return;
         }
 
@@ -200,6 +200,6 @@ class FinishController extends Controller
                 $module
             ));
 
-        Log::info('Correo de módulo finalizado enviado a: ' . $moduleOwner->email . ' con ' . $ccEmails->count() . ' copias.');
+        Log::info('Correo de reporte finalizado enviado a: ' . $moduleOwner->email . ' con ' . $ccEmails->count() . ' copias.');
     }
 }

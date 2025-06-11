@@ -39,7 +39,7 @@ const roles: Record<string, string[]> = {
     Personal: ['CA', 'SA'],
     'Ingeniero de Seguridad': [],
     Roles: [],
-    Asignaciones: ['SA'],
+    Asignaciones: ['CA'],
 };
 
 function getRolesForItem(title: string): string[] {
@@ -91,7 +91,7 @@ export function AppSidebar() {
     const userRoleCodes = userRoleCode ? [userRoleCode] : [];
 
     const currentPath = window.location.pathname;
-    const restrictedItems = ['Consolidados']; // Add more restricted items if needed
+    const restrictedItems = ['Consolidados', 'Asignaciones']; // Add more restricted items if needed
 
     const filteredNavGroups = groupedNavItems
         .map((group) => ({

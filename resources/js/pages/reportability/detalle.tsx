@@ -22,14 +22,18 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function ReportabilityPage() {
-    const { reportability_id, reportability, isSecurityEngineer, canCloseReport } = usePage<{
+    const { reportability_id, reportability, isSecurityEngineer, canCloseReport, module, moduleReview } = usePage<{
         reportability_id: number;
         reportability: any;
         isSecurityEngineer: boolean;
         canCloseReport: boolean;
+        module: any;
+        moduleReview: any;
     }>().props;
 
+    console.log('Module:', module);
     console.log('ReportabilityPage', reportability_id, reportability, isSecurityEngineer, canCloseReport);
+    console.log('Module Review:', moduleReview);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -67,6 +71,10 @@ export default function ReportabilityPage() {
             default:
                 return 0;
         }
+    }
+
+    function getDisplayState(estado: string) {
+        return (estado === 'Cerrado' || estado === 'Finalizado') ? 'Cerrado' : 'Abierto';
     }
 
     return (
@@ -117,36 +125,75 @@ export default function ReportabilityPage() {
                             <CardHeader>
                                 <CardTitle>Detalles del reporte</CardTitle>
                             </CardHeader>
-                            <CardContent className="flex flex-col gap-2 space-y-2">
+                            <CardContent className="flex flex-col gap-2 space-y-1">
                                 {/* <Stepper currentStep={currentStep} currentState={reportability.estado} /> */}
-                                <div className="space-y-2 d-none">
-                                    <Label htmlFor="estado">Estado</Label>
-                                    <Input id="estado" type="text" value={reportability.estado} readOnly />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="estado">Estado</Label>
+                                        <Input id="estado" type="text" value={getDisplayState(reportability.estado)} readOnly />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="tipo_reporte">Tipo de Reporte</Label>
+                                        <Input id="tipo_reporte" type="text" value={reportability.tipo_reporte} readOnly />
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="tipo_reporte">Tipo de Reporte</Label>
-                                    <Input id="tipo_reporte" type="text" value={reportability.tipo_reporte} readOnly />
-                                </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                     <Label htmlFor="company_name">Compañía</Label>
                                     <Input id="company_name" type="text" value={reportability.company_name} readOnly />
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                     <Label htmlFor="company_report_name">Compañía Reportada</Label>
                                     <Input id="company_report_name" type="text" value={reportability.company_report_name} readOnly />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="fecha_evento">Fecha de Evento</Label>
-                                    <Input id="fecha_evento" type="text" value={formatDateTimeLocal(reportability.fecha_evento)} readOnly />
-                                </div>
-                                {reportability.report_closed_at && (
-                                    <div className="space-y-2">
-                                        <Label htmlFor="fecha_cierre">Fecha de Cierre</Label>
-                                        <Input id="fecha_cierre" type="text" value={formatDateTime(reportability.report_closed_at)} readOnly />
+                                {reportability.encargado_cierre && (
+                                    <div className="space-y-1">
+                                        <Label htmlFor="encargado_cierre">Encargado de Cierre</Label>
+                                        <Input id="encargado_cierre" type="text" value={reportability.encargado_cierre} readOnly />
                                     </div>
                                 )}
+                                {moduleReview?.user && (
+                                    <div className="space-y-1">
+                                        <Label htmlFor="cerrado_por">Cerrado por</Label>
+                                        <Input id="cerrado_por" type="text" value={`${moduleReview.user.nombres} ${moduleReview.user.apellidos}`} readOnly />
+                                    </div>
+                                )}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="fecha_evento">Fecha de Evento</Label>
+                                        <Input id="fecha_evento" type="text" value={formatDateTimeLocal(reportability.fecha_evento)} readOnly />
+                                    </div>
+                                    {reportability.report_closed_at && (
+                                        <div className="space-y-1">
+                                            <Label htmlFor="fecha_cierre">Fecha de Cierre</Label>
+                                            <Input id="fecha_cierre" type="text" value={formatDateTime(reportability.report_closed_at)} readOnly />
+                                        </div>
+                                    )}
+                                </div>
                             </CardContent>
                         </Card>
+                        {(module?.deleted_at || module?.delete_reason) && (
+                            <Card className="border-red-200 bg-red-50">
+                                <CardHeader>
+                                    <CardTitle className="text-red-700">Información de Eliminación</CardTitle>
+                                </CardHeader>
+                                <CardContent className="flex flex-col gap-2 space-y-1">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {module?.delete_reason && (
+                                            <div className="space-y-1">
+                                                <Label htmlFor="delete_reason">Motivo de Eliminación</Label>
+                                                <Input id="delete_reason" type="text" value={module.delete_reason} readOnly />
+                                            </div>
+                                        )}
+                                        {module?.deleted_at && (
+                                            <div className="space-y-1">
+                                                <Label htmlFor="deleted_at">Fecha de Eliminación</Label>
+                                                <Input id="deleted_at" type="text" value={formatDateTime(module.deleted_at)} readOnly />
+                                            </div>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
                 </div>
             </div>

@@ -19,7 +19,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface ProfileForm {
-    name: string;
+    nombres: string;
+    apellidos: string;
     email: string;
 }
 
@@ -27,7 +28,8 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
     const { auth } = usePage<SharedData>().props;
 
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<ProfileForm>>({
-        name: auth.user.name,
+        nombres: auth.user.nombres || '',
+        apellidos: auth.user.apellidos || '',
         email: auth.user.email,
     });
 
@@ -45,23 +47,37 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Información del perfil" description="Actualiza tu nombre y dirección de correo electrónico" />
+                    <HeadingSmall title="Información del perfil" description="Actualiza tus nombres, apellidos y dirección de correo electrónico" />
 
                     <form onSubmit={submit} className="space-y-6">
                         <div className="grid gap-2">
-                            <Label htmlFor="name">Nombre</Label>
+                            <Label htmlFor="nombres">Nombres</Label>
 
                             <Input
-                                id="name"
+                                id="nombres"
                                 className="mt-1 block w-full"
-                                value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
-                                required
-                                autoComplete="name"
-                                placeholder="Nombre completo"
+                                value={data.nombres}
+                                onChange={(e) => setData('nombres', e.target.value)}
+                                autoComplete="given-name"
+                                placeholder="Nombres"
                             />
 
-                            <InputError className="mt-2" message={errors.name} />
+                            <InputError className="mt-2" message={errors.nombres} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="apellidos">Apellidos</Label>
+
+                            <Input
+                                id="apellidos"
+                                className="mt-1 block w-full"
+                                value={data.apellidos}
+                                onChange={(e) => setData('apellidos', e.target.value)}
+                                autoComplete="family-name"
+                                placeholder="Apellidos"
+                            />
+
+                            <InputError className="mt-2" message={errors.apellidos} />
                         </div>
 
                         <div className="grid gap-2">
@@ -73,7 +89,6 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 className="mt-1 block w-full"
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
-                                readOnly={true}
                                 autoComplete="username"
                                 placeholder="Dirección de correo electrónico"
                             />

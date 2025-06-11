@@ -297,7 +297,7 @@ export const getColumns = (isSecurityEngineer: boolean, handlers: ColumnHandlers
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>{isSecurityEngineer ? 'Revisar' : 'Ver detalle'}</p>
+                                <p>Cerrar Reporte</p>
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>

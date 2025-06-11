@@ -27,7 +27,7 @@ class RolePermissionMiddleware
         'contrata.personal' => ['CA', 'SA'], // Personal
         'admin.security-engineer' => [], // Ingeniero de Seguridad
         'contrata.roles' => [], // Roles
-        'assignments' => ['SA'], // Asignaciones
+        'assignments' => ['CA'], // Asignaciones
     ];
 
     /**
@@ -35,6 +35,7 @@ class RolePermissionMiddleware
      */
     private array $restrictedItems = [
         'consolidated' => true,
+        'assignments' => true,
     ];
 
     /**
