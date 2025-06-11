@@ -95,6 +95,16 @@
             <div class="report-id">
                 ID DEL REPORTE: {{ last(explode('/', $reportLink)) }}
             </div>
+            @if ($module ?? false)
+                <div class="module-details">
+                    <p><strong>DETALLES DEL MÓDULO:</strong></p>
+                    <p><strong>DESCRIPCIÓN:</strong> {{ strtoupper($module->descripcion ?? '-') }}</p>
+                    <p><strong>ACCIÓN CORRECTIVA:</strong> {{ strtoupper($module->correctiva ?? '-') }}</p>
+                    <p><strong>GRAVEDAD:</strong> {{ strtoupper($module->gravedad ?? '-') }}</p>
+                    <p><strong>CAUSA:</strong> {{ strtoupper($module->categoryCompanyName() ?? '-') }}</p>
+                </div>
+            @endif
+
             <a href="{{ $reportLink }}" class="button">DESCARGAR REPORTE</a>
 
         </div>
