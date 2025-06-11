@@ -312,33 +312,16 @@ class UtilityController extends Controller
                 $data['user_report_id'] = $engineerSecurityReported->id;
             }
 
-            $securityEnginnerSPCCs = User::where('company_id', 1)
-                ->where('role_id', $roleSecurityEngineer->id)
-                ->where('estado', 1)
-                ->whereNotNull('email')
-                ->where('email', '!=', '')
+            $securityEnginnerSPCCs = User::select('users.id', 'users.nombres', 'users.apellidos')
+                ->distinct()
+                ->leftJoin('assignments', 'assignments.user_id', '=', 'users.id')
+                ->where('users.role_id', $roleSecurityEngineer->id)
+                ->where('users.company_id', 1)
+                ->where(function ($query) use ($request) {
+                    $query->whereNull('assignments.user_id')
+                        ->orWhere('assignments.company_id', $request->company_report_id);
+                })
                 ->get();
-
-            if ($securityEnginnerSPCCs){
-                //Validamos que ingenierio de seguridad de SPCCs estan en Assignment
-                $assignments = Assignment::all();
-
-                //estos tienen alguna clausula entonces saquemos a los ingenieros con clausula y sin clausula
-                $engineerSecuritySPCCsWithClause = $securityEnginnerSPCCs->filter(function ($user) use ($assignments) {
-                    return $assignments->contains('user_id', $user->id);
-                });
-                $engineerSecuritySPCCsWithoutClause = $securityEnginnerSPCCs->filter(function ($user) use ($assignments) {
-                    return !$assignments->contains('user_id', $user->id);
-                });
-
-                // Los ingenieros con clausura tenemos que validar si la asignaacion contiene la empresa company_report_id
-                $assignmentsWithClause = Assignment::where('company_id', $request->company_report_id)
-                    ->whereIn('user_id', $engineerSecuritySPCCsWithClause->pluck('id'))
-                    ->get();
-                
-                // Filtramos los ingenieros de seguridad de SPCCs con clausula que tienen asignacion a la empresa
-                
-            }
 
             if (!$roleSecurityEngineer) {
                 Log::warning('El rol con código "IS" no existe. No se enviarán correos electrónicos.');
