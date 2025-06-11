@@ -34,6 +34,7 @@ type CategoryCompanyForm = {
     has_document?: boolean;
     document_name?: string;
     document_url?: File | null;
+    status: string;
 };
 
 interface UpdateCategoryCompanyProps {
@@ -56,6 +57,7 @@ interface UpdateCategoryCompanyProps {
         has_document?: boolean;
         document_name?: string;
         document_url?: string;
+        status?: string;
     } | null;
 }
 
@@ -96,6 +98,7 @@ export default function UpdateCategoryCompany({
         has_document: initialHasDocument,
         document_name: item?.document_name ?? '',
         document_url: null,
+        status: item?.status ?? '1',
     });
     const [optionalConfigs, setOptionalConfigs] = useState<OptionalConfig[]>(initialOptionalConfigs);
 
@@ -124,6 +127,7 @@ export default function UpdateCategoryCompany({
                     item.has_document === true || item.has_document === 1 || item.has_document === '1' || !!item.document_url || !!item.document_name,
                 document_name: item.document_name ?? '',
                 document_url: null,
+                status: item.status ?? '1',
             });
             setOptionalConfigs(optConfigs);
         }
@@ -183,6 +187,7 @@ export default function UpdateCategoryCompany({
         formData.append('has_document', String(data.has_document ?? false));
         if (data.document_name) formData.append('document_name', data.document_name);
         if (data.document_url) formData.append('document_url', data.document_url);
+        formData.append('status', data.status);
 
         // optional_configs
         if (data.optional_configs && data.optional_configs.length > 0) {
@@ -377,6 +382,16 @@ export default function UpdateCategoryCompany({
                                 disabled={processing}
                             />
                             <Label htmlFor="has_attributes">¿Tiene atributos?</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <input
+                                id="status"
+                                type="checkbox"
+                                checked={data.status === '1'}
+                                onChange={(e) => setData('status', e.target.checked ? '1' : '0')}
+                                disabled={processing}
+                            />
+                            <Label htmlFor="status">¿Activo?</Label>
                         </div>
                         {/* Mostrar dinámicos solo si has_attributes es true */}
                         {data.has_attributes && (

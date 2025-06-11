@@ -85,7 +85,7 @@ class CategoryController extends Controller
             $existingCategoryCompanies = CategoryCompany::where('category_id', $category_id)
                 ->where('company_id', $company_id)
                 ->get();
-            
+
             foreach ($existingCategoryCompanies as $existingCategoryCompany) {
                 if (strtoupper(trim($existingCategoryCompany->nombre)) === strtoupper($nombre)) {
                     return redirect()->back()->with('error', 'Ya existe una categoría de empresa con el mismo nombre.');
@@ -147,7 +147,7 @@ class CategoryController extends Controller
                 ->where('company_id', $company_id)
                 ->where('id', '!=', $category_id)
                 ->get();
-            
+
             foreach ($existingCategoryCompanies as $existingCategoryCompany) {
                 if (strtoupper(trim($existingCategoryCompany->nombre)) === strtoupper($nombre)) {
                     return redirect()->back()->with('error', 'Ya existe otra categoría de empresa con el mismo nombre.');
@@ -159,7 +159,7 @@ class CategoryController extends Controller
                 $existingCategories = Category::where('company_id', $company_id)
                     ->where('id', '!=', $categoryCompany->category_id)
                     ->get();
-                
+
                 foreach ($existingCategories as $existingCategory) {
                     if (strtoupper(trim($existingCategory->code)) === strtoupper($code)) {
                         return redirect()->back()->with('error', 'Ya existe otra categoría con el mismo código.');
@@ -173,12 +173,12 @@ class CategoryController extends Controller
                 }
             }
 
-
             $categoryCompany->update([
                 'nombre' => $nombre,
                 'group_id' => $request->input('group_id'),
                 'is_required' => $request->input('is_required', false),
                 'instruction' => $request->input('instruction'),
+                'status' => $request->input('status') === '1' ? true : false,
             ]);
 
 

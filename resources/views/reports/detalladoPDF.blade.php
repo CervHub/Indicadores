@@ -215,6 +215,9 @@
                         @foreach ($reportability->levels() as $key => $names)
                             @if ($key == 'gerencia')
                                 {{ $names }}
+                                @if (strtolower($names) == 'otros')
+                                    ({{ $reportability->other_managements ?? 'No especificado' }})
+                                @endif
                                 @break
                             @endif
                         @endforeach

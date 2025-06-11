@@ -19,13 +19,13 @@ const chartConfig: ChartConfig = {
         label: 'Abierto',
         color: '#ef4444', // Rojo
     },
-    revisado: {
-        label: 'Revisado',
-        color: '#f59e0b', // Amarillo/Naranja
-    },
     cerrado: {
         label: 'Cerrado',
-        color: '#10b981', // Verde
+        color: '#22c55e', // Verde
+    },
+    cerradoPorOtro: {
+        label: 'Cerrado por otro',
+        color: '#3b82f6', // Azul
     },
     label: {
         color: 'var(--background)',
@@ -44,7 +44,7 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
 
     const allChartData = useMemo(() => {
         // Group by idUsuarioCierre and nombreUsuarioCierre pair
-        const responsableData: { [key: string]: { abierto: number; revisado: number; cerrado: number; total: number; idUsuario: string; nombre: string } } = {};
+        const responsableData: { [key: string]: { abierto: number; cerrado: number; cerradoPorOtro: number; total: number; idUsuario: string; nombre: string } } = {};
 
         data.forEach((report) => {
             const idUsuario = report.idUsuarioCierre || 'sin-id';
@@ -55,8 +55,8 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
             if (!responsableData[key]) {
                 responsableData[key] = {
                     abierto: 0,
-                    revisado: 0,
                     cerrado: 0,
+                    cerradoPorOtro: 0,
                     total: 0,
                     idUsuario,
                     nombre
@@ -65,19 +65,23 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
 
             responsableData[key].total++;
 
-            if (estado === 'abierto' || estado === 'generado') {
+            if (estado === 'cerrado' || estado === 'finalizado') {
+                // Check if it was closed by the assigned person or someone else
+                const cerradoPor = report.idUsuarioRealmenteCerro;
+                if (cerradoPor && cerradoPor !== idUsuario) {
+                    responsableData[key].cerradoPorOtro++;
+                } else {
+                    responsableData[key].cerrado++;
+                }
+            } else {
                 responsableData[key].abierto++;
-            } else if (estado === 'revisado' || estado === 'visualizado') {
-                responsableData[key].revisado++;
-            } else if (estado === 'cerrado' || estado === 'finalizado') {
-                responsableData[key].cerrado++;
             }
         });
 
         // Sort by closure performance (percentage of closed reports), then by total reports
         const sortedEntries = Object.entries(responsableData).sort(([, a], [, b]) => {
-            const aPerformance = a.total > 0 ? (a.cerrado / a.total) * 100 : 0;
-            const bPerformance = b.total > 0 ? (b.cerrado / b.total) * 100 : 0;
+            const aPerformance = a.total > 0 ? ((a.cerrado + a.cerradoPorOtro) / a.total) * 100 : 0;
+            const bPerformance = b.total > 0 ? ((b.cerrado + b.cerradoPorOtro) / b.total) * 100 : 0;
             
             // First sort by performance (closure percentage), then by total reports
             if (bPerformance !== aPerformance) {
@@ -90,31 +94,31 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
             .map(([key, datos], globalIndex) => {
                 // Calculate exact percentages that sum to 100%
                 const abiertoPercent = datos.total > 0 ? (datos.abierto / datos.total) * 100 : 0;
-                const revisadoPercent = datos.total > 0 ? (datos.revisado / datos.total) * 100 : 0;
                 const cerradoPercent = datos.total > 0 ? (datos.cerrado / datos.total) * 100 : 0;
+                const cerradoPorOtroPercent = datos.total > 0 ? (datos.cerradoPorOtro / datos.total) * 100 : 0;
 
                 // Round percentages but ensure they sum to 100%
                 let abiertoPercentRounded = Math.round(abiertoPercent);
-                let revisadoPercentRounded = Math.round(revisadoPercent);
                 let cerradoPercentRounded = Math.round(cerradoPercent);
+                let cerradoPorOtroPercentRounded = Math.round(cerradoPorOtroPercent);
 
                 // Adjust rounding to ensure sum equals 100%
-                const totalRounded = abiertoPercentRounded + revisadoPercentRounded + cerradoPercentRounded;
+                const totalRounded = abiertoPercentRounded + cerradoPercentRounded + cerradoPorOtroPercentRounded;
                 const difference = 100 - totalRounded;
 
                 if (difference !== 0 && datos.total > 0) {
                     const decimals = [
                         { key: 'abierto', decimal: abiertoPercent - abiertoPercentRounded, value: abiertoPercentRounded },
-                        { key: 'revisado', decimal: revisadoPercent - revisadoPercentRounded, value: revisadoPercentRounded },
-                        { key: 'cerrado', decimal: cerradoPercent - cerradoPercentRounded, value: cerradoPercentRounded }
+                        { key: 'cerrado', decimal: cerradoPercent - cerradoPercentRounded, value: cerradoPercentRounded },
+                        { key: 'cerradoPorOtro', decimal: cerradoPorOtroPercent - cerradoPorOtroPercentRounded, value: cerradoPorOtroPercentRounded }
                     ].sort((a, b) => Math.abs(b.decimal) - Math.abs(a.decimal));
 
                     if (decimals[0].key === 'abierto') {
                         abiertoPercentRounded += difference;
-                    } else if (decimals[0].key === 'revisado') {
-                        revisadoPercentRounded += difference;
-                    } else {
+                    } else if (decimals[0].key === 'cerrado') {
                         cerradoPercentRounded += difference;
+                    } else {
+                        cerradoPorOtroPercentRounded += difference;
                     }
                 }
 
@@ -123,16 +127,16 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
                     responsable: datos.nombre.length > 12 ? datos.nombre.substring(0, 12) + '...' : datos.nombre,
                     fullResponsable: datos.nombre,
                     abierto: datos.abierto,
-                    revisado: datos.revisado,
                     cerrado: datos.cerrado,
+                    cerradoPorOtro: datos.cerradoPorOtro,
                     total: datos.total,
-                    performance: datos.total > 0 ? Math.round((datos.cerrado / datos.total) * 100) : 0,
+                    performance: datos.total > 0 ? Math.round(((datos.cerrado + datos.cerradoPorOtro) / datos.total) * 100) : 0,
                     abiertoPercent: abiertoPercentRounded,
-                    revisadoPercent: revisadoPercentRounded,
                     cerradoPercent: cerradoPercentRounded,
+                    cerradoPorOtroPercent: cerradoPorOtroPercentRounded,
                     abiertoPercentRounded,
-                    revisadoPercentRounded,
                     cerradoPercentRounded,
+                    cerradoPorOtroPercentRounded,
                     globalRank: globalIndex + 1,
                 };
             });
@@ -158,9 +162,9 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
     const totalByStatus = useMemo(() => {
         return allChartData.reduce((sum, item) => ({
             abierto: sum.abierto + item.abierto,
-            revisado: sum.revisado + item.revisado,
             cerrado: sum.cerrado + item.cerrado,
-        }), { abierto: 0, revisado: 0, cerrado: 0 });
+            cerradoPorOtro: sum.cerradoPorOtro + item.cerradoPorOtro,
+        }), { abierto: 0, cerrado: 0, cerradoPorOtro: 0 });
     }, [allChartData]);
 
     const topResponsible = useMemo(() => {
@@ -182,12 +186,12 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
                             Abierto: {data.abierto} ({data.abiertoPercentRounded}%)
                         </p>
                         <p className="text-sm">
-                            <span className="inline-block w-3 h-3 bg-amber-500 rounded mr-2"></span>
-                            Revisado: {data.revisado} ({data.revisadoPercentRounded}%)
-                        </p>
-                        <p className="text-sm">
                             <span className="inline-block w-3 h-3 bg-green-500 rounded mr-2"></span>
                             Cerrado: {data.cerrado} ({data.cerradoPercentRounded}%)
+                        </p>
+                        <p className="text-sm">
+                            <span className="inline-block w-3 h-3 bg-blue-500 rounded mr-2"></span>
+                            Cerrado por otro: {data.cerradoPorOtro} ({data.cerradoPorOtroPercentRounded}%)
                         </p>
                     </div>
                     <p className="text-muted-foreground text-sm mt-2">
@@ -249,7 +253,6 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
                     <BarChart
                         data={chartData}
                         layout="vertical"
-                        // height={Math.max(chartData.length * 80, 400)}
                         margin={{ left: 0, right: 30, top: 0, bottom: 0 }}
                     >
                         <CartesianGrid horizontal={false} />
@@ -274,17 +277,17 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
                                 formatter={(value: number) => value > 5 ? `${value}%` : ''}
                             />
                         </Bar>
-                        <Bar dataKey="revisadoPercent" stackId="status" fill="var(--color-revisado)">
+                        <Bar dataKey="cerradoPercent" stackId="status" fill="var(--color-cerrado)">
                             <LabelList
-                                dataKey="revisadoPercentRounded"
+                                dataKey="cerradoPercentRounded"
                                 position="center"
                                 className="fill-white text-xs font-medium"
                                 formatter={(value: number) => value > 5 ? `${value}%` : ''}
                             />
                         </Bar>
-                        <Bar dataKey="cerradoPercent" stackId="status" fill="var(--color-cerrado)" radius={[0, 4, 4, 0]}>
+                        <Bar dataKey="cerradoPorOtroPercent" stackId="status" fill="var(--color-cerradoPorOtro)" radius={[0, 4, 4, 0]}>
                             <LabelList
-                                dataKey="cerradoPercentRounded"
+                                dataKey="cerradoPorOtroPercentRounded"
                                 position="center"
                                 className="fill-white text-xs font-medium"
                                 formatter={(value: number) => value > 5 ? `${value}%` : ''}
@@ -294,7 +297,8 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
                     </BarChart>
                 </ChartContainer>
             </CardContent>
-            <CardFooter className="flex-col items-start gap-2 text-sm">                <div className="flex gap-2 leading-none font-medium">
+            <CardFooter className="flex-col items-start gap-2 text-sm">
+                <div className="flex gap-2 leading-none font-medium">
                     {topResponsible &&
                         `${topResponsible.fullResponsable} lidera con ${topResponsible.performance}% de cierre (${topResponsible.total} reportes)`}
                     <TrendingUp className="h-4 w-4" />
@@ -302,8 +306,8 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
                 <div className="leading-none text-muted-foreground">
                     Total asignados: {totalAssigned} •
                     Abiertos: {totalByStatus.abierto} •
-                    Revisados: {totalByStatus.revisado} •
-                    Cerrados: {totalByStatus.cerrado}
+                    Cerrados: {totalByStatus.cerrado} •
+                    Cerrados por otro: {totalByStatus.cerradoPorOtro}
                 </div>
                 <div className="flex gap-4 text-xs">
                     <div className="flex items-center gap-1">
@@ -311,12 +315,12 @@ export default function ResponsibleStatusDistributionChart({ data = [] }: Respon
                         <span>Abierto</span>
                     </div>
                     <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-amber-500 rounded"></div>
-                        <span>Revisado</span>
-                    </div>
-                    <div className="flex items-center gap-1">
                         <div className="w-3 h-3 bg-green-500 rounded"></div>
                         <span>Cerrado</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-blue-500 rounded"></div>
+                        <span>Cerrado por otro</span>
                     </div>
                 </div>
             </CardFooter>

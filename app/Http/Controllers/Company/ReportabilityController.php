@@ -116,7 +116,7 @@ class ReportabilityController extends Controller
             m.fecha_evento,
             CASE
             WHEN m.estado IN ('Generado', 'Abierto') THEN 'Abierto'
-            WHEN m.estado IN ('Visualizado', 'Revisado') THEN 'Revisado'
+            WHEN m.estado IN ('Visualizado', 'Revisado') THEN 'Abierto'
             WHEN m.estado IN ('Finalizado', 'Cerrado') THEN 'Cerrado'
             ELSE m.estado
             END AS estado,

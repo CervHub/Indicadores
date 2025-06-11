@@ -18,8 +18,8 @@ class DashboardController extends Controller
                 'm.descripcion as descripcionEvento',
                 'm.gravedad as nivelGravedad',
                 DB::raw("CASE 
-                    WHEN m.estado IS NULL OR m.estado = '' THEN 'Generado'
-                    WHEN m.estado IN ('Revisado', 'Visualizado') THEN 'Visualizado'
+                    WHEN m.estado IS NULL OR m.estado = '' THEN 'Abierto'
+                    WHEN m.estado IN ('Revisado', 'Visualizado') THEN 'Abierto'
                     WHEN m.estado IN ('Cerrado', 'Finalizado') THEN 'Cerrado'
                     ELSE m.estado
                 END as estadoReporte"),
@@ -30,6 +30,7 @@ class DashboardController extends Controller
                 'm.company_report_id as idEmpresaReportada',
                 'm.area as areaInvolucrada',
                 'm.user_report_id as idUsuarioCierre',
+                'mr.user_id as idUsuarioRealmenteCerro',
                 'm.reassigned_user_id as idUsuarioReasignado',
                 'm.reassignment_reason as motivoReasignacion',
                 'm.deleted_at as eliminadoEn',
@@ -37,6 +38,7 @@ class DashboardController extends Controller
                 'm.report_closed_at as reportClosedAt',
                 DB::raw("CONCAT(u.nombres, ' ', u.apellidos) as nombreUsuarioReporta"),
                 DB::raw("CONCAT(ur.nombres, ' ', ur.apellidos) as nombreUsuarioCierre"),
+                DB::raw("CONCAT(mru.nombres, ' ', mru.apellidos) as nombreUsuarioRealmenteCerro"),
                 DB::raw("CONCAT(ru.nombres, ' ', ru.apellidos) as nombreUsuarioReasignado"),
                 'ec.nombre as nombreEmpresaReporta',
                 'er.nombre as nombreEmpresaReportada',
@@ -45,6 +47,10 @@ class DashboardController extends Controller
             ])
             ->leftJoin('users as u', 'u.id', '=', 'm.user_id')
             ->leftJoin('users as ur', 'ur.id', '=', 'm.user_report_id')
+            ->leftJoin(DB::raw('(SELECT DISTINCT module_id, 
+                                FIRST_VALUE(user_id) OVER (PARTITION BY module_id ORDER BY id DESC) as user_id
+                                FROM module_reviews) as mr'), 'mr.module_id', '=', 'm.id')
+            ->leftJoin('users as mru', 'mru.id', '=', 'mr.user_id')
             ->leftJoin('users as ru', 'ru.id', '=', 'm.reassigned_user_id')
             ->leftJoin('companies as ec', 'ec.id', '=', 'm.company_id')
             ->leftJoin('companies as er', 'er.id', '=', 'm.company_report_id')

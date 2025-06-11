@@ -9,7 +9,7 @@ class CategoryCompany extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['category_id', 'company_id', 'nombre', 'group_id', 'is_required', 'attribute_type', 'instruction', 'has_attributes', 'document_name', 'document_url', 'is_for_mine'];
+    protected $fillable = ['category_id', 'company_id', 'nombre', 'group_id', 'is_required', 'attribute_type', 'instruction', 'has_attributes', 'document_name', 'document_url', 'is_for_mine', 'status'];
 
     /**
      * Relación uno a muchos con CategoryAttribute.

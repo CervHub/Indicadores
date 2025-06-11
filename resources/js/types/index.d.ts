@@ -68,6 +68,8 @@ export interface Report {
     nombreUsuarioReporta: string;
     tipoReporte: string;
     reportClosedAt?: string | null;
+    nombreUsuarioRealmenteCerro?: string | null;
+    idUsuarioRealmenteCerro?: string | null;
 }
 
 export interface User {

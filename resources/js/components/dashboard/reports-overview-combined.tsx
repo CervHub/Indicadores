@@ -6,10 +6,7 @@ import {
     FileText, 
     CheckCircle, 
     Clock, 
-    AlertTriangle, 
-    TrendingUp,
-    Eye,
-    XCircle
+    TrendingUp
 } from 'lucide-react';
 import { useMemo } from 'react';
 import { LabelList, Pie, PieChart } from 'recharts';
@@ -22,54 +19,38 @@ const chartConfig: ChartConfig = {
     count: {
         label: 'Reportes',
     },
-    generado: {
-        label: 'GENERADO',
-        color: '#ef4444', // red-500 - estado malo
-    },
-    visualizado: {
-        label: 'REVISADO',
-        color: '#f97316', // orange-500 - estado intermedio
+    abierto: {
+        label: 'ABIERTO',
+        color: '#ef4444', // red-500
     },
     cerrado: {
         label: 'CERRADO',
-        color: '#22c55e', // green-500 - estado satisfactorio
-    },
-    rechazado: {
-        label: 'RECHAZADO',
-        color: '#dc2626', // red-600 - estado muy malo
+        color: '#22c55e', // green-500
     },
 } satisfies ChartConfig;
 
 export default function ReportsOverviewCombined({ data = [] }: ReportsOverviewCombinedProps) {
     const reportStats = useMemo(() => {
         const counts = {
-            generado: 0,
-            visualizado: 0,
+            abierto: 0,
             cerrado: 0,
-            rechazado: 0,
         };
 
         data.forEach((report) => {
             const status = report.estadoReporte?.toLowerCase();
-            if (!status || status === 'generado') {
-                counts.generado++;
-            } else if (status === 'visualizado' || status === 'evisado') {
-                counts.visualizado++;
-            } else if (status === 'cerrado' || status === 'finalizado') {
+            if (status === 'cerrado' || status === 'finalizado') {
                 counts.cerrado++;
-            } else if (status === 'rechazado') {
-                counts.rechazado++;
+            } else {
+                counts.abierto++;
             }
         });
 
-        const total = counts.generado + counts.visualizado + counts.cerrado + counts.rechazado;
-        const abiertos = counts.generado + counts.visualizado;
+        const total = counts.abierto + counts.cerrado;
         const closureRate = total > 0 ? ((counts.cerrado / total) * 100).toFixed(2) : '0.00';
 
         return {
             ...counts,
             total,
-            abiertos,
             closureRate: parseFloat(closureRate),
         };
     }, [data]);
@@ -77,14 +58,9 @@ export default function ReportsOverviewCombined({ data = [] }: ReportsOverviewCo
     const chartData = useMemo(() => {
         const items = [
             {
-                status: 'generado',
-                count: reportStats.generado,
-                fill: chartConfig.generado.color,
-            },
-            {
-                status: 'visualizado',
-                count: reportStats.visualizado,
-                fill: chartConfig.visualizado.color,
+                status: 'abierto',
+                count: reportStats.abierto,
+                fill: chartConfig.abierto.color,
             },
             {
                 status: 'cerrado',
@@ -92,14 +68,6 @@ export default function ReportsOverviewCombined({ data = [] }: ReportsOverviewCo
                 fill: chartConfig.cerrado.color,
             },
         ];
-
-        if (reportStats.rechazado > 0) {
-            items.push({
-                status: 'rechazado',
-                count: reportStats.rechazado,
-                fill: chartConfig.rechazado.color,
-            });
-        }
 
         return items.filter(item => item.count > 0);
     }, [reportStats]);
@@ -164,10 +132,10 @@ export default function ReportsOverviewCombined({ data = [] }: ReportsOverviewCo
                                     <div className="flex items-center justify-between">
                                         <div className="space-y-1">
                                             <p className="text-xs font-medium text-muted-foreground">Abiertos</p>
-                                            <p className="text-xl font-bold text-foreground">{reportStats.abiertos}</p>
+                                            <p className="text-xl font-bold text-foreground">{reportStats.abierto}</p>
                                         </div>
-                                        <div className="rounded-md bg-orange-100/50 p-1.5">
-                                            <Clock className="h-4 w-4 text-orange-600" />
+                                        <div className="rounded-md bg-red-100/50 p-1.5">
+                                            <Clock className="h-4 w-4 text-red-600" />
                                         </div>
                                     </div>
                                 </CardContent>
@@ -192,37 +160,21 @@ export default function ReportsOverviewCombined({ data = [] }: ReportsOverviewCo
                         <Card className="border-border/30 bg-card">
                             <CardContent className="p-3 space-y-3">
                                 <h4 className="text-xs font-semibold text-foreground">Desglose por Estado</h4>
-                                <div className="grid grid-cols-3 gap-2">
+                                <div className="grid grid-cols-2 gap-2">
                                     <div className="flex flex-col items-center p-2 bg-muted/30 rounded-md border border-border/20 hover:bg-muted/50 transition-colors">
                                         <div className="flex items-center gap-1 mb-1">
-                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'hsl(var(--chart-1))' }}></div>
+                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: chartConfig.abierto.color }}></div>
                                             <span className="text-xs font-medium text-foreground">Abierto</span>
                                         </div>
-                                        <span className="text-sm font-bold text-foreground">{reportStats.generado}</span>
+                                        <span className="text-sm font-bold text-foreground">{reportStats.abierto}</span>
                                     </div>
                                     <div className="flex flex-col items-center p-2 bg-muted/30 rounded-md border border-border/20 hover:bg-muted/50 transition-colors">
                                         <div className="flex items-center gap-1 mb-1">
-                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'hsl(var(--chart-2))' }}></div>
-                                            <span className="text-xs font-medium text-foreground">Revisado</span>
-                                        </div>
-                                        <span className="text-sm font-bold text-foreground">{reportStats.visualizado}</span>
-                                    </div>
-                                    <div className="flex flex-col items-center p-2 bg-muted/30 rounded-md border border-border/20 hover:bg-muted/50 transition-colors">
-                                        <div className="flex items-center gap-1 mb-1">
-                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'hsl(var(--chart-3))' }}></div>
+                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: chartConfig.cerrado.color }}></div>
                                             <span className="text-xs font-medium text-foreground">Cerrado</span>
                                         </div>
                                         <span className="text-sm font-bold text-foreground">{reportStats.cerrado}</span>
                                     </div>
-                                    {reportStats.rechazado > 0 && (
-                                        <div className="flex flex-col items-center p-2 bg-muted/30 rounded-md border border-border/20 hover:bg-muted/50 transition-colors col-span-full mt-1">
-                                            <div className="flex items-center gap-1 mb-1">
-                                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'hsl(var(--chart-4))' }}></div>
-                                                <span className="text-xs font-medium text-foreground">Rechazado</span>
-                                            </div>
-                                            <span className="text-sm font-bold text-foreground">{reportStats.rechazado}</span>
-                                        </div>
-                                    )}
                                 </div>
                             </CardContent>
                         </Card>
@@ -275,7 +227,6 @@ export default function ReportsOverviewCombined({ data = [] }: ReportsOverviewCo
                                             paddingAngle={0}
                                             stroke="hsl(var(--background))"
                                             strokeWidth={2}
-                                            
                                         >
                                             <LabelList
                                                 dataKey="count"

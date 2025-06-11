@@ -236,17 +236,23 @@ class UtilityController extends Controller
             return response()->json(['success' => false, 'message' => 'Conexión fallida: ' . $e->getMessage()], 200);
         }
     }
-
     public function categories($company_id, $name)
     {
         try {
             $name = strtolower($name);
-            $category = Category::where('company_id', $company_id)->whereRaw('LOWER(nombre) = ?', [strtolower($name)])->first();
+            $category = Category::where('company_id', $company_id)
+                ->whereRaw('LOWER(nombre) = ?', [strtolower($name)])
+                ->first();
 
             if (!$category) {
                 return response()->json(['success' => false, 'message' => 'Categoría no encontrada'], 200);
             }
-            $category_companies = $category->categoryCompanies()->select('id', 'nombre')->get();
+
+            $category_companies = $category->categoryCompanies()
+                ->where('status', 1)
+                ->select('id', 'nombre')
+                ->get();
+
             return response()->json(['success' => true, 'data' => $category_companies], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 200);

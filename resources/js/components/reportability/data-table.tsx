@@ -222,7 +222,7 @@ export function DataTable<TData extends {
                 if (!row.fecha_evento) return false;
                 const fechaEvento = new Date(row.fecha_evento);
                 const desde = fechaEventoDesde ? new Date(fechaEventoDesde) : null;
-                const hasta = fechaEventoHasta ? new Date(fechaEventoHasta) : null;
+                const hasta = fechaEventoHasta ? new Date(fechaEventoHasta + 'T23:59:59') : null;
                 
                 if (desde && hasta) {
                     return fechaEvento >= desde && fechaEvento <= hasta;
@@ -241,7 +241,7 @@ export function DataTable<TData extends {
                 if (!row.report_closed_at) return false;
                 const fechaCierre = new Date(row.report_closed_at);
                 const desde = fechaCierreDesde ? new Date(fechaCierreDesde) : null;
-                const hasta = fechaCierreHasta ? new Date(fechaCierreHasta) : null;
+                const hasta = fechaCierreHasta ? new Date(fechaCierreHasta + 'T23:59:59') : null;
                 
                 if (desde && hasta) {
                     return fechaCierre >= desde && fechaCierre <= hasta;

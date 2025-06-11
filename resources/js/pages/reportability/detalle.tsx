@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
-import { formatDateTime } from '@/lib/utils';
+import { formatDateTime, formatDateTimeLocal } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
@@ -102,13 +102,7 @@ export default function ReportabilityPage() {
                                     Una vez cerrado el reporte, no podrá ser modificado. Asegúrese de que toda la información esté correcta antes de proceder.
                                 </p>
                                 <div className="flex gap-2">
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => {/* Add edit functionality */}}
-                                        disabled={reportability.estado === 'Cerrado' || reportability.estado === 'Finalizado'}
-                                    >
-                                        Editar Reporte
-                                    </Button>
+
                                     <Button
                                         variant="destructive"
                                         onClick={() => setIsDialogOpen(true)}
@@ -124,31 +118,31 @@ export default function ReportabilityPage() {
                                 <CardTitle>Detalles del reporte</CardTitle>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-2 space-y-2">
-                                <Stepper currentStep={currentStep} currentState={reportability.estado} />
+                                {/* <Stepper currentStep={currentStep} currentState={reportability.estado} /> */}
                                 <div className="space-y-2 d-none">
                                     <Label htmlFor="estado">Estado</Label>
-                                    <Input id="estado" type="text" value={reportability.estado} disabled />
+                                    <Input id="estado" type="text" value={reportability.estado} readOnly />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="tipo_reporte">Tipo de Reporte</Label>
-                                    <Input id="tipo_reporte" type="text" value={reportability.tipo_reporte} disabled />
+                                    <Input id="tipo_reporte" type="text" value={reportability.tipo_reporte} readOnly />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="company_name">Compañía</Label>
-                                    <Input id="company_name" type="text" value={reportability.company_name} disabled />
+                                    <Input id="company_name" type="text" value={reportability.company_name} readOnly />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="company_report_name">Compañía Reportada</Label>
-                                    <Input id="company_report_name" type="text" value={reportability.company_report_name} disabled />
+                                    <Input id="company_report_name" type="text" value={reportability.company_report_name} readOnly />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="fecha_evento">Fecha de Evento</Label>
-                                    <Input id="fecha_evento" type="text" value={formatDateTime(reportability.fecha_evento)} disabled />
+                                    <Input id="fecha_evento" type="text" value={formatDateTimeLocal(reportability.fecha_evento)} readOnly />
                                 </div>
                                 {reportability.report_closed_at && (
                                     <div className="space-y-2">
                                         <Label htmlFor="fecha_cierre">Fecha de Cierre</Label>
-                                        <Input id="fecha_cierre" type="text" value={formatDateTime(reportability.report_closed_at)} disabled />
+                                        <Input id="fecha_cierre" type="text" value={formatDateTime(reportability.report_closed_at)} readOnly />
                                     </div>
                                 )}
                             </CardContent>

@@ -9,6 +9,7 @@ export interface CategoryCompany {
     nombre: string;
     category_id: number;
     group_id?: number;
+    status: string; // Assuming status is a string that can be '1' or '0'
 }
 
 export interface Group {
@@ -63,6 +64,15 @@ export const getColumns = (
                 <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
         ),
+        cell: ({ row }) => {
+            const categoryCompany = row.original;
+            const isStrikethrough = categoryCompany.status === '0'; // Assuming '0' means inactive or deleted
+            return (
+                <span className={isStrikethrough ? 'line-through text-gray-500' : ''}>
+                    {categoryCompany.nombre}
+                </span>
+            );
+        },
     },
     {
         accessorKey: 'group',
