@@ -57,7 +57,7 @@ class FinishController extends Controller
                 // Es una imagen
                 $file->move($imagesPath, $uniqueName);
                 $rutaCompleta = "modules_fotos/{$moduleDir}/{$uniqueName}";
-                
+
                 $archivos['images'][] = [
                     'original_name' => $originalName,
                     'stored_name' => $uniqueName,
@@ -66,14 +66,14 @@ class FinishController extends Controller
                     'size' => $size,
                     'uploaded_at' => now()->toISOString()
                 ];
-                
+
                 // Agregar solo la ruta al array simple
                 $fotosRutas[] = $rutaCompleta;
             } else {
                 // Es otro tipo de archivo
                 $file->move($filesPath, $uniqueName);
                 $rutaCompleta = "modules_files/{$moduleDir}/{$uniqueName}";
-                
+
                 $archivos['files'][] = [
                     'original_name' => $originalName,
                     'stored_name' => $uniqueName,
@@ -82,7 +82,7 @@ class FinishController extends Controller
                     'size' => $size,
                     'uploaded_at' => now()->toISOString()
                 ];
-                
+
                 // Agregar solo la ruta al array simple
                 $fotosRutas[] = $rutaCompleta;
             }
@@ -121,11 +121,15 @@ class FinishController extends Controller
         // Agregar todos los ingenieros de seguridad
         $roleSecurityEngineer = Role::where('code', 'IS')->first();
         if ($roleSecurityEngineer) {
-            $securityEngineers = User::where('role_id', $roleSecurityEngineer->id)
-                ->where('estado', 1)
-                ->where('company_id', 1)
-                ->whereNotNull('email')
-                ->where('email', '!=', '')
+            $securityEngineers = User::select('users.id', 'users.nombres', 'users.apellidos', 'users.email')
+                ->distinct()
+                ->leftJoin('assignments', 'assignments.user_id', '=', 'users.id')
+                ->where('users.role_id', $roleSecurityEngineer->id)
+                ->where('users.company_id', 1)
+                ->where(function ($query) use ($module) {
+                    $query->whereNull('assignments.user_id')
+                        ->orWhere('assignments.company_id', $module->company_report_id);
+                })
                 ->get();
 
             $securityEngineers->each(function ($engineer) use ($ccEmails) {
@@ -192,7 +196,8 @@ class FinishController extends Controller
                 $companyName,
                 $companyReportedName,
                 'emails.closed_test_email',
-                'CERRADO'
+                'CERRADO',
+                $module
             ));
 
         Log::info('Correo de módulo finalizado enviado a: ' . $moduleOwner->email . ' con ' . $ccEmails->count() . ' copias.');
