@@ -95,29 +95,6 @@
             <div class="report-id">
                 ID DEL REPORTE: {{ last(explode('/', $reportLink)) }}
             </div>
-
-            @if ($module)
-                <div class="module-details">
-                    <h3>DETALLES DEL MÓDULO</h3>
-                    <div class="detail-item">
-                        <span class="detail-label">DESCRIPCIÓN:</span>
-                        {{ strtoupper($module->descripcion) }}
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">CORRECTIVA:</span>
-                        {{ strtoupper($module->correctiva) }}
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">GRAVEDAD:</span>
-                        {{ strtoupper($module->gravedad) }}
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">CAUSA:</span>
-                        {{ strtoupper($module->categoryCompanyName()) }}
-                    </div>
-                </div>
-            @endif
-
             <a href="{{ $reportLink }}" class="button">DESCARGAR REPORTE</a>
 
         </div>
