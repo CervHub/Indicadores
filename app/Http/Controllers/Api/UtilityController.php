@@ -312,7 +312,7 @@ class UtilityController extends Controller
                 $data['user_report_id'] = $engineerSecurityReported->id;
             }
 
-            $securityEnginnerSPCCs = User::select('users.id', 'users.nombres', 'users.apellidos')
+            $securityEnginnerSPCCs = User::select('users.id', 'users.nombres', 'users.apellidos', 'users.email')
                 ->distinct()
                 ->leftJoin('assignments', 'assignments.user_id', '=', 'users.id')
                 ->where('users.role_id', $roleSecurityEngineer->id)
