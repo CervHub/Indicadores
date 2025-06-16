@@ -201,6 +201,7 @@ class InspectionVehicleController extends Controller
                 ? $module->images
                 : (json_decode($module->images, true) ?: []);
         }
+        dd($images);
 
         // Tipo de inspección legible
         $tipo_inspeccion_descripcion = match ($module->tipo_inspeccion) {

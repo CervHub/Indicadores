@@ -253,12 +253,24 @@
         <section class="compact-section">
             <h4>ARCHIVO FOTOGRÁFICO</h4>
             @php
-                $images = $reportability->imagenes();
+                $images = [];
+                if ($reportability->version == '2.0.0') {
+                    $images = json_decode($reportability->images, true);
+                } else {
+                    $images = $reportability->imagenes();
+                }
+
             @endphp
 
-            @foreach ($images as $image)
-                <img src="data:image/png;base64,{{ $image['img'] }}" alt="Imagen" class="fixed-height-img">
-            @endforeach
+            @if ($reportability->version == '2.0.0' && count($images) > 0)
+                @foreach ($images as $image)
+                    <img src="{{ $image }}" alt="Imagen" class="fixed-height-img">
+                @endforeach
+            @else
+                @foreach ($images as $image)
+                    <img src="data:image/png;base64,{{ $image['img'] }}" alt="Imagen" class="fixed-height-img">
+                @endforeach
+            @endif
         </section>
     </div>
 
@@ -275,7 +287,8 @@
                 $fotos = json_decode($finalizado->fotos);
             @endphp
 
-            <h1 style="font-size: 24px; text-decoration: underline; text-align: center; margin-bottom: 20px;">REPORTE CERRADO
+            <h1 style="font-size: 24px; text-decoration: underline; text-align: center; margin-bottom: 20px;">REPORTE
+                CERRADO
             </h1>
 
             <section class="compact-section">
@@ -285,7 +298,8 @@
                             <strong>Cerrado por:</strong><br>{{ $user->nombres }} {{ $user->apellidos }}
                         </td>
                         <td style="width: 50%;" class="data-cell">
-                            <strong>Fecha de cierre:</strong><br>{{ \Carbon\Carbon::parse($finalizado->created_at)->setTimezone('America/Lima')->format('d/m/Y H:i A') }}
+                            <strong>Fecha de
+                                cierre:</strong><br>{{ \Carbon\Carbon::parse($finalizado->created_at)->setTimezone('America/Lima')->format('d/m/Y H:i A') }}
                         </td>
                     </tr>
                 </table>
@@ -300,14 +314,15 @@
 
             <section class="compact-section">
                 <h4>ANEXOS</h4>
-                @if($fotos && count($fotos) > 0)
+                @if ($fotos && count($fotos) > 0)
                     @foreach ($fotos as $foto)
                         @if (Str::endsWith($foto, ['.png', '.jpg', '.jpeg']))
                             <img src="{{ $url . '/' . $foto }}" alt="Anexo" class="fixed-height-img">
                         @else
                             <div style="margin: 3px 0;">
-                                <a href="{{ url($foto) }}" target="_blank" style="color: blue; text-decoration: none;">
-                                     {{ basename($foto) }}
+                                <a href="{{ url($foto) }}" target="_blank"
+                                    style="color: blue; text-decoration: none;">
+                                    {{ basename($foto) }}
                                 </a>
                             </div>
                         @endif

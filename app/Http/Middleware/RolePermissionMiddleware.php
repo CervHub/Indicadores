@@ -21,7 +21,7 @@ class RolePermissionMiddleware
         'annexes' => ['CA'], // Indicadores
         'consolidated' => ['SA', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS'], // Consolidados
         'admin.reportability' => ['SA', 'IS', 'CA', 'SCC'], // Reporte
-        'format' => [], // Formatos
+        'format' => ['IS'], // Formatos
         'inspection' => [], // Inspecciones
         'settings.general' => ['SA'], // Configuración
         'contrata.personal' => ['CA', 'SA'], // Personal
@@ -189,6 +189,10 @@ class RolePermissionMiddleware
             'format.edit' => 'format',
             'format.update' => 'format',
             'format.destroy' => 'format',
+            'format.acts' => 'format',
+            'format.conditions' => 'format',
+            'format.incidents' => 'format',
+            'format.inspection' => 'format',
 
             // Inspecciones
             'inspection.index' => 'inspection',

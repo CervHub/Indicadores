@@ -20,7 +20,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 
 Route::get('vehicle/qr/{vehicle_id}', [VehicleController::class, 'qr'])->name('vehicle.qr');
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth', 'role.permission')->group(function () {
     Route::prefix('format')->group(function () {
         Route::get('/', [FormatController::class, 'index'])->name('format.index');
 

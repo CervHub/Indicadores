@@ -13,33 +13,33 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const staticReports = [
-    // {
-    //     title: 'Reporte',
-    //     subtitle: 'Actos subestándar',
-    //     description: 'Este reporte detalla los actos subestándar observados en las operaciones.',
-    //     image: '/reports/IMG-05.png',
-    //     background: '/reports/FONDO%20AMARILLO.svg',
-    //     route: route('format.acts'),
-    //     permissions: ['CA', 'IS', 'RU'],
-    // },
-    // {
-    //     title: 'Reporte',
-    //     subtitle: 'Condiciones subestándar',
-    //     description: 'Este reporte identifica las condiciones subestándar presentes en el entorno.',
-    //     image: '/reports/IMG-02.png',
-    //     background: '/reports/FONDO%20ROJO.svg',
-    //     route: route('format.conditions'),
-    //     permissions: ['CA', 'IS', 'RU'],
-    // },
-    // {
-    //     title: 'Reporte',
-    //     subtitle: 'Incidentes',
-    //     description: 'Este reporte documenta los incidentes ocurridos en el lugar de trabajo.',
-    //     image: '/reports/IMG-03.png',
-    //     background: '/reports/FONDO%20TURQUESA.svg',
-    //     route: route('format.incidents'),
-    //     permissions: ['CA', 'IS', 'RU'],
-    // },
+    {
+        title: 'Reporte',
+        subtitle: 'Actos subestándar',
+        description: 'Este reporte detalla los actos subestándar observados en las operaciones.',
+        image: '/reports/IMG-05.png',
+        background: '/reports/FONDO%20AMARILLO.svg',
+        route: route('format.acts'),
+        permissions: ['CA', 'IS', 'RU'],
+    },
+    {
+        title: 'Reporte',
+        subtitle: 'Condiciones subestándar',
+        description: 'Este reporte identifica las condiciones subestándar presentes en el entorno.',
+        image: '/reports/IMG-02.png',
+        background: '/reports/FONDO%20ROJO.svg',
+        route: route('format.conditions'),
+        permissions: ['CA', 'IS', 'RU'],
+    },
+    {
+        title: 'Reporte',
+        subtitle: 'Incidentes',
+        description: 'Este reporte documenta los incidentes ocurridos en el lugar de trabajo.',
+        image: '/reports/IMG-03.png',
+        background: '/reports/FONDO%20TURQUESA.svg',
+        route: route('format.incidents'),
+        permissions: ['CA', 'IS', 'RU'],
+    },
     // {
     //     title: 'Inspección',
     //     subtitle: 'General',
@@ -49,78 +49,12 @@ const staticReports = [
     //     route: route('format.inspection'),
     //     permissions: ['CA', 'IS', 'RU'],
     // },
-    // Opciones adicionales de inspección vehicular
-    {
-        title: 'Inspección',
-        subtitle: 'Vehicular diaria',
-        description: 'Inspección diaria de vehículos para garantizar su operatividad.',
-        image: '/reports/IMG-01.png',
-        background: '/reports/FONDO%20AMARILLO.svg',
-        route: route('format.dailyVehicleInspection'),
-        permissions: ['IS', 'RU'],
-    },
-    {
-        title: 'Inspección',
-        subtitle: 'Vehicular diaria (Visita)',
-        description: 'Inspección diaria de vehículos para garantizar su operatividad.',
-        image: '/reports/IMG-01.png',
-        background: '/reports/FONDO%20AMARILLO.svg',
-        route: route('format.dailyVehicleInspectionVisit'),
-        permissions: ['IS', 'RU'],
-    },
-    {
-        title: 'Inspección',
-        subtitle: 'Vehicular trimestral',
-        description: 'Inspección trimestral de vehículos para mantenimiento preventivo.',
-        image: '/reports/IMG-01.png',
-        background: '/reports/FONDO%20ROJO.svg',
-        route: route('format.quarterlyVehicleInspection'),
-        permissions: ['IS'],
-    },
-    {
-        title: 'Inspección',
-        subtitle: 'Vehicular semestral',
-        description: 'Inspección semestral de vehículos para evaluar su estado general.',
-        image: '/reports/IMG-01.png',
-        background: '/reports/FONDO%20TURQUESA.svg',
-        route: route('format.semiannualVehicleInspection'),
-        permissions: ['IS'],
-    },
-    {
-        title: 'Inspección',
-        subtitle: 'Vehicular parada de planta',
-        description: 'Inspección anual de vehículos durante la parada programada.',
-        image: '/reports/IMG-01.png',
-        background: '/reports/FONDO%20VERDE.svg',
-        route: route('format.annualVehicleShutdownInspection'),
-        permissions: ['IS'],
-    },
 ];
 
 export default function Format() {
     const { auth } = usePage<{ auth: Auth }>().props;
-    const ROLE_CODE = auth.user.role_code;
-    const COMPANY_ID = auth.user.company_id;
 
-    let filteredReports = staticReports.filter(report =>
-        report.permissions.includes(ROLE_CODE)
-    );
-
-    if (ROLE_CODE === 'IS') {
-        if (COMPANY_ID === '1') {
-            // Empresa 1: quitar trimestral y anual
-            filteredReports = filteredReports.filter(
-                report =>
-                    report.route !== route('format.quarterlyVehicleInspection') &&
-                    report.route !== route('format.annualVehicleShutdownInspection')
-            );
-        } else {
-            // Otras empresas: quitar semestral
-            filteredReports = filteredReports.filter(
-                report => report.route !== route('format.semiannualVehicleInspection')
-            );
-        }
-    }
+    let filteredReports = staticReports;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

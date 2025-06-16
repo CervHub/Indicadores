@@ -7,6 +7,8 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Models\CategoryCompany;
 use Inertia\Inertia;
+use App\Models\Company;
+use App\Models\Entity;
 
 class FormatController extends Controller
 {
@@ -28,15 +30,57 @@ class FormatController extends Controller
 
     public function acts(Request $request)
     {
-        return Inertia::render('format/formats/acts');
+        $categoryId = Category::whereIn('nombre', ['Actos', 'actos'])->first()->id;
+        $causas = [];
+        $causas = CategoryCompany::where('category_id', $categoryId)
+            ->where('is_active', 1)
+            ->get();
+        $companies = Company::where('estado', 1)
+            ->get();
+        $managements = Entity::where('estado', 1)
+            ->get();
+        return Inertia::render(
+            'format/formats/acts',
+            [
+                'causas' => $causas,
+                'companies' => $companies,
+                'managements' => $managements,
+            ]
+        );
     }
     public function conditions(Request $request)
     {
-        return Inertia::render('format/formats/conditions');
+        $categoryId = Category::whereIn('nombre', ['Condiciones', 'condiciones'])->first()->id;
+        $causas = [];
+        $causas = CategoryCompany::where('category_id', $categoryId)
+            ->where('is_active', 1)
+            ->get();
+        $companies = Company::where('estado', 1)
+            ->get();
+        $managements = Entity::where('estado', 1)
+            ->get();
+        return Inertia::render('format/formats/conditions', [
+            'causas' => $causas,
+            'companies' => $companies,
+            'managements' => $managements,
+        ]);
     }
     public function incidents(Request $request)
     {
-        return Inertia::render('format/formats/incidents');
+        $categoryId = Category::whereIn('nombre', ['Incidentes', 'incidentes'])->first()->id;
+        $causas = [];
+        $causas = CategoryCompany::where('category_id', $categoryId)
+            ->where('is_active', 1)
+            ->get();
+        $companies = Company::where('estado', 1)
+            ->get();
+        $managements = Entity::where('estado', 1)
+            ->get();
+        return Inertia::render('format/formats/incidents', [
+            'causas' => $causas,
+            'companies' => $companies,
+            'managements' => $managements,
+        ]);
     }
     public function inspection(Request $request)
     {

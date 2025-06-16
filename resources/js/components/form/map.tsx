@@ -36,7 +36,7 @@ export default function MapSelector({
             <MapContainer
                 center={[defaultCoordinates.lat, defaultCoordinates.lng]}
                 zoom={13}
-                style={{ height: '100%', width: '100%' }}
+                style={{ height: '100%', width: '100%', zIndex: 1 }}
                 className="rounded-lg border-0 border-gray-300"
             >
                 <TileLayer url="https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />

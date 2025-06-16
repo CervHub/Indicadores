@@ -266,10 +266,13 @@ class UtilityController extends Controller
             $log = $request->all();
 
             $user = User::where($request->only('doi'))->first();
-            if (!$user) {
-                return response()->json(['status' => true, 'message' => 'Usuario no encontrado'], 404);
+
+            if ($request->has('version') && $request->version === '2.0.0') {
+                $user = User::find($request->user_id);
             }
+
             $user_id = $user->id;
+
             $data = [
                 'fecha_reporte' => date('Y-m-d H:i:s', strtotime($request->fecha_reporte)),
                 'fecha_evento' => date('Y-m-d H:i:s', strtotime($request->fecha_evento)),
@@ -297,6 +300,7 @@ class UtilityController extends Controller
                 'device' => $request->device,
                 'user_report_id' => $request->user_report_id,
                 'other_managements' => $request->other_managements,
+                'version' => $request->version ?? '1.0.0',
             ];
 
             $report = match ($request->tipo_reporte) {

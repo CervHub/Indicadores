@@ -1,45 +1,57 @@
 import TemplateForm from '@/components/form/template';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { Auth, User } from '@/types';
 import { Head } from '@inertiajs/react';
 
 const DEFAULT_COORDINATES = { lat: -17.270662, lng: -70.617886 };
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Gestión de Formatos',
-        href: '/format',
-    },
-    {
-        title: 'Incidentes',
-        href: '/incidents',
-    },
+const breadcrumbs = [
+    { title: 'Gestión de Formatos', href: '/format' },
+    { title: 'Incidentes', href: '/incidents' },
 ];
 
-const gerencias = [
-    { id: 'gerencia1', name: 'Gerencia de Operaciones' },
-    { id: 'gerencia2', name: 'Gerencia de Recursos Humanos' },
-    { id: 'gerencia3', name: 'Gerencia de Finanzas' },
-];
+export default function Incidents(props: any) {
+    const { causas, companies, managements, auth } = props;
 
-const empresas = [
-    { id: 'empresa1', name: 'Empresa A' },
-    { id: 'empresa2', name: 'Empresa B' },
-    { id: 'empresa3', name: 'Empresa C' },
-];
+    // Extraer solo id y name en mayúsculas
+    const filteredCausas = causas
+        ?.filter((causa: any) => causa && causa.id && causa.nombre)
+        .map((causa: any) => ({ id: causa.id, name: causa.nombre.toUpperCase() })) ?? [];
 
-const causas = [
-    { id: 'causa1', name: 'Causa 1' },
-    { id: 'causa2', name: 'Causa 2' },
-    { id: 'causa3', name: 'Causa 3' },
-];
-export default function Incidents() {
+    const filteredCompanies = companies
+        ?.filter((company: any) => company && company.id && company.nombre)
+        .map((company: any) => ({ id: company.id, name: company.nombre.toUpperCase() })) ?? [];
+
+    const managementsWithoutOtros = managements
+        ?.filter((management: any) => management && management.nombre && !management.nombre.toUpperCase().includes('OTROS')) ?? [];
+    const otrosManagement = managements
+        ?.find((management: any) => management && management.nombre && management.nombre.toUpperCase().includes('OTROS'));
+    const filteredManagements = [
+        ...managementsWithoutOtros.map((management: any) => ({ id: management.id, name: management.nombre.toUpperCase() })),
+        ...(otrosManagement ? [{ id: otrosManagement.id, name: otrosManagement.nombre.toUpperCase() }] : [])
+    ];
+
+    // Obtener user_id y company_id del usuario autenticado
+    const user: User = auth?.user;
+    const user_id = user?.id?.toString() ?? '';
+    const company_id = user?.company_id?.toString() ?? '';
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Incidentes" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <TemplateForm defaultCoordinates={DEFAULT_COORDINATES} gerencias={gerencias} empresas={empresas} causas={causas} />
-            </div>{' '}
+                <div className="w-lg mx-auto">
+                    <TemplateForm
+                        defaultCoordinates={DEFAULT_COORDINATES}
+                        gerencias={filteredManagements}
+                        empresas={filteredCompanies}
+                        causas={filteredCausas}
+                        user_id={user_id}
+                        company_id={company_id}
+                        tipo_reporte='incidentes'
+                    />
+                </div>
+            </div>
         </AppLayout>
     );
 }
