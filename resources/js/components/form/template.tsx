@@ -63,11 +63,11 @@ export default function TemplateForm({
         causes: '',
         eventDescription: '',
         correctiveActions: '',
-        riskLevel: 'low',
+        riskLevel: '', // <-- Obligatorio seleccionar
         location: '',
         signature: [] as File[],
         coordinates: defaultCoordinates,
-        images: [] as File[],
+        images: [] as File[], // <-- Obligatorio
     });
 
     const [loadingField, setLoadingField] = useState<string | null>(null);
@@ -133,48 +133,38 @@ export default function TemplateForm({
             data.causes &&
             data.eventDescription &&
             data.correctiveActions &&
-            data.riskLevel &&
+            data.riskLevel && // riesgo obligatorio
             data.location &&
-            data.signature.length > 0
+            data.signature.length > 0 &&
+            data.images.length > 0 // imágenes obligatorias
         );
     };
 
-    // Función para resetear el formulario
-    const resetForm = () => {
-        setData({
-            eventDate: currentDate,
-            eventTime: currentTime,
-            management: '',
-            customManagement: '',
-            company: '',
-            engineer: '',
-            causes: '',
-            eventDescription: '',
-            correctiveActions: '',
-            riskLevel: 'low',
-            location: '',
-            signature: [] as File[],
-            coordinates: defaultCoordinates,
-            images: [] as File[],
-        });
-
-        // Resetear filtros
-        setManagementFilter('');
-        setCompanyFilter('');
-        setCausesFilter('');
-        setEngineerFilter('');
-        setEngineers([]);
-        setImageError(null);
-        setSignatureError(null);
+    // Nueva función para obtener el primer campo faltante
+    const getFirstMissingField = () => {
+        if (!data.eventDate) return 'Fecha del evento';
+        if (!data.eventTime) return 'Hora del evento';
+        if (!data.management) return 'Gerencia a reportar';
+        if (showCustomManagement && !data.customManagement) return 'Ingrese la gerencia';
+        if (!data.company) return 'Empresa a reportar';
+        if (!data.engineer) return 'Ingenieros de Seguridad';
+        if (!data.causes) return 'Causas';
+        if (!data.eventDescription) return 'Descripción del evento';
+        if (!data.correctiveActions) return 'Acciones correctivas';
+        if (!data.riskLevel) return 'Nivel de riesgo'; // riesgo obligatorio
+        if (!data.location) return 'Lugar';
+        if (data.images.length === 0) return 'Imagen'; // imágenes obligatorias
+        if (data.signature.length === 0) return 'Firma';
+        return null;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!isFormValid()) {
-            toast.error('Por favor, complete todos los campos requeridos antes de enviar el formulario.');
+        const missing = getFirstMissingField();
+        if (missing) {
+            toast.error(`Por favor, complete el campo obligatorio: ${missing}`);
             return;
         }
-
         setShowModal(true);
         setModalStatus('idle');
     };
@@ -262,14 +252,18 @@ export default function TemplateForm({
                     'Accept': 'application/json',
                     // 'Content-Type' no se debe establecer manualmente para FormData con axios
                 },
+                validateStatus: function (status) {
+                    return status >= 200 && status < 300; // Acepta cualquier 2xx
+                }
             });
 
             const result = response.data;
+            console.log('Respuesta del servidor:', result);
+            // Acepta cualquier status 2xx y status true en la respuesta
+            if (result.status) {
 
-            // Cambiar result.success por result.status
-            if (response.status === 200 && result.status) {
-                setModalStatus('success');
-                setModalMessage(result.message || 'Reporte generado con éxito');
+                setShowModal(false);
+                toast.success('Reporte enviado exitosamente');
                 resetForm();
             } else {
                 setModalStatus('error');
@@ -294,6 +288,33 @@ export default function TemplateForm({
         setModalMessage('');
     };
 
+    // Función para resetear el formulario
+    const resetForm = () => {
+        setData({
+            eventDate: currentDate,
+            eventTime: currentTime,
+            management: '',
+            customManagement: '',
+            company: '',
+            engineer: '',
+            causes: '',
+            eventDescription: '',
+            correctiveActions: '',
+            riskLevel: '',
+            location: '',
+            signature: [] as File[],
+            coordinates: defaultCoordinates,
+            images: [] as File[],
+        });
+        setManagementFilter('');
+        setCompanyFilter('');
+        setCausesFilter('');
+        setEngineerFilter('');
+        setEngineers([]);
+        setImageError(null);
+        setSignatureError(null);
+    };
+
     return (
         <>
             <form className="grid grid-cols-1 gap-6 md:grid-cols-2 " onSubmit={handleSubmit}>
@@ -301,13 +322,13 @@ export default function TemplateForm({
                 <div className="col-span-2 grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
                         <Label htmlFor="event-date" className="mb-3">
-                            Fecha del evento
+                            Fecha del evento: *
                         </Label>
                         <Input type="date" id="event-date" value={data.eventDate} onChange={(e) => setData({ ...data, eventDate: e.target.value })} />
                     </div>
                     <div>
                         <Label htmlFor="event-time" className="mb-3">
-                            Hora del evento
+                            Hora del evento: *
                         </Label>
                         <Input type="time" id="event-time" value={data.eventTime} onChange={(e) => setData({ ...data, eventTime: e.target.value })} />
                     </div>
@@ -316,7 +337,7 @@ export default function TemplateForm({
                 {/* Gerencia - Each combobox in its own row */}
                 <div className="col-span-2">
                     <Label htmlFor="management" className="mb-3">
-                        Gerencia a reportar
+                        Gerencia a reportar: *
                     </Label>
                     <Combobox
                         data={managementOptions}
@@ -331,7 +352,7 @@ export default function TemplateForm({
                                 setData({ ...data, management: '', customManagement: '' });
                             }
                         }}
-                        placeholder="Seleccionar gerencia"
+                        placeholder="Seleccionar una opción"
                         className="w-full"
                     />
                 </div>
@@ -340,7 +361,7 @@ export default function TemplateForm({
                 {showCustomManagement && (
                     <div className="col-span-2">
                         <Label htmlFor="custom-management" className="mb-3">
-                            Ingrese la gerencia
+                            Ingrese la gerencia: *
                         </Label>
                         <Input
                             type="text"
@@ -355,7 +376,7 @@ export default function TemplateForm({
                 {/* Empresa a reportar */}
                 <div className="col-span-2">
                     <Label htmlFor="company" className="mb-3">
-                        Empresa a reportar
+                        Empresa a reportar: *
                     </Label>
                     <Combobox
                         data={companyOptions}
@@ -373,7 +394,7 @@ export default function TemplateForm({
                                 setEngineers([]);
                             }
                         }}
-                        placeholder="Seleccionar empresa"
+                        placeholder="Seleccionar una opción"
                         className="w-full"
                     />
                 </div>
@@ -382,7 +403,7 @@ export default function TemplateForm({
                 {data.company && (
                     <div className="col-span-2">
                         <Label htmlFor="engineer" className="mb-3">
-                            Ingeniero de Seguridad
+                            Ingenieros de Seguridad: *
                         </Label>
                         {loadingEngineers ? (
                             <div className="flex items-center justify-center p-4">
@@ -403,22 +424,17 @@ export default function TemplateForm({
                                         setData({ ...data, engineer: '' });
                                     }
                                 }}
-                                placeholder="Seleccionar ingeniero de seguridad"
+                                placeholder="Seleccionar una opción"
                                 className="w-full"
                             />
                         )}
                     </div>
                 )}
 
-                {/* Separador */}
-                <div className="col-span-2">
-                    <h3 className="text-lg font-semibold text-gray-700">De acuerdo a mi análisis, las causas fueron:</h3>
-                </div>
-
                 {/* Causas - Each combobox in its own row */}
                 <div className="col-span-2">
                     <Label htmlFor="causes" className="mb-3">
-                        Causas
+                        De acuerdo a mi análisis, las causas fueron: *
                     </Label>
                     <Combobox
                         data={causesOptions}
@@ -433,7 +449,7 @@ export default function TemplateForm({
                                 setData({ ...data, causes: '' });
                             }
                         }}
-                        placeholder="Seleccionar causa"
+                        placeholder="Seleccionar una opción"
                         className="w-full"
                     />
                 </div>
@@ -441,7 +457,7 @@ export default function TemplateForm({
                 {/* Descripción del evento */}
                 <div className="relative col-span-2">
                     <Label htmlFor="event-description" className="mb-3">
-                        Descripción del evento
+                        Descripción del evento: *
                     </Label>
                     <Textarea
                         id="event-description"
@@ -456,7 +472,7 @@ export default function TemplateForm({
                 {/* Acciones correctivas */}
                 <div className="relative col-span-2">
                     <Label htmlFor="corrective-actions" className="mb-3">
-                        Acciones correctivas
+                        Acciones correctivas: *
                     </Label>
                     <Textarea
                         id="corrective-actions"
@@ -469,16 +485,16 @@ export default function TemplateForm({
 
                 {/* Nivel de riesgo */}
                 <div className="col-span-2">
-                    <Label className="mb-3">Nivel del riesgo</Label>
+                    <Label className="mb-3">Nivel de riesgo: *</Label>
                     <RadioGroup
                         className="grid grid-cols-3 gap-4"
-                        defaultValue={data.riskLevel}
+                        value={data.riskLevel}
                         onValueChange={(value) => setData({ ...data, riskLevel: value })}
                     >
                         {/* Bajo */}
                         <div className="border-input has-focus-visible:border-ring has-focus-visible:ring-ring/50 relative flex cursor-pointer flex-col items-center gap-3 rounded-md border px-2 py-3 text-center shadow-xs transition-[color,box-shadow] outline-none has-focus-visible:ring-[3px] has-data-[state=checked]:border-red-500">
                             <RadioGroupItem id={`${id}-low`} value="Bajo" className="sr-only" />
-                            <CheckCircle className="text-green-500" size={24} aria-hidden="true" />
+                            <span className="w-6 h-6 rounded-full bg-green-500 border-2 border-green-600 block mx-auto"></span>
                             <label
                                 htmlFor={`${id}-low`}
                                 className="text-foreground cursor-pointer text-xs leading-none font-medium after:absolute after:inset-0"
@@ -489,7 +505,7 @@ export default function TemplateForm({
                         {/* Medio */}
                         <div className="border-input has-focus-visible:border-ring has-focus-visible:ring-ring/50 relative flex cursor-pointer flex-col items-center gap-3 rounded-md border px-2 py-3 text-center shadow-xs transition-[color,box-shadow] outline-none has-focus-visible:ring-[3px] has-data-[state=checked]:border-red-500">
                             <RadioGroupItem id={`${id}-medium`} value="Medio" className="sr-only" />
-                            <AlertTriangle className="text-yellow-500" size={24} aria-hidden="true" />
+                            <span className="w-6 h-6 rounded-full bg-orange-400 border-2 border-orange-500 block mx-auto"></span>
                             <label
                                 htmlFor={`${id}-medium`}
                                 className="text-foreground cursor-pointer text-xs leading-none font-medium after:absolute after:inset-0"
@@ -500,7 +516,7 @@ export default function TemplateForm({
                         {/* Alto */}
                         <div className="border-input has-focus-visible:border-ring has-focus-visible:ring-ring/50 relative flex cursor-pointer flex-col items-center gap-3 rounded-md border px-2 py-3 text-center shadow-xs transition-[color,box-shadow] outline-none has-focus-visible:ring-[3px] has-data-[state=checked]:border-red-500">
                             <RadioGroupItem id={`${id}-high`} value="Alto" className="sr-only" />
-                            <Flame className="text-red-500" size={24} aria-hidden="true" />
+                            <span className="w-6 h-6 rounded-full bg-red-500 border-2 border-red-600 block mx-auto"></span>
                             <label
                                 htmlFor={`${id}-high`}
                                 className="text-foreground cursor-pointer text-xs leading-none font-medium after:absolute after:inset-0"
@@ -513,7 +529,12 @@ export default function TemplateForm({
 
                 {/* Lugar y ubicación */}
                 <div className="col-span-2">
-                    <Label htmlFor="location">Lugar y ubicación</Label>
+                    <MapSelector
+                        defaultCoordinates={defaultCoordinates}
+                        coordinates={data.coordinates}
+                        setCoordinates={(coords) => setData({ ...data, coordinates: coords })}
+                    />
+                    <Label className='mb-3 mt-4' htmlFor="location">Lugar: *</Label>
                     <Input
                         type="text"
                         id="location"
@@ -521,28 +542,24 @@ export default function TemplateForm({
                         onChange={(e) => setData({ ...data, location: e.target.value })}
                         placeholder="Ingrese el lugar y ubicación"
                     />
-                    <MapSelector
-                        defaultCoordinates={defaultCoordinates}
-                        coordinates={data.coordinates}
-                        setCoordinates={(coords) => setData({ ...data, coordinates: coords })}
-                    />
+
                 </div>
 
                 {/* Imágenes adicionales */}
                 <ImageDrop
-                    label="Imágenes adicionales"
+                    label="Carga foto / Imagen:"
                     files={data.images}
                     onFilesChange={(files) => setData({ ...data, images: files })}
                     maxFiles={4}
                     error={imageError}
                     onError={setImageError}
-                    required={false}
+                    required={true}
                     pincel={true}
                 />
 
                 {/* Firma */}
                 <ImageDrop
-                    label="Firma"
+                    label="Firma: "
                     files={data.signature}
                     onFilesChange={(files) => setData({ ...data, signature: files })}
                     maxFiles={1}
@@ -553,7 +570,7 @@ export default function TemplateForm({
 
                 {/* Botón de envío */}
                 <div className="col-span-2">
-                    <Button type="submit" className="flex-start" disabled={!isFormValid() || submitting}>
+                    <Button type="submit" className="flex-start" /* siempre habilitado */>
                         {submitting ? (
                             <>
                                 <Loader2 className="animate-spin mr-2" size={16} />

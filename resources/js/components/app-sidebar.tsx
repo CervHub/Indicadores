@@ -20,6 +20,7 @@ import {
     ShieldCheck,
     Truck,
     Users,
+    TriangleAlert
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
@@ -33,7 +34,7 @@ const roles: Record<string, string[]> = {
     Indicadores: ['CA'],
     Consolidados: ['SA', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS'],
     Reporte: ['SA', 'IS', 'CA', 'SCC'],
-    Formatos: ['IS'],
+    'Controles Preventivos': ['IS'],
     Inspecciones: [],
     Configuración: ['SA'],
     Personal: ['CA', 'SA'],
@@ -64,7 +65,7 @@ const groupedNavItems = [
             { title: 'Indicadores', url: '/annexes', icon: BarChart },
             { title: 'Consolidados', url: '/consolidated', icon: FileText },
             { title: 'Reporte', url: '/admin/reportability', icon: FileText },
-            { title: 'Formatos', url: '/format', icon: FileText },
+            { title: 'Controles Preventivos', url: '/format', icon: TriangleAlert },
             { title: 'Inspecciones', url: '/inspection', icon: FileText },
         ],
     },

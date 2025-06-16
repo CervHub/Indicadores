@@ -7,7 +7,7 @@ import { useState } from 'react';
 import IndicationsModal from './option'; // Importamos el modal de opciones
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Gestión de Formatos',
+        title: 'Controles Preventivos',
         href: '/formatos',
     },
 ];
@@ -31,15 +31,15 @@ const staticReports = [
         route: route('format.conditions'),
         permissions: ['CA', 'IS', 'RU'],
     },
-    {
-        title: 'Reporte',
-        subtitle: 'Incidentes',
-        description: 'Este reporte documenta los incidentes ocurridos en el lugar de trabajo.',
-        image: '/reports/IMG-03.png',
-        background: '/reports/FONDO%20TURQUESA.svg',
-        route: route('format.incidents'),
-        permissions: ['CA', 'IS', 'RU'],
-    },
+    // {
+    //     title: 'Reporte',
+    //     subtitle: 'Incidentes',
+    //     description: 'Este reporte documenta los incidentes ocurridos en el lugar de trabajo.',
+    //     image: '/reports/IMG-03.png',
+    //     background: '/reports/FONDO%20TURQUESA.svg',
+    //     route: route('format.incidents'),
+    //     permissions: ['CA', 'IS', 'RU'],
+    // },
     // {
     //     title: 'Inspección',
     //     subtitle: 'General',

@@ -62,7 +62,7 @@ export function Combobox({ data, value, onChange, placeholder = "Select...", cla
           <ChevronsUpDown className="opacity-50 flex-shrink-0" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className={cn("p-0", className)}>
+      <PopoverContent align="start" className={cn("p-0 w-full min-w-[var(--radix-popover-trigger-width)]", className)} style={{ width: 'var(--radix-popover-trigger-width)' }}>
         <Command>
           <div className="relative">
             <CommandInput

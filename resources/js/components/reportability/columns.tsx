@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { formatDateTime } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { Eye, FileText, Trash2 } from 'lucide-react';
+import { Eye, FileText, Trash2, Lock, Unlock } from 'lucide-react';
 import { useState } from 'react';
 
 // Este tipo define la forma de nuestros datos.
@@ -287,17 +287,25 @@ export const getColumns = (isSecurityEngineer: boolean, handlers: ColumnHandlers
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button
-                                    variant="warning"
-                                    aria-label="Ver detalle"
-                                    className={`flex h-7 w-7 items-center justify-center p-0 ${detalleClicked ? 'cursor-not-allowed opacity-50' : ''}`}
+                                    variant={row.original.estado === 'Abierto' ? 'warning' : 'secondary'}
+                                    aria-label={row.original.estado === 'Abierto' ? 'Ingresar y cerrar reporte' : 'Ver detalle'}
+                                    className={`flex h-7 w-7 items-center justify-center p-0 ${detalleClicked ? 'cursor-not-allowed opacity-50' : ''} ${row.original.estado === 'Abierto' ? 'bg-red-700 hover:bg-red-900' : 'bg-green-700 hover:bg-green-900'} text-white`}
                                     onClick={handleDetalleClick}
                                     disabled={detalleClicked}
                                 >
-                                    <Eye className="h-3 w-3" />
+                                    {row.original.estado === 'Abierto' ? (
+                                        <Unlock className="h-4 w-4" />
+                                    ) : (
+                                        <Lock className="h-4 w-4" />
+                                    )}
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>Cerrar Reporte</p>
+                                <p>
+                                    {row.original.estado === 'Abierto'
+                                        ? 'Haz click para ingresar y cerrar el reporte'
+                                        : 'Este reporte está cerrado. Haz click para ver el detalle'}
+                                </p>
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
