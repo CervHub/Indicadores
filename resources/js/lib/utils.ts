@@ -139,3 +139,29 @@ export function formatNumber(value: number | string) {
     }
     return value;
 };
+
+export function calculateElapsedTime(startDate: Date | string, endDate?: Date | string): string {
+    const start = typeof startDate === 'string' ? new Date(startDate) : startDate;
+    const end = endDate ? (typeof endDate === 'string' ? new Date(endDate) : endDate) : new Date();
+    
+    const diffInMs = end.getTime() - start.getTime();
+    const diffInSeconds = Math.floor(diffInMs / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+    
+    if (diffInDays > 0) {
+        const hours = diffInHours % 24;
+        const minutes = diffInMinutes % 60;
+        return `${diffInDays}d ${hours}h ${minutes}m`;
+    } else if (diffInHours > 0) {
+        const minutes = diffInMinutes % 60;
+        const seconds = diffInSeconds % 60;
+        return `${diffInHours}h ${minutes}m ${seconds}s`;
+    } else if (diffInMinutes > 0) {
+        const seconds = diffInSeconds % 60;
+        return `${diffInMinutes}m ${seconds}s`;
+    } else {
+        return `${diffInSeconds}s`;
+    }
+}

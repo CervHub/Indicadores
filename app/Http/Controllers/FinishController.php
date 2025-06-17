@@ -100,10 +100,10 @@ class FinishController extends Controller
         try {
             $this->sendReportFinishedMail($module, $user, $moduleReview);
         } catch (\Exception $emailException) {
-            Log::error('Error al enviar correo de reporte finalizado: ' . $emailException->getMessage());
+            Log::error('Error al enviar correo de reporte cerrado: ' . $emailException->getMessage());
         }
 
-        return redirect()->back()->with('success', 'Reporte finalizado correctamente');
+        return redirect()->back()->with('success', 'Reporte cerrado correctamente');
     }
 
     private function sendReportFinishedMail($module, $finishedBy, $moduleReview)
@@ -200,6 +200,6 @@ class FinishController extends Controller
                 $module
             ));
 
-        Log::info('Correo de reporte finalizado enviado a: ' . $moduleOwner->email . ' con ' . $ccEmails->count() . ' copias.');
+        Log::info('Correo de reporte cerrado enviado a: ' . $moduleOwner->email . ' con ' . $ccEmails->count() . ' copias.');
     }
 }

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
-import { formatDateTime, formatDateTimeLocal } from '@/lib/utils';
+import { formatDateTime, formatDateTimeLocal, calculateElapsedTime } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
@@ -40,6 +40,7 @@ export default function ReportabilityPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [iframeKey, setIframeKey] = useState(0);
     const [currentStep, setCurrentStep] = useState(getCurrentStep(reportability.estado));
+    const [liveElapsedTime, setLiveElapsedTime] = useState(calculateElapsedTime(reportability.fecha_evento, reportability.report_closed_at));
 
     const urlPdf = route('company.reportability.download', { reportability_id });
 
@@ -57,6 +58,21 @@ export default function ReportabilityPage() {
         setIframeKey((prevKey) => prevKey + 1);
         setCurrentStep(getCurrentStep(reportability.estado));
     }, [reportability.estado]);
+
+    // Real-time timer for open reports
+    useEffect(() => {
+        if (!reportability.report_closed_at) {
+            const interval = setInterval(() => {
+                setLiveElapsedTime(calculateElapsedTime(reportability.fecha_evento, null));
+            }, 1000);
+
+            return () => clearInterval(interval);
+        } else {
+            const adjustedClosedAt = new Date(reportability.report_closed_at);
+            adjustedClosedAt.setHours(adjustedClosedAt.getHours() - 5);
+            setLiveElapsedTime(calculateElapsedTime(reportability.fecha_evento, adjustedClosedAt));
+        }
+    }, [reportability.fecha_evento, reportability.report_closed_at]);
 
     function getCurrentStep(estado: string) {
         switch (estado) {
@@ -123,7 +139,14 @@ export default function ReportabilityPage() {
                         </Card>
                         <Card className="flex flex-1 flex-col">
                             <CardHeader>
-                                <CardTitle>Detalles del reporte</CardTitle>
+                                <div className="flex items-center justify-between">
+                                    <CardTitle>Detalles del reporte</CardTitle>
+                                    <div className="text-sm">
+                                        <span className={!reportability.report_closed_at ? 'text-orange-600 font-semibold' : 'text-green-600'}>
+                                            {liveElapsedTime}
+                                        </span>
+                                    </div>
+                                </div>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-2 space-y-1">
                                 {/* <Stepper currentStep={currentStep} currentState={reportability.estado} /> */}
@@ -197,7 +220,7 @@ export default function ReportabilityPage() {
                     </div>
                 </div>
             </div>
-            <CloseReport report_id={reportability_id} isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />
+            <CloseReport report_id={reportability_id.toString()} isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />
         </AppLayout>
     );
 }
