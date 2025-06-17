@@ -377,10 +377,10 @@ export default function ImageDrop({
 
             {/* Modal para editar imagen */}
             {shouldShowModal && (
-                <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/50">
-                    <div className="bg-white rounded-lg max-w-3xl max-h-[90vh] w-full mx-4 flex flex-col">
+                <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white rounded-lg w-full h-full max-w-[95vw] max-h-[95vh] sm:max-w-4xl sm:max-h-[90vh] sm:w-auto sm:h-auto flex flex-col">
                         {/* Header del modal */}
-                        <div className="flex items-center justify-between p-4 border-b">
+                        <div className="flex items-center justify-between p-4 border-b shrink-0">
                             <h3 className="text-lg font-semibold">Editar imagen</h3>
                             <Button variant="ghost" size="sm" onClick={closeModal}>
                                 <XIcon className="size-4" />
@@ -389,8 +389,8 @@ export default function ImageDrop({
 
                         {/* Controles solo pintar y limpiar */}
                         {isPaintingEnabled && (
-                        <div className="flex items-center gap-4 px-4 py-2 border-b bg-gray-50">
-                            <label className="flex items-center gap-1 text-xs">
+                        <div className="flex items-center gap-4 px-4 py-2 border-b bg-gray-50 shrink-0 overflow-x-auto">
+                            <label className="flex items-center gap-1 text-xs whitespace-nowrap">
                                 Color:
                                 <input
                                     type="color"
@@ -399,7 +399,7 @@ export default function ImageDrop({
                                     className="w-6 h-6 p-0 border-none bg-transparent"
                                 />
                             </label>
-                            <label className="flex items-center gap-1 text-xs">
+                            <label className="flex items-center gap-1 text-xs whitespace-nowrap">
                                 Grosor:
                                 <input
                                     type="range"
@@ -424,11 +424,11 @@ export default function ImageDrop({
                         )}
 
                         {/* Canvas para dibujar */}
-                        <div className="flex-1 p-4 overflow-auto relative">
-                            <div className="flex justify-center relative">
+                        <div className="flex-1 p-4 overflow-auto min-h-0">
+                            <div className="flex justify-center items-center h-full">
                                 <canvas
                                     ref={canvasRef}
-                                    className="border rounded cursor-crosshair"
+                                    className="border rounded cursor-crosshair max-w-full max-h-full"
                                     onMouseDown={startDrawing}
                                     onMouseMove={draw}
                                     onMouseUp={stopDrawing}
@@ -444,7 +444,7 @@ export default function ImageDrop({
                         </div>
 
                         {/* Footer del modal */}
-                        <div className="flex items-center justify-end gap-2 p-4 border-t">
+                        <div className="flex items-center justify-end gap-2 p-4 border-t shrink-0">
                             <Button variant="outline" onClick={closeModal}>
                                 Cancelar
                             </Button>

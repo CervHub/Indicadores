@@ -42,7 +42,7 @@ export default function Conditions(props: any) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Condiciones subestándar" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <div className="w-lg mx-auto">
+                <div className="w-full sm:w-lg mx-auto">
                     <TemplateForm
                         defaultCoordinates={DEFAULT_COORDINATES}
                         gerencias={filteredManagements}
@@ -51,7 +51,6 @@ export default function Conditions(props: any) {
                         user_id={user_id}
                         company_id={company_id}
                         tipo_reporte='condiciones'
-                        device={device}
                     />
                 </div>
             </div>

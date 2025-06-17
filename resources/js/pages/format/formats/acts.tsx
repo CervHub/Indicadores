@@ -36,7 +36,7 @@ export default function Acts(props: any) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Actos subestándar" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <div className="w-lg mx-auto">
+                <div className="w-full sm:w-lg mx-auto">
                     <TemplateForm
                         defaultCoordinates={DEFAULT_COORDINATES}
                         gerencias={filteredManagements}
