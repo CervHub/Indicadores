@@ -42,6 +42,7 @@ class UserContrller extends Controller
 
             $users = User::where('company_id', $company_id)
                 ->where('role_id', '=', $isRole->id)
+                ->where('estado', true)
                 ->select('id', 'nombres', 'apellidos', 'cargo', 'doi')
                 ->get();
 
