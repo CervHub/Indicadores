@@ -7,13 +7,13 @@ current_date=$(date +"%Y-%m-%d_%H-%M-%S")
 destination_folder="Production/SouthernToquepalaGestionSST_$current_date"
 mkdir -p "$destination_folder"
 
-# Obtener la lista de archivos modificados y agregados desde el 8 de abril de 2025 hasta la fecha actual
-echo "Buscando archivos modificados desde el 8 de abril de 2025 hasta la fecha actual..."
-files_to_copy=$(git log --name-only --since="2025-06-18" --pretty=format: | sort | uniq | grep -v '^resources/js/')
+# Obtener la lista de archivos modificados y agregados desde el 18 de junio de 2025 a las 00:00 horas hasta la fecha actual
+echo "Buscando archivos modificados desde el 18 de junio de 2025 a las 00:00 horas hasta la fecha actual..."
+files_to_copy=$(git log --name-only --since="2025-06-18T00:00:00" --pretty=format: | sort | uniq | grep -v '^resources/js/')
 
 # Verificar si hay archivos para copiar
 if [ -z "$files_to_copy" ]; then
-    echo "No se encontraron archivos modificados o agregados desde el 8 de abril de 2025."
+    echo "No se encontraron archivos modificados o agregados desde el 18 de junio de 2025 a las 00:00 horas."
 else
     echo "Archivos encontrados:"
     echo "$files_to_copy"
