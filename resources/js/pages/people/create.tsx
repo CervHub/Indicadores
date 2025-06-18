@@ -115,12 +115,12 @@ export default function CreatePerson({ isOpen = false, onOpenChange, roles }: Cr
             >
                 <div className="flex justify-start">
                     <DialogTrigger asChild>
-                        <Button className="inline-block px-4 py-2">Crear Persona</Button>
+                        <Button className="inline-block px-4 py-2">Crear Personal</Button>
                     </DialogTrigger>
                 </div>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Crear Persona</DialogTitle>
+                        <DialogTitle>Crear Personal</DialogTitle>
                         <DialogDescription>Complete los campos para crear una nueva persona.</DialogDescription>
                     </DialogHeader>
                     <form onSubmit={submit} className="space-y-3" method="post" action={route('contrata.personal.store')}>

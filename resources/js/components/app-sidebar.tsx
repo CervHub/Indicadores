@@ -27,7 +27,7 @@ import AppLogo from './app-logo';
 // Roles por app
 const roles: Record<string, string[]> = {
     Dashboard: ['SA', 'IS', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS', 'RU'],
-    Empresas: ['SA'],
+    Empresas: ['SA', 'CA'],
     Gerencias: ['SA'],
     'Gestión de SSO': ['SA'],
     Vehículos: [],
@@ -92,7 +92,7 @@ export function AppSidebar() {
     const userRoleCodes = userRoleCode ? [userRoleCode] : [];
 
     const currentPath = window.location.pathname;
-    const restrictedItems = ['Consolidados', 'Asignaciones']; // Add more restricted items if needed
+    const restrictedItems = ['Consolidados', 'Asignaciones', 'Empresas']; // Add more restricted items if needed
 
     const filteredNavGroups = groupedNavItems
         .map((group) => ({

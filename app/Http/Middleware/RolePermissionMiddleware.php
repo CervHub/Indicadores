@@ -14,7 +14,7 @@ class RolePermissionMiddleware
      */
     private array $roles = [
         'dashboard' => ['SA', 'IS', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS', 'RU'],
-        'contractor' => ['SA'], // Empresas
+        'contractor' => ['SA','CA'], // Empresas
         'admin.management' => ['SA'], // Gerencias
         'admin.category' => ['SA'], // Gestión de SSO
         'vehicle' => [], // Vehículos
@@ -36,6 +36,7 @@ class RolePermissionMiddleware
     private array $restrictedItems = [
         'consolidated' => true,
         'assignments' => true,
+        'contractor' => true,
     ];
 
     /**

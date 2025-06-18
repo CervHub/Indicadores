@@ -157,7 +157,7 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
                     <div className="max-h-[60vh] overflow-auto">
                         <form onSubmit={submit} className="space-y-3" method="post" action={route('admin.contractor.store')}>
                             <div className="grid gap-2">
-                                <Label htmlFor="ruc">RUC</Label>
+                                <Label htmlFor="ruc">RUC *</Label>
                                 <Input
                                     id="ruc"
                                     type="text"
@@ -170,7 +170,7 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
                                 <InputError message={errors.ruc} />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="nombre">Nombre</Label>
+                                <Label htmlFor="nombre">Nombre *</Label>
                                 <Input
                                     id="nombre"
                                     type="text"
@@ -183,10 +183,11 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
                                 <InputError message={errors.nombre} />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="descripcion">Descripción</Label>
+                                <Label htmlFor="descripcion">Descripción *</Label>
                                 <Textarea
                                     id="descripcion"
                                     maxLength={150}
+                                    required
                                     value={data.descripcion}
                                     onChange={(e) => setData('descripcion', e.target.value)}
                                     disabled={processing}
@@ -195,7 +196,7 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
                                 <InputError message={errors.descripcion} />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email">Email *</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -209,7 +210,7 @@ export default function CreateContractor({ ueas, companyType }: CreateContractor
                             </div>
                             {/* NUEVO: Combos dinámicos */}
                             <div className="space-y-2">
-                                <Label>UEA y Tipo de Empresa</Label>
+                                <Label>UEA y Tipo de Empresa *</Label>
                                 {ueaCompanyTypes.map((item, idx) => (
                                     <div
                                         key={idx}

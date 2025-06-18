@@ -45,7 +45,7 @@ export function DataTable<TData extends {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = React.useState('');
     const [roleFilter, setRoleFilter] = React.useState<string>('__all__');
-    const [estadoFilter, setEstadoFilter] = React.useState<string>('__all__');
+    const [estadoFilter, setEstadoFilter] = React.useState<string>('1');
     const [rucFilter, setRucFilter] = React.useState<string>('');
     const [companyFilter, setCompanyFilter] = React.useState<string>('');
     const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 });
