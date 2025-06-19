@@ -10,6 +10,7 @@ use App\Models\Company as ContractorCompany;
 use App\Models\Uea;
 use Illuminate\Support\Facades\DB;
 use App\Exports\CompanyExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ContractorController extends Controller
 {
@@ -90,5 +91,18 @@ class ContractorController extends Controller
     public function destroy($path)
     {
         // Aquí puedes agregar la lógica para eliminar una contratista
+    }
+
+    public function export()
+    {
+        $filename = 'detalle_empresas_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        return Excel::download(new CompanyExport, $filename);
+    }
+
+    public function exportDetail($id)
+    {
+        $company = ContractorCompany::with(['ueaCompanies.uea', 'ueaCompanies.activity'])->findOrFail($id);
+        $filename = 'detalle_empresa_' . $company->nombre . '_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        return Excel::download(new CompanyExport, $filename);
     }
 }

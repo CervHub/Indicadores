@@ -151,6 +151,3 @@ class ModulesExport implements FromCollection, WithHeadings, WithColumnWidths
         ];
     }
 }
-        ];
-    }
-}
