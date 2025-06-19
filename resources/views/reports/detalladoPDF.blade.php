@@ -95,10 +95,27 @@
         }
 
         .fixed-height-img {
-            max-height: 200px;
+            max-height: 150px;
             max-width: 100%;
             display: block;
-            margin: 5px auto;
+            margin: 2px auto;
+            clear: none;
+            page-break-inside: avoid;
+            position: relative;
+            z-index: 1;
+        }
+
+        .image-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5px 0;
+        }
+
+        .image-cell {
+            width: 25%;
+            text-align: center;
+            vertical-align: top;
+            padding: 2px;
         }
 
         .footer {
@@ -137,10 +154,14 @@
             right: 0;
             height: 60px;
             margin-bottom: 10px;
+            z-index: 1000;
+            background-color: white;
         }
 
         .content {
             margin-top: 70px;
+            position: relative;
+            z-index: 1;
         }
     </style>
 </head>
@@ -259,17 +280,27 @@
                 } else {
                     $images = $reportability->imagenes();
                 }
-
             @endphp
 
-            @if ($reportability->version == '2.0.0' && count($images) > 0)
-                @foreach ($images as $image)
-                    <img src="{{ $image }}" alt="Imagen" class="fixed-height-img">
-                @endforeach
-            @else
-                @foreach ($images as $image)
-                    <img src="data:image/png;base64,{{ $image['img'] }}" alt="Imagen" class="fixed-height-img">
-                @endforeach
+            @if (count($images) > 0)
+                <table class="image-table">
+                    @for ($i = 0; $i < count($images); $i += 4)
+                        <tr>
+                            @for ($j = $i; $j < min($i + 4, count($images)); $j++)
+                                <td class="image-cell">
+                                    @if ($reportability->version == '2.0.0')
+                                        <img src="{{ $images[$j] }}" alt="Imagen" class="fixed-height-img">
+                                    @else
+                                        <img src="data:image/png;base64,{{ $images[$j]['img'] }}" alt="Imagen" class="fixed-height-img">
+                                    @endif
+                                </td>
+                            @endfor
+                            @for ($k = count($images) % 4; $k > 0 && $k < 4 && $i + 4 > count($images); $k++)
+                                <td class="image-cell"></td>
+                            @endfor
+                        </tr>
+                    @endfor
+                </table>
             @endif
         </section>
     </div>
@@ -315,18 +346,42 @@
             <section class="compact-section">
                 <h4>ANEXOS</h4>
                 @if ($fotos && count($fotos) > 0)
-                    @foreach ($fotos as $foto)
-                        @if (Str::endsWith($foto, ['.png', '.jpg', '.jpeg']))
-                            <img src="{{ $url . '/' . $foto }}" alt="Anexo" class="fixed-height-img">
-                        @else
+                    @php
+                        $imageFiles = array_filter($fotos, function($foto) {
+                            return Str::endsWith($foto, ['.png', '.jpg', '.jpeg']);
+                        });
+                        $otherFiles = array_filter($fotos, function($foto) {
+                            return !Str::endsWith($foto, ['.png', '.jpg', '.jpeg']);
+                        });
+                    @endphp
+                    
+                    @if (count($imageFiles) > 0)
+                        <table class="image-table">
+                            @for ($i = 0; $i < count($imageFiles); $i += 4)
+                                <tr>
+                                    @for ($j = $i; $j < min($i + 4, count($imageFiles)); $j++)
+                                        <td class="image-cell">
+                                            <img src="{{ $url . '/' . array_values($imageFiles)[$j] }}" alt="Anexo" class="fixed-height-img">
+                                        </td>
+                                    @endfor
+                                    @for ($k = count($imageFiles) % 4; $k > 0 && $k < 4 && $i + 4 > count($imageFiles); $k++)
+                                        <td class="image-cell"></td>
+                                    @endfor
+                                </tr>
+                            @endfor
+                        </table>
+                    @endif
+                    
+                    @if (count($otherFiles) > 0)
+                        @foreach ($otherFiles as $foto)
                             <div style="margin: 3px 0;">
                                 <a href="{{ url($foto) }}" target="_blank"
                                     style="color: blue; text-decoration: none;">
                                     {{ basename($foto) }}
                                 </a>
                             </div>
-                        @endif
-                    @endforeach
+                        @endforeach
+                    @endif
                 @else
                     <div class="border" style="min-height: 40px;">
                         No se adjuntaron anexos adicionales.

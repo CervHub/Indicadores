@@ -3,6 +3,11 @@
 use App\Http\Controllers\Indicators\ConsolidatedController;
 use Illuminate\Support\Facades\Route;
 
+Route::middleware(['auth'])->group(function () {
+    // Exporetar el detalle del consolidado en excel
+    Route::get('consolidated/{id}/export', [ConsolidatedController::class, 'export'])->name('consolidated.export');
+});
+
 Route::middleware(['auth', 'role.permission'])->group(function () {
     // Rutas para Consolidated
     Route::get('consolidated', [ConsolidatedController::class, 'index'])->name('consolidated.index');

@@ -85,14 +85,69 @@ class ReportabilityController extends Controller
         $reportabilities = DB::select($query, [$start_date, $end_date]);
         return $reportabilities;
     }
+    public function genDataReportExcel($start_date, $end_date)
+    {
+        $query = DB::table('modules as m')
+            ->select([
+                'm.id as id',
+                'm.fecha_reporte as fechaReporte',
+                'm.fecha_evento as fechaEvento',
+                'm.descripcion as descripcionEvento',
+                'm.gravedad as nivelGravedad',
+                DB::raw("CASE 
+                    WHEN m.estado IS NULL OR m.estado = '' THEN 'Abierto'
+                    WHEN m.estado IN ('Revisado', 'Visualizado') THEN 'Abierto'
+                    WHEN m.estado IN ('Cerrado', 'Finalizado') THEN 'Cerrado'
+                    ELSE m.estado
+                END as estadoReporte"),
+                'm.category_company_id as idCausa',
+                'm.tipo_reporte as tipoReporte',
+                'm.user_id as idUsuarioReporta',
+                'm.company_id as idEmpresaReporta',
+                'm.company_report_id as idEmpresaReportada',
+                'm.area as areaInvolucrada',
+                'm.user_report_id as idUsuarioCierre',
+                'mr.user_id as idUsuarioRealmenteCerro',
+                'm.reassigned_user_id as idUsuarioReasignado',
+                'm.reassignment_reason as motivoReasignacion',
+                'm.deleted_at as eliminadoEn',
+                'm.entity_id as idGerencia',
+                'm.report_closed_at as reportClosedAt',
+                DB::raw("CONCAT(u.nombres, ' ', u.apellidos) as nombreUsuarioReporta"),
+                DB::raw("CONCAT(ur.nombres, ' ', ur.apellidos) as nombreUsuarioCierre"),
+                DB::raw("CONCAT(mru.nombres, ' ', mru.apellidos) as nombreUsuarioRealmenteCerro"),
+                DB::raw("CONCAT(ru.nombres, ' ', ru.apellidos) as nombreUsuarioReasignado"),
+                'ec.nombre as nombreEmpresaReporta',
+                'er.nombre as nombreEmpresaReportada',
+                'cc.nombre as causaReporte',
+                'e.nombre as nombreGerencia'
+            ])
+            ->leftJoin('users as u', 'u.id', '=', 'm.user_id')
+            ->leftJoin('users as ur', 'ur.id', '=', 'm.user_report_id')
+            ->leftJoin(DB::raw('(SELECT DISTINCT module_id, 
+                                FIRST_VALUE(user_id) OVER (PARTITION BY module_id ORDER BY id DESC) as user_id
+                                FROM module_reviews) as mr'), 'mr.module_id', '=', 'm.id')
+            ->leftJoin('users as mru', 'mru.id', '=', 'mr.user_id')
+            ->leftJoin('users as ru', 'ru.id', '=', 'm.reassigned_user_id')
+            ->leftJoin('companies as ec', 'ec.id', '=', 'm.company_id')
+            ->leftJoin('companies as er', 'er.id', '=', 'm.company_report_id')
+            ->leftJoin('category_companies as cc', 'cc.id', '=', 'm.category_company_id')
+            ->leftJoin('entities as e', 'e.id', '=', 'm.entity_id')
+            ->where('m.tipo_reporte', '!=', 'inspeccion')
+            ->whereNull('m.deleted_at')
+            ->whereDate('m.fecha_evento', '>=', $start_date)
+            ->whereDate('m.fecha_evento', '<=', $end_date);
+
+        return $query->get();
+    }
+
     public function downloadRange($start_date, $end_date)
     {
-        $data = $this->genDataReport($start_date, $end_date);
+        $data = $this->genDataReportExcel($start_date, $end_date);
 
         $uniqueId = uniqid();
-        $fileName = "Reporte_General_{$start_date}_{$end_date}_{$uniqueId}.xlsx";
-
-        return Excel::download(new ModulesExport($data), $fileName);
+        $fileName = "Reporte_Dashboard_{$start_date}_{$end_date}_{$uniqueId}.xlsx";
+        return Excel::download(new ModulesExport($data->toArray()), $fileName);
     }
 
     public function index(Request $request)

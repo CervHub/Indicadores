@@ -41,6 +41,7 @@ export function DataTable<TData extends {
     company_report_name?: string;
     estado?: string;
     report_closed_at?: string;
+    tiempo_cierre?: string;
     deleted_at?: string | null;
 }, TValue>({
     columns,
@@ -59,6 +60,7 @@ export function DataTable<TData extends {
         company_report_name: false,
         estado: true,
         report_closed_at: true,
+        tiempo_cierre: true,
         deleted_at: false,
         acciones: true,
     });
@@ -97,6 +99,7 @@ export function DataTable<TData extends {
         company_report_name: 'Empresa reportada',
         estado: 'Estado del reporte',
         report_closed_at: 'Fecha de cierre',
+        tiempo_cierre: 'Tiempo de Resolución',
         deleted_at: 'Fecha de eliminación',
         acciones: 'Acciones',
     };

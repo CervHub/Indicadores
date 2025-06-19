@@ -74,8 +74,8 @@ class RolePermissionMiddleware
             return $next($request);
         }
 
-        // Verificar restricciones por company_id
-        if ($this->isRestrictedItem($roleKey) && $userCompanyId !== '1') {
+        // Verificar restricciones por company_id (excepto para SA)
+        if ($this->isRestrictedItem($roleKey) && $userCompanyId !== '1' && $userRoleCode !== 'SA') {
             \Log::info('Access denied - Company restriction');
             return $this->redirectToDashboard($request);
         }

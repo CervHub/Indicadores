@@ -9,7 +9,7 @@ mkdir -p "$destination_folder"
 
 # Obtener la lista de archivos modificados y agregados desde el 18 de junio de 2025 a las 00:00 horas hasta la fecha actual
 echo "Buscando archivos modificados desde el 18 de junio de 2025 a las 00:00 horas hasta la fecha actual..."
-files_to_copy=$(git log --name-only --since="2025-06-18T00:00:00" --pretty=format: | sort | uniq | grep -v '^resources/js/')
+files_to_copy=$(git log --name-only --since="2025-06-19T00:00:00" --pretty=format: | sort | uniq | grep -v '^resources/js/')
 
 # Verificar si hay archivos para copiar
 if [ -z "$files_to_copy" ]; then

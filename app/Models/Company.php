@@ -20,6 +20,11 @@ class Company extends Model
     public $timestamps = true;
     use HasFactory;
 
+    public function ueaCompanies()
+    {
+        return $this->hasMany(UeaCompany::class);
+    }
+
     public function setting()
     {
         return $this->hasOne(Setting::class);

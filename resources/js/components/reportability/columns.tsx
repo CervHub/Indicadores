@@ -7,7 +7,7 @@ import { formatDateTime } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { Eye, FileText, Trash2, Lock, Unlock } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Este tipo define la forma de nuestros datos.
 export type Reportability = {
@@ -29,6 +29,88 @@ export interface ColumnHandlers {
     onPdfClick: (id: string) => void;
     onDeleteClick: (id: string) => void;
 }
+
+// Función para calcular el tiempo transcurrido
+const calculateDuration = (fechaEvento: string, fechaCierre?: string | null): string => {
+    const startDate = new Date(fechaEvento);
+    const endDate = fechaCierre ? new Date(fechaCierre) : new Date();
+    
+    const diffMs = endDate.getTime() - startDate.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (diffDays > 0) {
+        return `${diffDays}d ${diffHours}h ${diffMinutes}m`;
+    } else if (diffHours > 0) {
+        return `${diffHours}h ${diffMinutes}m`;
+    } else {
+        return `${diffMinutes}m`;
+    }
+};
+
+// Componente para mostrar el tiempo con actualización en vivo
+const DurationCell = ({ fechaEvento, fechaCierre, estado }: { fechaEvento: string, fechaCierre?: string | null, estado: string }) => {
+    const [duration, setDuration] = useState(() => calculateDuration(fechaEvento, fechaCierre));
+    
+    // Un reporte está completamente cerrado si tiene fecha de cierre Y estado Cerrado/Finalizado
+    const isFullyClosed = (fechaCierre !== null && fechaCierre !== undefined) && 
+                         (estado === 'Cerrado' || estado === 'Finalizado');
+    
+    // Un reporte está parcialmente cerrado si tiene solo uno de los dos criterios
+    const isPartiallyClosed = ((fechaCierre !== null && fechaCierre !== undefined) && 
+                              !(estado === 'Cerrado' || estado === 'Finalizado')) ||
+                             ((fechaCierre === null || fechaCierre === undefined) && 
+                              (estado === 'Cerrado' || estado === 'Finalizado'));
+    
+    useEffect(() => {
+        if (!isFullyClosed) {
+            const interval = setInterval(() => {
+                setDuration(calculateDuration(fechaEvento, fechaCierre));
+            }, 60000); // Actualizar cada minuto
+            
+            return () => clearInterval(interval);
+        }
+    }, [fechaEvento, fechaCierre, isFullyClosed]);
+    
+    // Determinar colores basado en el estado de cierre
+    let colorClass = '';
+    let bgClass = '';
+    let tooltipMessage = '';
+    
+    if (isFullyClosed) {
+        colorClass = 'text-green-600';
+        bgClass = 'bg-green-50';
+        tooltipMessage = `Tiempo total para cerrar: ${duration}`;
+    } else if (isPartiallyClosed) {
+        colorClass = 'text-orange-600';
+        bgClass = 'bg-orange-50';
+        if (fechaCierre && !(estado === 'Cerrado' || estado === 'Finalizado')) {
+            tooltipMessage = `Tiene fecha de cierre pero estado no es Cerrado/Finalizado: ${duration} (verificar estado)`;
+        } else {
+            tooltipMessage = `Estado es ${estado} pero sin fecha de cierre: ${duration} (verificar fecha)`;
+        }
+    } else {
+        colorClass = 'text-red-600';
+        bgClass = 'bg-red-50';
+        tooltipMessage = `Tiempo transcurrido sin cerrar: ${duration} (actualizándose)`;
+    }
+    
+    return (
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <span className={`cursor-help px-2 py-1 rounded-md ${colorClass} ${bgClass} font-medium`}>
+                        {duration}
+                    </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>{tooltipMessage}</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+    );
+};
 
 export const getColumns = (isSecurityEngineer: boolean, handlers: ColumnHandlers, userRoleCode: string): ColumnDef<Reportability>[] => [
     {
@@ -237,6 +319,18 @@ export const getColumns = (isSecurityEngineer: boolean, handlers: ColumnHandlers
                 </TooltipProvider>
             );
         },
+        enableHiding: true,
+    },
+    {
+        accessorKey: 'tiempo_cierre',
+        header: 'Tiempo de Resolución',
+        cell: ({ row }) => (
+            <DurationCell 
+                fechaEvento={row.original.fecha_evento}
+                fechaCierre={row.original.report_closed_at}
+                estado={row.original.estado}
+            />
+        ),
         enableHiding: true,
     },
     {

@@ -46,7 +46,7 @@ export default function ReportsOverviewCombined({ data = [] }: ReportsOverviewCo
         });
 
         const total = counts.abierto + counts.cerrado;
-        const closureRate = total > 0 ? ((counts.cerrado / total) * 100).toFixed(2) : '0.00';
+        const closureRate = total > 0 ? ((counts.cerrado / total) * 100).toFixed(1) : '0.0';
 
         return {
             ...counts,
@@ -199,20 +199,21 @@ export default function ReportsOverviewCombined({ data = [] }: ReportsOverviewCo
                                                 if (active && payload && payload.length) {
                                                     const data = payload[0].payload;
                                                     const percentage = reportStats.total > 0 ? 
-                                                        ((data.count / reportStats.total) * 100).toFixed(2) : '0.00';
+                                                        ((data.count / reportStats.total) * 100).toFixed(1) : '0.0';
                                                     return (
-                                                        <Card className="border-border/50 shadow-lg">
-                                                            <CardContent className="p-3">
-                                                                <div className="space-y-1">
-                                                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                                                                        {chartConfig[data.status as keyof typeof chartConfig]?.label}
-                                                                    </p>
-                                                                    <p className="text-sm font-bold text-foreground">
-                                                                        {data.count} reportes ({percentage}%)
-                                                                    </p>
-                                                                </div>
-                                                            </CardContent>
-                                                        </Card>
+                                                        <div className="rounded-md border bg-background p-2 shadow-md">
+                                                            <div className="space-y-1">
+                                                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                                                    {chartConfig[data.status as keyof typeof chartConfig]?.label}
+                                                                </p>
+                                                                <p className="text-sm font-bold text-foreground">
+                                                                    {data.count} reportes
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {percentage}%
+                                                                </p>
+                                                            </div>
+                                                        </div>
                                                     );
                                                 }
                                                 return null;
@@ -235,9 +236,9 @@ export default function ReportsOverviewCombined({ data = [] }: ReportsOverviewCo
                                                 strokeWidth={0.3}
                                                 fontSize={13}
                                                 formatter={(value: number) => {
-                                                    if (reportStats.total === 0) return '0';
-                                                    const percentage = ((value / reportStats.total) * 100).toFixed(2);
-                                                    return value > 0 ? `${value}\n${percentage}%` : '';
+                                                    if (reportStats.total === 0) return '0%';
+                                                    const percentage = ((value / reportStats.total) * 100).toFixed(1);
+                                                    return value > 0 ? `${percentage}%` : '';
                                                 }}
                                             />
                                         </Pie>

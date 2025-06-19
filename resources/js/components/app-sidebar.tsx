@@ -106,7 +106,7 @@ export function AppSidebar() {
                 .filter((item) => {
                     let isRestricted = false;
                     restrictedItems.forEach((restrictedItem) => {
-                        if (item.title === restrictedItem && userCompanyId !== '1') {
+                        if (item.title === restrictedItem && userCompanyId !== '1' && userRoleCode !== 'SA') {
                             isRestricted = true;
                         }
                     });

@@ -9,6 +9,7 @@ use App\Models\ContractorCompanyType;
 use App\Models\Company as ContractorCompany;
 use App\Models\Uea;
 use Illuminate\Support\Facades\DB;
+use App\Exports\CompanyExport;
 
 class ContractorController extends Controller
 {

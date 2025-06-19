@@ -17,6 +17,7 @@ use App\Models\ContractorCompany;
 use App\Models\FileStatus;
 use App\Models\Uea;
 use App\Models\ContractorCompanyType;
+use App\Exports\ConsolidatedCompanyExport;
 
 class ConsolidatedController extends Controller
 {
@@ -31,7 +32,7 @@ class ConsolidatedController extends Controller
 
     public function index()
     {
-        $consolidateds = Consolidated::all();
+        $consolidateds = Consolidated::orderBy('year', 'desc')->orderBy('month', 'desc')->get();
         return Inertia::render('consolidated/index', [
             'consolidateds' => $consolidateds
         ]);
@@ -276,5 +277,12 @@ class ConsolidatedController extends Controller
         }
 
         return response()->json(['error' => 'Formato no encontrado.'], 404);
+    }
+
+    public function export($id)
+    {
+        $consolidated = Consolidated::findOrFail($id);
+        $filename = 'consolidado_empresas_' . $consolidated->year . '_' . $consolidated->month . '_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        return Excel::download(new ConsolidatedCompanyExport($id), $filename);
     }
 }

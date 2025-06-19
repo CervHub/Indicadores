@@ -6,7 +6,9 @@ import { MinemTemplate1, getColumns as minem1GetColumns } from '@/components/con
 import { MinemTemplate2, getColumns as minem2GetColumns } from '@/components/consolidated/company/minem2';
 import { DataTable } from '@/components/file-status/show/data-table';
 import { DataTable as DataTableCompany } from '@/components/file-status/show/data-table-company';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Download, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,10 +16,11 @@ import AppLayout from '@/layouts/app-layout';
 import { findFieldByValue, months } from '@/lib/utils';
 import ChartComponent from '@/pages/annexe/chart';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, router } from '@inertiajs/react';
 import React, { useCallback, useMemo, useState } from 'react';
 import DeleteFileStatus from './delete/annex';
 import DeleteCompany from './delete/company';
+import { toast } from 'sonner';
 
 const tabData = [
     { value: 'anexo24', title: 'Anexo 24', description: 'Detalles del Anexo 24.', abbreviation: 'A24' },
@@ -106,6 +109,7 @@ export default function ConsolidatedDetail() {
     const [companySelected, setCompanySelected] = useState(null);
     const [openModalFileStatusDelete, setOpenModalFileStatusDelete] = useState(false);
     const [fileStatusSelected, setFileStatusSelected] = useState(null);
+    const [isExporting, setIsExporting] = useState(false);
 
     const { consolidated, fileStatuses, ueas, companyConsolidateds, auth, companyConsolidatedData } = usePage<{
         consolidated: any;
@@ -116,8 +120,6 @@ export default function ConsolidatedDetail() {
         auth: any;
         companyConsolidatedData: any;
     }>().props;
-
-    console.log('companyConsolidateds', companyConsolidateds);
 
     const ROLE_CODE = auth.user.role_code;
 
@@ -136,10 +138,6 @@ export default function ConsolidatedDetail() {
             annex25: annex25s,
             annex26: annex26s,
             annex27: annex27s,
-            annex28: annex28s,
-            annex30: annex30s,
-            minem_template_1: minemTemplate1,
-            minem_template_2: minemTemplate2,
         }),
         [annex24s, annex25s, annex26s, annex27s, annex28s, annex30s, minemTemplate1, minemTemplate2],
     );
@@ -195,7 +193,37 @@ export default function ConsolidatedDetail() {
         }));
     }, [companyConsolidatedData]);
 
-    console.log('Transformed Companies:', transformedCompanies);
+    const handleExport = async () => {
+        setIsExporting(true);
+        try {
+            const response = await fetch(route('consolidated.export', consolidated.id), {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al descargar el archivo');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `consolidado_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.xlsx`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            toast.success('Archivo descargado exitosamente');
+        } catch (error) {
+            toast.error('Error al descargar el archivo Excel');
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -317,8 +345,21 @@ export default function ConsolidatedDetail() {
 
                 <div className="grid grid-cols-1">
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>Contratas que subieron sus Excel</CardTitle>
+                            <Button
+                                onClick={handleExport}
+                                disabled={isExporting}
+                                variant="outline"
+                                size="sm"
+                            >
+                                {isExporting ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Download className="mr-2 h-4 w-4" />
+                                )}
+                                {isExporting ? 'Exportando...' : 'Exportar'}
+                            </Button>
                         </CardHeader>
                         <CardContent>
                             <DataTableCompany columns={getColumns()} data={transformedCompanies} ueas={ueas} />
