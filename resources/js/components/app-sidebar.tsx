@@ -32,7 +32,7 @@ const roles: Record<string, string[]> = {
     'Gestión de SSO': ['SA'],
     Vehículos: [],
     Indicadores: ['CA'],
-    Consolidados: ['SA', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS'],
+    'Anexos MEM': ['SA', 'CA', 'SCC', 'ALM', 'PI', 'CO', 'CS'],
     Reporte: ['SA', 'IS', 'CA', 'SCC'],
     'Controles Preventivos': ['IS'],
     Inspecciones: [],
@@ -63,7 +63,7 @@ const groupedNavItems = [
         group: 'Herramientas',
         items: [
             { title: 'Indicadores', url: '/annexes', icon: BarChart },
-            { title: 'Consolidados', url: '/consolidated', icon: FileText },
+            { title: 'Anexos MEM', url: '/consolidated', icon: FileText },
             { title: 'Reporte', url: '/admin/reportability', icon: FileText },
             { title: 'Controles Preventivos', url: '/format', icon: TriangleAlert },
             { title: 'Inspecciones', url: '/inspection', icon: FileText },
@@ -92,7 +92,7 @@ export function AppSidebar() {
     const userRoleCodes = userRoleCode ? [userRoleCode] : [];
 
     const currentPath = window.location.pathname;
-    const restrictedItems = ['Consolidados', 'Asignaciones', 'Empresas']; // Add more restricted items if needed
+    const restrictedItems = ['Anexos MEM', 'Asignaciones', 'Empresas']; // Add more restricted items if needed
 
     const filteredNavGroups = groupedNavItems
         .map((group) => ({
