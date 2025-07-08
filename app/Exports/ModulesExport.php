@@ -26,7 +26,7 @@ class ModulesExport implements FromCollection, WithHeadings, WithColumnWidths
         // Modify the data to include hyperlinks and map new structure
         $modifiedData = array_map(function ($item) {
             $url = route('company.reportability.download', ['reportability_id' => $item->id]);
-            
+
             // Calcular tiempo de resolución si hay fecha de cierre real
             $tiempoResolucion = '-';
             if ($item->reportClosedAt && $item->fechaEvento) {
@@ -36,30 +36,38 @@ class ModulesExport implements FromCollection, WithHeadings, WithColumnWidths
                 $horas = $fechaEvento->diffInHours($fechaCierre) % 24;
                 $tiempoResolucion = $dias . ' días, ' . $horas . ' horas';
             }
-            
+
+            // Determinar el estado: Cerrado (si es Cerrado o Finalizador), Abierto en cualquier otro caso
+            $estado = strtolower($item->estadoReporte);
+            if ($estado === 'cerrado' || $estado === 'finalizado') {
+                $estadoExport = 'Cerrado';
+            } else {
+                $estadoExport = 'Abierto';
+            }
+
             return [
                 'ID' => '=HYPERLINK("' . $url . '", "' . $item->id . '")',
                 'GERENCIA' => $item->nombreGerencia,
-                'TIPO_REPORTE' => ucfirst($item->tipoReporte),
-                'FECHA_EVENTO' => $item->fechaEvento,
-                'GENERADO_POR' => $item->nombreUsuarioReporta,
-                'EMPRESA_QUE_GENERA' => $item->nombreEmpresaReporta,
-                'EMPRESA_ENCARGADA_CIERRE' => $item->nombreEmpresaReportada,
-                'DESCRIPCION_EVENTO' => $item->descripcionEvento,
-                'NIVEL_GRAVEDAD' => $item->nivelGravedad,
-                'ESTADO_REPORTE' => $item->estadoReporte,
-                'CAUSA_REPORTE' => $item->causaReporte,
-                'RESPONSABLE_CIERRE' => $item->nombreUsuarioCierre,
-                'ING_QUE_CERRO_REPORTE' => $item->nombreUsuarioRealmenteCerro ?? '-',
-                'FECHA_CIERRE_REAL' => $item->reportClosedAt ?? '-',
-                'TIEMPO_RESOLUCION' => $tiempoResolucion,
-                
+                'TIPO DE REPORTE' => ucfirst($item->tipoReporte),
+                'FECHA DEL EVENTO' => $item->fechaEvento,
+                'GENERADO POR' => $item->nombreUsuarioReporta,
+                'EMPRESA QUE REPORTA' => $item->nombreEmpresaReporta,
+                'EMPRESA REPORTADA' => $item->nombreEmpresaReportada,
+                'DESCRIPCION DEL EVENTO' => $item->descripcionEvento,
+                'NIVEL DE GRAVEDAD' => $item->nivelGravedad,
+                'ESTADO' => $estadoExport,
+                'CAUSA' => $item->causaReporte,
+                'RESPONSABLE DE CIERRE' => $item->nombreUsuarioCierre,
+                'ING QUE CERRO REPORTE' => $item->nombreUsuarioRealmenteCerro ?? '-',
+                'FECHA DE CIERRE' => $item->reportClosedAt ?? '-',
+                'DIAS TRANSCURRIDOS' => $tiempoResolucion,
+
                 // CAMPOS ADICIONALES DISPONIBLES - Descomenta para usar:
                 // 'AREA_INVOLUCRADA' => $item->areaInvolucrada ?? '-',
                 // 'USUARIO_REASIGNADO' => $item->nombreUsuarioReasignado ?? '-',
                 // 'MOTIVO_REASIGNACION' => $item->motivoReasignacion ?? '-',
                 // 'ELIMINADO_EN' => $item->eliminadoEn ?? '-',
-                
+
                 // IDs PARA REFERENCIAS - Descomenta si necesitas:
                 // 'ID_CAUSA' => $item->idCausa,
                 // 'ID_USUARIO_REPORTA' => $item->idUsuarioReporta,
@@ -74,7 +82,7 @@ class ModulesExport implements FromCollection, WithHeadings, WithColumnWidths
 
         return new Collection($modifiedData);
     }
-    
+
     /**
      * @return array
      */
@@ -83,20 +91,20 @@ class ModulesExport implements FromCollection, WithHeadings, WithColumnWidths
         return [
             'ID',
             'GERENCIA',
-            'TIPO_REPORTE',
-            'FECHA_EVENTO',
-            'GENERADO_POR',
-            'EMPRESA_QUE_GENERA',
-            'EMPRESA_ENCARGADA_CIERRE',
-            'DESCRIPCION_EVENTO',
-            'NIVEL_GRAVEDAD',
-            'ESTADO_REPORTE',
-            'CAUSA_REPORTE',
-            'RESPONSABLE_CIERRE',
-            'ING_QUE_CERRO_REPORTE',
-            'FECHA_CIERRE_REAL',
-            'TIEMPO_RESOLUCION',
-            
+            'TIPO DE REPORTE',
+            'FECHA DEL EVENTO',
+            'GENERADO POR',
+            'EMPRESA QUE REPORTA',
+            'EMPRESA REPORTADA',
+            'DESCRIPCION DEL EVENTO',
+            'NIVEL DE GRAVEDAD',
+            'ESTADO',
+            'CAUSA',
+            'RESPONSABLE DE CIERRE',
+            'ING QUE CERRO REPORTE',
+            'FECHA DE CIERRE',
+            'DIAS TRANSCURRIDOS',
+
             // HEADERS ADICIONALES - Descomenta junto con los campos:
             // 'AREA_INVOLUCRADA',
             // 'USUARIO_REASIGNADO',
@@ -121,20 +129,20 @@ class ModulesExport implements FromCollection, WithHeadings, WithColumnWidths
         return [
             'A' => 10,  // ID
             'B' => 40,  // GERENCIA
-            'C' => 20,  // TIPO_REPORTE
-            'D' => 25,  // FECHA_EVENTO
-            'E' => 40,  // GENERADO_POR
-            'F' => 40,  // EMPRESA_QUE_GENERA
-            'G' => 40,  // EMPRESA_ENCARGADA_CIERRE
-            'H' => 60,  // DESCRIPCION_EVENTO
-            'I' => 15,  // NIVEL_GRAVEDAD
-            'J' => 20,  // ESTADO_REPORTE
-            'K' => 50,  // CAUSA_REPORTE
-            'L' => 40,  // RESPONSABLE_CIERRE
-            'M' => 40,  // ING_QUE_CERRO_REPORTE
-            'N' => 25,  // FECHA_CIERRE_REAL
-            'O' => 25,  // TIEMPO_RESOLUCION
-            
+            'C' => 20,  // TIPO DE REPORTE
+            'D' => 25,  // FECHA DEL EVENTO
+            'E' => 40,  // GENERADO POR
+            'F' => 40,  // EMPRESA QUE REPORTA
+            'G' => 40,  // EMPRESA REPORTADA
+            'H' => 60,  // DESCRIPCION DEL EVENTO
+            'I' => 15,  // NIVEL DE GRAVEDAD
+            'J' => 20,  // ESTADO
+            'K' => 50,  // CAUSA
+            'L' => 40,  // RESPONSABLE DE CIERRE
+            'M' => 40,  // ING QUE CERRO REPORTE
+            'N' => 25,  // FECHA DE CIERRE
+            'O' => 25,  // DIAS TRANSCURRIDOS
+
             // ANCHOS ADICIONALES - Descomenta junto con los campos:
             // 'P' => 30,  // AREA_INVOLUCRADA
             // 'Q' => 40,  // USUARIO_REASIGNADO
