@@ -32,8 +32,9 @@ class ModulesExport implements FromCollection, WithHeadings, WithColumnWidths
             if ($item->reportClosedAt && $item->fechaEvento) {
                 $fechaEvento = Carbon::parse($item->fechaEvento);
                 $fechaCierre = Carbon::parse($item->reportClosedAt);
-                $dias = $fechaEvento->diffInDays($fechaCierre);
-                $horas = $fechaEvento->diffInHours($fechaCierre) % 24;
+                $diff = $fechaEvento->diff($fechaCierre);
+                $dias = (int)$diff->d;
+                $horas = (int)$diff->h;
                 $tiempoResolucion = $dias . ' días, ' . $horas . ' horas';
             }
 
